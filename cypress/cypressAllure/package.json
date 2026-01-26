@@ -37,7 +37,7 @@
     "@shelex/cypress-allure-plugin": "^2.41.2",
     "@types/node": "^22.0.0",
     "allure-commandline": "^2.36.0",
-    "cypress": "^12.17.4",
+    "cypress": "^15.9.0",
     "typescript": "^5.7.0"
   }
 }
