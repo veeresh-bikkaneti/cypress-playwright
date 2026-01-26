@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Cypress Test Application</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input.error {
+            border-color: #dc3545;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+
+        .links {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .links a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #fff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container" data-testid="login-container">
+        <h1>Sign In</h1>
+
+        <!-- Alert Messages -->
+        <div id="alert" class="alert" role="alert" data-testid="login-alert"></div>
+
+        <form id="login-form" novalidate data-testid="login-form">
+            <!-- Email Field -->
+            <div class="form-group">
+                <label for="email" id="email-label">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" autocomplete="email" required
+                    aria-labelledby="email-label" aria-describedby="email-error" data-testid="email-input">
+                <div id="email-error" class="error-message" data-testid="email-error">
+                    Please enter a valid email address
+                </div>
+            </div>
+
+            <!-- Password Field -->
+            <div class="form-group">
+                <label for="password" id="password-label">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password"
+                    autocomplete="current-password" required minlength="6" aria-labelledby="password-label"
+                    aria-describedby="password-error" data-testid="password-input">
+                <div id="password-error" class="error-message" data-testid="password-error">
+                    Password must be at least 6 characters
+                </div>
+            </div>
+
+            <!-- Remember Me Checkbox -->
+            <div class="form-group checkbox-group">
+                <input type="checkbox" id="remember" name="remember" data-testid="remember-checkbox">
+                <label for="remember">Remember me</label>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn" id="submit-btn" data-testid="submit-btn">
+                <span id="btn-text">Sign In</span>
+                <span class="loading-spinner" id="loading-spinner"></span>
+            </button>
+        </form>
+
+        <!-- Links -->
+        <div class="links">
+            <a href="#" id="forgot-password-link" data-testid="forgot-password-link">Forgot Password?</a>
+            <span style="margin: 0 10px;">|</span>
+            <a href="/" data-testid="back-to-home-link">Back to Home</a>
+        </div>
+
+        <!-- Test credentials info -->
+        <div style="margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 5px; font-size: 14px;">
+            <p style="font-weight: bold; margin-bottom: 10px;">Test Credentials:</p>
+            <p>Email: <code>test@example.com</code></p>
+            <p>Password: <code>password123</code></p>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * ================================================================
+         * LOGIN FORM HANDLER
+         * ================================================================
+         * Demonstrates:
+         * - Form validation (cy.type, cy.submit)
+         * - API requests (cy.intercept, cy.request)
+         * - Cookie handling (cy.getCookie, cy.setCookie)
+         * - Error handling
+         * - Loading states
+         */
+
+        const form = document.getElementById('login-form');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const rememberCheckbox = document.getElementById('remember');
+        const submitBtn = document.getElementById('submit-btn');
+        const btnText = document.getElementById('btn-text');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const alert = document.getElementById('alert');
+        const emailError = document.getElementById('email-error');
+        const passwordError = document.getElementById('password-error');
+
+        /**
+         * Validate email format
+         */
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        /**
+         * Show error on input
+         */
+        function showInputError(input, errorEl) {
+            input.classList.add('error');
+            errorEl.classList.add('show');
+        }
+
+        /**
+         * Clear error on input
+         */
+        function clearInputError(input, errorEl) {
+            input.classList.remove('error');
+            errorEl.classList.remove('show');
+        }
+
+        /**
+         * Show alert message
+         */
+        function showAlert(message, type) {
+            alert.textContent = message;
+            alert.className = `alert ${type} show`;
+        }
+
+        /**
+         * Hide alert
+         */
+        function hideAlert() {
+            alert.className = 'alert';
+        }
+
+        /**
+         * Set loading state
+         */
+        function setLoading(loading) {
+            submitBtn.disabled = loading;
+            btnText.textContent = loading ? 'Signing In...' : 'Sign In';
+            loadingSpinner.style.display = loading ? 'inline-block' : 'none';
+        }
+
+        // Real-time validation
+        emailInput.addEventListener('blur', () => {
+            if (emailInput.value && !isValidEmail(emailInput.value)) {
+                showInputError(emailInput, emailError);
+            } else {
+                clearInputError(emailInput, emailError);
+            }
+        });
+
+        passwordInput.addEventListener('blur', () => {
+            if (passwordInput.value && passwordInput.value.length < 6) {
+                showInputError(passwordInput, passwordError);
+            } else {
+                clearInputError(passwordInput, passwordError);
+            }
+        });
+
+        // Form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideAlert();
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            const remember = rememberCheckbox.checked;
+
+            // Client-side validation
+            let isValid = true;
+
+            if (!email || !isValidEmail(email)) {
+                showInputError(emailInput, emailError);
+                isValid = false;
+            }
+
+            if (!password || password.length < 6) {
+                showInputError(passwordInput, passwordError);
+                isValid = false;
+            }
+
+            if (!isValid) return;
+
+            // Submit to API
+            setLoading(true);
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showAlert(data.error || 'Login failed', 'alert-error');
+                    setLoading(false);
+                    return;
+                }
+
+                // Store token
+                if (remember) {
+                    localStorage.setItem('authToken', data.token);
+                } else {
+                    sessionStorage.setItem('authToken', data.token);
+                }
+
+                // Store user info
+                localStorage.setItem('user', JSON.stringify(data.user));
+
+                showAlert('Login successful! Redirecting...', 'alert-success');
+
+                // Redirect after delay
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 1000);
+
+            } catch (error) {
+                showAlert('Network error. Please try again.', 'alert-error');
+                setLoading(false);
+            }
+        });
+
+        // Forgot password handler
+        document.getElementById('forgot-password-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            alert('Password reset functionality - would trigger cy.on("window:alert") test');
+            window.alert('Password reset email sent to your email address.');
+        });
+    </script>
+</body>
+
+</html>

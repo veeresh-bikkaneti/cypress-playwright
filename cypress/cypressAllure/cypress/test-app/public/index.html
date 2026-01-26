@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cypress Test Application - Home</title>
+    <style>
+        /* 
+         * CSS Styles for Test Application
+         * Designed to provide clear, testable UI elements
+         */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        nav {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        nav a:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+        }
+
+        .product-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .product-card .price {
+            font-size: 1.5rem;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .product-card .stock {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+
+        .stock.in-stock {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .stock.out-of-stock {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #cce5ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+
+        #notification {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+        }
+
+        #notification.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        /* Accessibility test elements */
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        /* Test data attributes */
+        [data-testid] {
+            /* Marker for test elements */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header with navigation -->
+        <header>
+            <h1 data-testid="main-heading">Cypress Test Application</h1>
+            <p>A self-contained application for testing Cypress.io capabilities</p>
+            <nav role="navigation" aria-label="Main navigation" data-testid="main-nav">
+                <a href="/" data-testid="nav-home">Home</a>
+                <a href="/login" data-testid="nav-login">Login</a>
+                <a href="/dashboard" data-testid="nav-dashboard">Dashboard</a>
+                <a href="/forms" data-testid="nav-forms">Forms</a>
+                <a href="/dialogs" data-testid="nav-dialogs">Dialogs</a>
+                <a href="/upload" data-testid="nav-upload">File Upload</a>
+            </nav>
+        </header>
+
+        <!-- Welcome Section -->
+        <div class="card" data-testid="products-section">
+            <h2>Welcome to the Test Application</h2>
+            <p>This application provides various UI elements and API endpoints for testing Cypress capabilities:</p>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li>Authentication flows (login/logout)</li>
+                <li>Form handling and validation</li>
+                <li>API interception and stubbing</li>
+                <li>File upload and download</li>
+                <li>Dialog handling (alert, confirm, prompt)</li>
+                <li>Dynamic content loading</li>
+                <li>Cookie and storage management</li>
+            </ul>
+        </div>
+
+        <!-- Products Section -->
+        <div class="card">
+            <h2>Products</h2>
+            <div id="products-container" class="grid" data-testid="products-grid">
+                <!-- Products loaded dynamically -->
+                <p>Loading products...</p>
+            </div>
+        </div>
+
+        <!-- Dynamic Content Section -->
+        <div class="card">
+            <h2>Dynamic Content</h2>
+            <button id="load-content-btn" class="btn btn-primary" data-testid="load-content-btn">
+                Load Dynamic Content
+            </button>
+            <div id="dynamic-content" style="margin-top: 15px;" data-testid="loaded-content">
+                <!-- Content loaded on button click -->
+            </div>
+        </div>
+
+        <!-- Time Display Section (for cy.clock testing) -->
+        <div class="card">
+            <h2>Server Time</h2>
+            <p>Current time: <span id="current-time">--:--:--</span></p>
+            <button id="refresh-time-btn" class="btn btn-secondary">
+                Refresh Time
+            </button>
+        </div>
+
+        <!-- Scroll Target Section (for scroll testing) -->
+        <div class="card" id="scroll-target" style="margin-top: 100vh;" data-testid="scroll-section">
+            <h2>Scroll Target</h2>
+            <p>This section is placed far down the page to test scrolling capabilities.</p>
+            <button id="scroll-to-top-btn" class="btn btn-secondary" data-testid="scroll-to-top-btn">
+                Scroll to Top
+            </button>
+        </div>
+
+        <footer>
+            <p>Cypress Test Application v1.0.0</p>
+        </footer>
+    </div>
+
+    <!-- Notification Element -->
+    <div id="notification"></div>
+
+    <script>
+        /**
+         * ================================================================
+         * CLIENT-SIDE JAVASCRIPT
+         * ================================================================
+         * This script handles dynamic content loading and UI interactions.
+         * It's designed to be easily testable with Cypress.
+         */
+
+        // DOM elements
+        const productsContainer = document.getElementById('products-container');
+        const loadContentBtn = document.getElementById('load-content-btn');
+        const dynamicContent = document.getElementById('dynamic-content');
+        const currentTimeEl = document.getElementById('current-time');
+        const refreshTimeBtn = document.getElementById('refresh-time-btn');
+        const scrollToTopBtn = document.getElementById('scroll-to-top-btn');
+        const notification = document.getElementById('notification');
+
+        /**
+         * Show notification message
+         * @param {string} message - Message to display
+         * @param {string} type - Notification type (success, error, info)
+         */
+        function showNotification(message, type = 'info') {
+            notification.textContent = message;
+            notification.className = 'show';
+            notification.style.background = type === 'success' ? '#28a745' :
+                type === 'error' ? '#dc3545' : '#17a2b8';
+
+            setTimeout(() => {
+                notification.className = '';
+            }, 3000);
+        }
+
+        /**
+         * Load products from API
+         * Demonstrates: cy.intercept(), API data loading
+         */
+        async function loadProducts() {
+            try {
+                const response = await fetch('/api/products');
+                const data = await response.json();
+
+                productsContainer.innerHTML = data.products.map(product => `
+                    <div class="product-card" data-testid="product-card" data-product-id="${product.id}">
+                        <h3>${product.name}</h3>
+                        <p class="price">$${product.price.toFixed(2)}</p>
+                        <span class="stock ${product.inStock ? 'in-stock' : 'out-of-stock'}">
+                            ${product.inStock ? 'In Stock' : 'Out of Stock'}
+                        </span>
+                        <button class="btn btn-primary add-to-cart" 
+                                data-product-id="${product.id}"
+                                ${!product.inStock ? 'disabled' : ''}>
+                            Add to Cart
+                        </button>
+                    </div>
+                `).join('');
+
+                // Add click handlers to cart buttons
+                document.querySelectorAll('.add-to-cart').forEach(btn => {
+                    btn.addEventListener('click', handleAddToCart);
+                });
+
+            } catch (error) {
+                productsContainer.innerHTML = '<p class="alert alert-error">Failed to load products</p>';
+            }
+        }
+
+        /**
+         * Handle add to cart click
+         * Demonstrates: cy.contains(), event handling
+         */
+        function handleAddToCart(event) {
+            const productId = event.target.dataset.productId;
+            const productName = event.target.closest('.product-card').querySelector('h3').textContent;
+
+            showNotification(`Added "${productName}" to cart!`, 'success');
+
+            // Store in localStorage for testing
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            cart.push({ productId, addedAt: Date.now() });
+            localStorage.setItem('cart', JSON.stringify(cart));
+        }
+
+        /**
+         * Load dynamic content
+         * Demonstrates: cy.wait(), async loading
+         */
+        loadContentBtn.addEventListener('click', async () => {
+            dynamicContent.innerHTML = '<p>Loading...</p>';
+            loadContentBtn.disabled = true;
+
+            // Simulate delay for testing cy.wait()
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            dynamicContent.innerHTML = `
+                <div class="alert alert-success">
+                    <h3>Content Loaded Successfully!</h3>
+                    <p>This content was loaded dynamically at ${new Date().toLocaleTimeString()}</p>
+                    <ul>
+                        <li>Item 1: Dynamic data point</li>
+                        <li>Item 2: Another piece of information</li>
+                        <li>Item 3: Final dynamic element</li>
+                    </ul>
+                </div>
+            `;
+
+            loadContentBtn.disabled = false;
+            loadContentBtn.textContent = 'Reload Content';
+        });
+
+        /**
+         * Refresh time display
+         * Demonstrates: cy.clock(), cy.tick()
+         */
+        async function refreshTime() {
+            try {
+                const response = await fetch('/api/time');
+                const data = await response.json();
+                currentTimeEl.textContent = data.formatted;
+            } catch (error) {
+                currentTimeEl.textContent = 'Error loading time';
+            }
+        }
+
+        refreshTimeBtn.addEventListener('click', refreshTime);
+
+        /**
+         * Scroll to top button
+         * Demonstrates: cy.scrollTo()
+         */
+        scrollToTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProducts();
+            refreshTime();
+
+            // Update time every second (for clock testing)
+            setInterval(refreshTime, 60000);
+        });
+    </script>
+</body>
+
+</html>

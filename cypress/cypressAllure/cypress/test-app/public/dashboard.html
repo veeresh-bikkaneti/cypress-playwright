@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Cypress Test Application</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            height: 100vh;
+            background: #2d3748;
+            color: white;
+            padding: 20px 0;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #4a5568;
+        }
+
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+
+        .sidebar-nav a {
+            display: block;
+            padding: 12px 20px;
+            color: #a0aec0;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            background: #4a5568;
+            color: white;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: #667eea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stat-card.blue .value {
+            color: #667eea;
+        }
+
+        .stat-card.green .value {
+            color: #28a745;
+        }
+
+        .stat-card.orange .value {
+            color: #fd7e14;
+        }
+
+        .stat-card.red .value {
+            color: #dc3545;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" data-testid="sidebar">
+        <div class="sidebar-header">
+            <h2>Dashboard</h2>
+        </div>
+        <nav class="sidebar-nav" data-testid="sidebar-nav">
+            <a href="#overview" class="active" data-testid="nav-overview">📊 Overview</a>
+            <a href="#orders" data-testid="nav-orders">📦 Orders</a>
+            <a href="#products" data-testid="nav-products">🛍️ Products</a>
+            <a href="#settings" data-testid="nav-settings">⚙️ Settings</a>
+            <a href="#" id="logout-link" data-testid="logout-link">🚪 Logout</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" data-testid="main-content">
+        <!-- Auth Warning (shown if not logged in) -->
+        <div class="alert alert-warning" id="auth-warning" data-testid="auth-warning">
+            <strong>Not authenticated.</strong>
+            <a href="/login">Please login</a> to access all features.
+        </div>
+
+        <!-- Header -->
+        <header class="header" data-testid="dashboard-header">
+            <h1 data-testid="page-title">Welcome to Dashboard</h1>
+            <div class="user-info" id="user-info" data-testid="user-info">
+                <div class="user-avatar" data-testid="user-avatar">?</div>
+                <div>
+                    <div data-testid="user-name">Guest</div>
+                    <small data-testid="user-email">Not logged in</small>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid" data-testid="stats-grid">
+            <div class="stat-card blue">
+                <h3>Total Orders</h3>
+                <div class="value" id="total-orders">--</div>
+            </div>
+            <div class="stat-card green">
+                <h3>Completed</h3>
+                <div class="value" id="completed-orders">--</div>
+            </div>
+            <div class="stat-card orange">
+                <h3>Pending</h3>
+                <div class="value" id="pending-orders">--</div>
+            </div>
+            <div class="stat-card red">
+                <h3>Revenue</h3>
+                <div class="value" id="total-revenue">$--</div>
+            </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="card" data-testid="orders-section">
+            <h2>Recent Orders</h2>
+            <table data-testid="orders-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Date</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="orders-tbody">
+                    <tr>
+                        <td colspan="6" style="text-align: center;">Loading orders...</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div style="margin-top: 15px;">
+                <button class="btn btn-primary" id="create-order-btn" data-testid="create-order-btn">
+                    + Create Test Order
+                </button>
+            </div>
+        </div>
+
+        <!-- Cookie/Storage Test Section -->
+        <div class="card" data-testid="storage-section">
+            <h2>Storage Testing</h2>
+            <p style="margin-bottom: 15px;">Test cookie and localStorage operations:</p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn btn-primary" id="set-cookie-btn" data-testid="set-cookie-btn">
+                    Set Test Cookie
+                </button>
+                <button class="btn btn-primary" id="get-cookie-btn" data-testid="get-cookie-btn">
+                    Get Cookies
+                </button>
+                <button class="btn btn-danger" id="clear-cookies-btn" data-testid="clear-cookies-btn">
+                    Clear Cookies
+                </button>
+                <button class="btn btn-primary" id="set-storage-btn" data-testid="set-storage-btn">
+                    Set localStorage
+                </button>
+                <button class="btn btn-danger" id="clear-storage-btn" data-testid="clear-storage-btn">
+                    Clear localStorage
+                </button>
+            </div>
+            <div id="storage-result" data-testid="storage-result"
+                style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                Click a button to test storage
+            </div>
+        </div>
+    </main>
+
+    <script>
+        /**
+         * ================================================================
+         * DASHBOARD SCRIPT
+         * ================================================================
+         * Demonstrates:
+         * - cy.getCookie() / cy.setCookie() - Cookie operations
+         * - cy.clearCookies() / cy.clearLocalStorage() - Storage clearing
+         * - cy.intercept() - API request interception
+         * - Protected route behavior
+         * - Dynamic content loading
+         */
+
+        const authWarning = document.getElementById('auth-warning');
+        const userInfo = document.getElementById('user-info');
+        const ordersTbody = document.getElementById('orders-tbody');
+        const storageResult = document.getElementById('storage-result');
+
+        // Check authentication on load
+        function checkAuth() {
+            const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+            if (token && user) {
+                authWarning.classList.add('hidden');
+                document.querySelector('[]').textContent = user.name.charAt(0).toUpperCase();
+                document.querySelector('[]').textContent = user.name;
+                document.querySelector('[]').textContent = user.email;
+                return true;
+            }
+
+            // Security Fix: Redirect to login if not authenticated
+            window.location.href = '/login';
+            return false;
+        }
+
+        // Load orders
+        async function loadOrders() {
+            const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+
+            if (!token) {
+                ordersTbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Please login to view orders</td></tr>';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/orders', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to load orders');
+
+                const data = await response.json();
+
+                if (data.orders.length === 0) {
+                    ordersTbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No orders yet</td></tr>';
+                } else {
+                    ordersTbody.innerHTML = data.orders.map(order => `
+                        <tr>
+                            <td>#${order.id}</td>
+                            <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+                            <td>${order.items.length} items</td>
+                            <td>$${order.total.toFixed(2)}</td>
+                            <td><span class="status-badge status-${order.status}">${order.status}</span></td>
+                            <td><button class="btn btn-sm btn-primary">View</button></td>
+                        </tr>
+                    `).join('');
+                }
+
+                // Update stats
+                document.getElementById('total-orders').textContent = data.orders.length;
+                document.getElementById('completed-orders').textContent =
+                    data.orders.filter(o => o.status === 'completed').length;
+                document.getElementById('pending-orders').textContent =
+                    data.orders.filter(o => o.status === 'pending').length;
+                document.getElementById('total-revenue').textContent =
+                    '$' + data.orders.reduce((sum, o) => sum + o.total, 0).toFixed(2);
+
+            } catch (error) {
+                ordersTbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red;">Error: ${error.message}</td></tr>`;
+            }
+        }
+
+        // Create test order
+        document.getElementById('create-order-btn').addEventListener('click', async () => {
+            const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+
+            if (!token) {
+                alert('Please login first');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        items: [
+                            { productId: 1, quantity: 1 },
+                            { productId: 2, quantity: 2 }
+                        ]
+                    })
+                });
+
+                if (response.ok) {
+                    loadOrders();
+                }
+            } catch (error) {
+                console.error('Failed to create order:', error);
+            }
+        });
+
+        // Logout
+        document.getElementById('logout-link').addEventListener('click', async (e) => {
+            e.preventDefault();
+
+            await fetch('/api/auth/logout', { method: 'POST' });
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            sessionStorage.removeItem('authToken');
+
+            window.location.href = '/login';
+        });
+
+        // Cookie/Storage operations
+        document.getElementById('set-cookie-btn').addEventListener('click', () => {
+            document.cookie = 'testCookie=cypress-test-value; path=/; max-age=3600';
+            storageResult.textContent = 'Cookie set: testCookie=cypress-test-value';
+        });
+
+        document.getElementById('get-cookie-btn').addEventListener('click', () => {
+            storageResult.textContent = 'Cookies: ' + (document.cookie || '(none)');
+        });
+
+        document.getElementById('clear-cookies-btn').addEventListener('click', () => {
+            document.cookie.split(';').forEach(c => {
+                document.cookie = c.trim().split('=')[0] + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
+            });
+            storageResult.textContent = 'All cookies cleared';
+        });
+
+        document.getElementById('set-storage-btn').addEventListener('click', () => {
+            localStorage.setItem('testKey', 'cypress-test-value');
+            localStorage.setItem('testTimestamp', Date.now().toString());
+            storageResult.textContent = 'localStorage set: testKey=cypress-test-value';
+        });
+
+        document.getElementById('clear-storage-btn').addEventListener('click', () => {
+            const authToken = localStorage.getItem('authToken');
+            const user = localStorage.getItem('user');
+            localStorage.clear();
+            if (authToken) localStorage.setItem('authToken', authToken);
+            if (user) localStorage.setItem('user', user);
+            storageResult.textContent = 'localStorage cleared (except auth)';
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            loadOrders();
+        });
+    </script>
+</body>
+
+</html>

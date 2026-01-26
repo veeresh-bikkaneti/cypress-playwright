@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "es2016",
+    "module": "commonjs",
+    "lib": ["dom", "es6", "es7"],
+    "types": ["node","cypress"],
+    "strict": true,
+    "skipLibCheck": true,
+    "baseUrl": "./"
+  },
+  "exclude": ["node_modules"],
+  "include": ["**/*.ts",
+    "../node_modules/@shelex/cypress-allure-plugin/reporter",
+    "../node_modules/cypress"]
+}

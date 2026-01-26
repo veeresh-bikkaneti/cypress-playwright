@@ -1,0 +1,24 @@
+{
+    "valid_credentials": {
+        "emailId": "test@example.com",
+        "password": "password123"
+    },
+    "admin_credentials": {
+        "emailId": "admin@example.com",
+        "password": "admin123"
+    },
+    "invalid_credentials": {
+        "invalid_email": {
+            "emailId": "invalidUser@example.com",
+            "password": "password123"
+        },
+        "invalid_password": {
+            "emailId": "test@example.com",
+            "password": "wrongpassword"
+        },
+        "wrong_email_format": {
+            "emailId": "testautomationresstest.com",
+            "password": "password123"
+        }
+    }
+}

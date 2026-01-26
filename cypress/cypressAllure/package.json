@@ -1,0 +1,43 @@
+{
+  "name": "cypress-capabilities-demo",
+  "version": "1.0.0",
+  "description": "Automation Testing framework using Cypress and TypeScript with Allure reports",
+  "main": "index.js",
+  "scripts": {
+    "cy:e2e:run": "npm run clear && npm run cy:run && npm run report",
+    "cy:open": "cypress open --env allure=true",
+    "cy:run": "cypress run --env allure=true",
+    "cy:run:docker": "docker compose run --rm cypress",
+    "report": "npx allure generate reports/ui/allure-results --clean -o reports/ui/allure-report && allure open reports/ui/allure-report",
+    "allure:generate": "npx allure generate allure-results --clean",
+    "clear": "rm -rf reports/** || true",
+    "test:docker": "docker compose up --build --abort-on-container-exit",
+    "build:prod": "node scripts/strip-testids.js"
+  },
+  "keywords": [
+    "cypress",
+    "typescript",
+    "allure",
+    "e2e",
+    "testing",
+    "automation",
+    "docker"
+  ],
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "author": "Veeresh Bikkaneti",
+  "license": "ISC",
+  "bugs": {
+    "url": ""
+  },
+  "homepage": "",
+  "devDependencies": {
+    "@shelex/cypress-allure-plugin": "^2.41.2",
+    "@types/node": "^22.0.0",
+    "allure-commandline": "^2.36.0",
+    "cypress": "^12.17.4",
+    "typescript": "^5.7.0"
+  }
+}

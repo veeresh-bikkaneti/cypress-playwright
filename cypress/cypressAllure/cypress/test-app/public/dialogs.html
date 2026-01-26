@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dialogs - Cypress Test Application</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            margin: 5px;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .result-box {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-left: 4px solid #333;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            width: 400px;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Hash navigation targets */
+        .page-section {
+            height: 100vh;
+            border-top: 2px dashed #999;
+            margin-top: 20px;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Dialogs & Modals Testing</h1>
+    <nav>
+        <a href="#overview" data-testid="link-overview">Overview</a> |
+        <a href="#details" data-testid="link-details">Details</a>
+    </nav>
+
+    <!-- Native Dialogs -->
+    <div class="section">
+        <h2>Native Dialogs</h2>
+        <div>
+            <button id="alert-btn" data-testid="alert-btn">Trigger Alert</button>
+            <button id="confirm-btn" data-testid="confirm-btn">Trigger Confirm</button>
+            <button id="prompt-btn" data-testid="prompt-btn">Trigger Prompt</button>
+        </div>
+        <div id="native-result" class="result-box" data-testid="native-dialog-result">Waiting for interaction...</div>
+    </div>
+
+    <!-- Custom Modals -->
+    <div class="section">
+        <h2>Custom Modals</h2>
+        <button id="info-modal-btn" data-testid="info-modal-btn">Open Info Modal</button>
+        <button id="delete-modal-btn" data-testid="delete-modal-btn">Open Delete Modal</button>
+        <button id="form-modal-btn" data-testid="form-modal-btn">Open Form Modal</button>
+        <div id="modal-result" class="result-box" data-testid="modal-result">No modal action yet.</div>
+    </div>
+
+    <!-- Window Events -->
+    <div class="section">
+        <h2>Window Events</h2>
+        <button id="beforeunload-btn" data-testid="beforeunload-btn">Enable BeforeUnload</button>
+        <button id="error-btn" data-testid="error-btn">Trigger Error</button>
+        <button id="console-btn" data-testid="console-btn">Trigger Console Logs</button>
+        <button id="popup-btn" data-testid="popup-btn">Open Popup Window</button>
+        <div id="event-result" class="result-box" data-testid="event-result">Events status...</div>
+    </div>
+
+    <!-- Hash Navigation Targets -->
+    <div id="overview" class="page-section" data-testid="overview-section">
+        <h2>Overview Section</h2>
+        <p>This section is for testing hash navigation (overview).</p>
+    </div>
+
+    <div id="details" class="page-section" data-testid="details-section">
+        <h2>Details Section</h2>
+        <p>This section is for testing hash navigation (details).</p>
+    </div>
+
+    <!-- Info Modal -->
+    <div id="info-modal" class="modal" data-testid="info-modal">
+        <div class="modal-content">
+            <span class="close-btn" data-testid="info-modal-close">&times;</span>
+            <h3 data-testid="info-modal-title">Information</h3>
+            <p>This is a custom modal dialog.</p>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div id="delete-modal" class="modal" data-testid="delete-modal">
+        <div class="modal-content">
+            <h3>Confirm Delete</h3>
+            <p data-testid="delete-modal-content">This action cannot be undone.</p>
+            <button data-testid="delete-modal-confirm">Confirm</button>
+            <button data-testid="delete-modal-cancel">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Form Modal -->
+    <div id="form-modal" class="modal" data-testid="form-modal">
+        <div class="modal-content">
+            <h3>User Form</h3>
+            <input type="text" placeholder="Name" data-testid="modal-name-input"
+                style="display:block; margin: 10px 0; width: 100%;">
+            <input type="text" placeholder="Message" data-testid="modal-message-input"
+                style="display:block; margin: 10px 0; width: 100%;">
+            <button data-testid="form-modal-submit">Submit</button>
+        </div>
+    </div>
+
+    <script>
+        // Native Dialogs
+        const resultBox = document.getElementById('native-result');
+
+        document.getElementById('alert-btn').addEventListener('click', () => {
+            alert('This is an alert message!');
+            resultBox.textContent = 'Alert was shown';
+        });
+
+        document.getElementById('confirm-btn').addEventListener('click', () => {
+            const result = confirm('Do you want to proceed?');
+            resultBox.textContent = result ? 'User clicked OK' : 'User clicked Cancel';
+        });
+
+        document.getElementById('prompt-btn').addEventListener('click', () => {
+            const name = prompt('Please enter your name:', 'Guest');
+            resultBox.textContent = name === null ? 'User cancelled' : `User entered: "${name}"`;
+        });
+
+        // Modals
+        const modalResult = document.getElementById('modal-result');
+        const setupModal = (btnId, modalId) => {
+            const btn = document.getElementById(btnId);
+            const modal = document.getElementById(modalId);
+            if (btn && modal) {
+                btn.addEventListener('click', () => modal.classList.add('show'));
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) modal.classList.remove('show');
+                });
+            }
+        };
+
+        setupModal('info-modal-btn', 'info-modal');
+        setupModal('delete-modal-btn', 'delete-modal');
+        setupModal('form-modal-btn', 'form-modal');
+
+        document.querySelector('[data-testid="info-modal-close"]').addEventListener('click', () => {
+            document.getElementById('info-modal').classList.remove('show');
+        });
+
+        // Delete Modal Actions
+        document.querySelector('[data-testid="delete-modal-confirm"]').addEventListener('click', () => {
+            document.getElementById('delete-modal').classList.remove('show');
+            modalResult.textContent = 'Item deleted';
+        });
+        document.querySelector('[data-testid="delete-modal-cancel"]').addEventListener('click', () => {
+            document.getElementById('delete-modal').classList.remove('show');
+            modalResult.textContent = 'Delete cancelled';
+        });
+
+        // Form Modal Actions
+        document.querySelector('[data-testid="form-modal-submit"]').addEventListener('click', () => {
+            const name = document.querySelector('[data-testid="modal-name-input"]').value;
+            const msg = document.querySelector('[data-testid="modal-message-input"]').value;
+            document.getElementById('form-modal').classList.remove('show');
+            modalResult.textContent = `Submitted: ${name} - ${msg}`;
+        });
+
+        // Window Events
+        const eventResult = document.getElementById('event-result');
+
+        document.getElementById('beforeunload-btn').addEventListener('click', () => {
+            window.onbeforeunload = () => "Are you sure?";
+            eventResult.textContent = 'BeforeUnload ENABLED';
+        });
+
+        document.getElementById('error-btn').addEventListener('click', () => {
+            setTimeout(() => { throw new Error("Test error"); }, 100);
+            eventResult.textContent = 'Error triggered';
+        });
+
+        document.getElementById('console-btn').addEventListener('click', () => {
+            console.log('Console log test message');
+            console.warn('Console warn test message');
+        });
+
+        document.getElementById('popup-btn').addEventListener('click', () => {
+            window.open('/', 'popup', 'width=400,height=300');
+        });
+
+    </script>
+</body>
+
+</html>

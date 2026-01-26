@@ -1,0 +1,40 @@
+{
+    "compilerOptions": {
+        "target": "ES2020",
+        "useDefineForClassFields": true,
+        "module": "ESNext",
+        "lib": [
+            "ES2020",
+            "DOM",
+            "DOM.Iterable"
+        ],
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+        "noEmit": true,
+        "moduleResolution": "bundler",
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "baseUrl": ".",
+        "paths": {
+            "@pages/*": [
+                "tests/pages/*"
+            ],
+            "@fixtures/*": [
+                "tests/fixtures/*"
+            ],
+            "@helpers/*": [
+                "tests/helpers/*"
+            ]
+        }
+    },
+    "include": [
+        "tests/**/*.ts",
+        "playwright.config.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}

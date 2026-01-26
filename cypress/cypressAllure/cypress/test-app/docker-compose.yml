@@ -1,0 +1,119 @@
+# ============================================================================
+# CYPRESS TEST ENVIRONMENT - Docker Compose
+# ============================================================================
+#
+# ARCHITECTURE:
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                      Docker Compose Environment                         │
+# ├─────────────────────────────────────────────────────────────────────────┤
+# │                                                                         │
+# │  ┌──────────────────────┐            ┌──────────────────────┐          │
+# │  │   test-app           │            │   cypress            │          │
+# │  │   (Node.js Server)   │◄──────────►│   (Test Runner)      │          │
+# │  │   Port: 3000         │   HTTP     │   Headless Chrome    │          │
+# │  └──────────────────────┘            └──────────────────────┘          │
+# │           │                                    │                        │
+# │           │                                    │                        │
+# │           ▼                                    ▼                        │
+# │  ┌──────────────────────┐            ┌──────────────────────┐          │
+# │  │   uploads/           │            │   allure-results/    │          │
+# │  │   (File Storage)     │            │   (Test Reports)     │          │
+# │  └──────────────────────┘            └──────────────────────┘          │
+# │                                                                         │
+# └─────────────────────────────────────────────────────────────────────────┘
+#
+# USAGE:
+#   # Start test app only
+#   docker-compose up test-app
+#
+#   # Run Cypress tests
+#   docker-compose up cypress
+#
+#   # Run everything
+#   docker-compose up
+#
+#   # Clean up
+#   docker-compose down -v
+#
+# ============================================================================
+
+version: '3.8'
+
+services:
+  # ==========================================================================
+  # TEST APPLICATION SERVICE
+  # ==========================================================================
+  test-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cypress-test-app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+    volumes:
+      # Mount uploads directory for file testing
+      - ./uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/time', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - cypress-network
+    restart: unless-stopped
+
+  # ==========================================================================
+  # CYPRESS TEST RUNNER SERVICE
+  # ==========================================================================
+  cypress:
+    image: cypress/included:13.6.0
+    container_name: cypress-runner
+    depends_on:
+      test-app:
+        condition: service_healthy
+    working_dir: /e2e
+    environment:
+      # Point Cypress to the test app container
+      - CYPRESS_baseUrl=http://test-app:3000
+      # Enable Allure reporting
+      - CYPRESS_allure=true
+    volumes:
+      # Mount the Cypress project
+      - ../:/e2e
+      # Mount for Allure results
+      - ../reports:/e2e/reports
+    networks:
+      - cypress-network
+    # Run tests in headless mode
+    command: ["run", "--config-file", "config/config.config.ts"]
+
+  # ==========================================================================
+  # ALLURE REPORT GENERATOR (Optional)
+  # ==========================================================================
+  allure:
+    image: frankescobar/allure-docker-service:latest
+    container_name: allure-reporter
+    ports:
+      - "5050:5050"
+    environment:
+      CHECK_RESULTS_EVERY_SECONDS: 5
+      KEEP_HISTORY: 1
+    volumes:
+      - ../reports/ui/allure-results:/app/allure-results
+      - ../reports/ui/allure-report:/app/default-reports
+    networks:
+      - cypress-network
+    profiles:
+      - reporting
+
+networks:
+  cypress-network:
+    name: cypress-test-network
+    driver: bridge
+
+volumes:
+  uploads:
