@@ -1,0 +1,38 @@
+name: AI Prompt Auto-Update
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # Weekly on Sunday at midnight
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  update-prompts:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed to commit changes
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run Prompt Refresh Script
+        run: python .github/scripts/refresh_prompts.py
+
+      - name: Check for changes
+        id: git-check
+        run: |
+          git diff --exit-code || echo "changes=true" >> $GITHUB_OUTPUT
+
+      - name: Commit and Push changes
+        if: steps.git-check.outputs.changes == 'true'
+        run: |
+          git config --global user.name 'AI Auto-Updater'
+          git config --global user.email 'ai-updater@users.noreply.github.com'
+          git add .github/prompts/*.md
+          git commit -m "chore: auto-update AI prompts [skip ci]"
+          git push
