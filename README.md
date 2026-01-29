@@ -1,99 +1,136 @@
-# Cypress to Playwright Migration Demo
+# Cypress Automation Framework
 
-> **Note**: This repository is a dedicated playground for demonstrating the migration of **Cypress (TypeScript)** tests to **Playwright (TypeScript)**, leveraging AI assistants like GitHub Copilot.
+## Overview
+This project is an automated testing framework using Cypress and TypeScript, designed to test a modern web application including REST and GraphQL APIs.
 
-While the original codebase is based on an OWASP-compliant test suite, the primary focus here is the **migration methodology**, tooling, and validation between the two frameworks.
+> **🆕 New to this project?**
+> Check out our [Beginner's Guide](BEGINNER_GUIDE.md) for a step-by-step introduction!
+> We also have a [Docker Helper Guide](DOCKER_HELPER.md) and [TypeScript Guide](TYPESCRIPT_FOR_CYPRESS.md).
 
-## 🎯 Project Goals
+## Architecture
+- **Framework**: Cypress + TypeScript
+- **Pattern**: Page Object Model (POM) for UI tests; Custom Commands for API interactions
+- **Reporting**: Allure + Mochawesome
+- **CI/CD**: Docker-ready configuration
 
-1.  **Demonstrate Migration Patterns**: Show direct comparisons between Cypress commands (`cy.*`) and Playwright locators/actions (`await page.*`).
-2.  **AI-Assisted Refactoring**: utilizing AI agents to convert tests while maintaining robust locator strategies.
-3.  **Validation**: A structured approach to verifying that the ported Playwright tests provide the same coverage and value as the original Cypress tests.
+### Directory Structure
+- `cypress/e2e/tests/`: Test specifications (specs)
+- `cypress/e2e/pages/`: Page Object definitions (UI abstraction)
+- `cypress/test-app/`: Local Node.js test application (Server + UI)
 
-## 📂 Repository Structure
-
--   **`cypress/`**: Contains the source Cypress test project (`cypressAllure`). This is the "Legacy" state we are migrating *from*.
-    -   See `cypress/cypressAllure/README.md` for specific Cypress detailed docs.
--   **`tests/`**: The destination folder for the new Playwright implementation.
--   **`docs/`**: Documentation for both frameworks and the migration strategy.
--   **`scripts/`**: Utility scripts for maintenance and setup.
-
-## 🚀 Getting Started (Beginner's Guide)
+## How to Run Tests
 
 ### Prerequisites
+- Node.js (v16+)
+- NPM
 
--   [Node.js](https://nodejs.org/) (Latest LTS recommended).
--   [Visual Studio Code](https://code.visualstudio.com/) or your preferred IDE.
--   (Optional) Docker for running containerized tests.
-
-### Installation
-
-1.  Clone the repository:
-    ```bash
-    git clone <repository-url>
-    cd cypress-playwright
-    ```
-
-2.  **Install Cypress Dependencies** (for the source project):
-    ```bash
-    cd cypress/cypressAllure
-    npm install
-    ```
-
-3.  **Install Playwright Dependencies** (for the new project):
-    *(If you are setting up Playwright for the first time in the root)*
-    ```bash
-    # Return to root
-    cd ../..
-    npm init -y  # If package.json is missing in root
-    npm init playwright@latest
-    ```
-
-## 🛤️ Migration Flow: How to "Hop on the Train"
-
-Follow this workflow to contribute to the migration:
-
-### 1. Identify a Candidate
-Go to the `cypress/cypressAllure/cypress/e2e/tests` folder and pick a spec file (e.g., `login.test.ts`) that hasn't been migrated yet.
-
-### 2. Understand the Source
-Run the Cypress test to understand what it does:
+### 1. Start the Application Server
+The tests run against a local server.
 ```bash
-cd cypress/cypressAllure
-npx cypress open
+node cypress/test-app/server.js
+```
+*Note: The server runs on `http://localhost:3000` (UI) and `http://localhost:3001` (Secondary).*
+
+### 2. Run All Tests
+To execute the full suite (Headless):
+```bash
+npm run cy:run
+```
+*This command waits for port 3000 automatically.*
+
+### 3. Run Specific Tests
+To run a specific spec file:
+```bash
+npx cypress run --browser edge --spec "cypress/e2e/tests/graphql.test.ts"
 ```
 
-### 3. Convert with AI
-Create a new corresponding spec file in `tests/` (e.g., `tests/specs/login.spec.ts`).
-Use your AI assistant (Copilot Chat, etc.) with a prompt like:
-> "Convert this Cypress TypeScript test to Playwright TypeScript. Use `page.getByRole` and semantic locators where possible. Replace `cy.intercept` with `page.route`."
-
-### 4. Refine and Validate
-AI translation is a starting point, not the end.
--   **Fix Locators**: Ensure they are stable and resilient.
--   **Add Awaits**: Playwright is async/await based. ensuring no floating promises.
--   **Check Assertions**: Replace `should` chai assertions with `expect` Web-First assertions.
-
-Refer to **[tests/validation.md](tests/validation.md)** for a checklist of what to verify.
-
-## 🧪 Running Tests
-
-### Running Cypress (Source)
+### 4. Open Interactive Mode
+To run tests with the Cypress UI runner:
 ```bash
-cd cypress/cypressAllure
-npm run cy:run    # Headless
-npm run cy:open   # Interactive
+npm run cy:open
 ```
 
-### Running Playwright (Destination)
+### 5. Run with Video Recording
+To generate video recordings of the test execution (saved to `cypress/reports/videos`):
 ```bash
-# From the root directory (assuming Playwright is initialized)
-npx playwright test
-npx playwright test --ui  # Interactive UI mode
+npx cypress run --config video=true
 ```
 
-## 📚 Resources
+### 6. Run with Docker (DevOps Guide)
+The project is fully containerized using `docker-compose.yml` in the root. This ensures a consistent environment matching CI.
 
--   [Validation Checklist](tests/validation.md): detailed steps for verifying migration quality.
--   [Playwright Documentation](https://playwright.dev/)
--   [Cypress Documentation](https://docs.cypress.io/)
+#### A. Build & Start Environment
+To build the test app and runner images:
+```bash
+# Build images explicitly
+docker-compose build
+
+# Pull pre-built images (if using a registry)
+docker-compose pull
+```
+
+#### B. Execute Tests
+**Option 1: Run Full Suite (App + Runner)**
+Spins up the app, runs all Cypress tests, and shuts down on completion.
+```bash
+docker-compose up --abort-on-container-exit --exit-code-from cypress
+```
+
+**Option 2: Run Cypress Interactively (Specific Spec)**
+If the app is already running (or you want to run one spec against the containerized app):
+```bash
+# 1. Start the App
+docker-compose up -d test-app
+
+# 2. Run Specific Spec
+docker-compose run --rm cypress run --spec "cypress/e2e/tests/login.test.ts"
+```
+
+#### C. View Results & Artifacts
+The containers mount volumes to your local host, so you can view results instantly without entering the container.
+
+| Artifact Type | Host Location | Description |
+|---------------|---------------|-------------|
+| **HTML Report** | `./cypress/reports/html/index.html` | Open this file in your browser to see the Mochawesome report. |
+| **Allure Results** | `./reports/ui/allure-results/` | Raw JSON data for Allure. |
+| **Videos** | `./cypress/reports/videos/` | MP4 recordings of the test runs. |
+| **Screenshots** | `./cypress/reports/screenshots/` | Images captured during failures. |
+
+#### D. Cleanup
+To stop containers and remove volumes:
+```bash
+docker-compose down -v
+```
+
+## Reporting
+
+### Allure Reports
+Generate and view Allure reports after a run:
+```bash
+npm run report
+```
+
+### Mochawesome Reports
+HTML reports are automatically generated in `cypress/reports/html/`.
+
+## Agentic Workflow & Roles
+This project is supported by a team of specialized AI agents defined in `.github/agents/`.
+
+| Agent | Responsibility | Use Case |
+|-------|----------------|----------|
+| **QA Automation Engineer** | Test Infrastructure & E2E | "Fix flaky tests", "Add regression suite", "Setup CI/CD" |
+| **Test Engineer** | Unit/Integration Tests | "Write unit tests for utils", "Check coverage" |
+| **Backend Specialist** | API & Database | "Refactor GraphQL parser", "Optimize DB schema" |
+| **Frontend Specialist** | UI/UX & Components | "Update design system", "Fix CSS layout", "Accessibility audit" |
+| **Product Owner** | Requirements & Scope | "Define acceptance criteria", "Prioritize backlog" |
+| **Performance Optimizer** | Speed & Efficiency | "Fix slow load times", "Optimize bundle size" |
+| **Documentation Writer** | Docs & Guides | "Update README", "Write API docs", "Create changelog" |
+| **Explorer Agent** | Codebase Navigation | "Map project structure", "Find dependencies" |
+| **Cypress to Playwright** | Migration Specialist | "Convert cypress tests to playwright" |
+
+## Key Features Tested
+- **UI Interactions**: Forms, Dialogs, Modals, Uploads
+- **Navigation**: Cross-origin (cy.origin), Reloads, History
+- **State**: Storage (Cookies, LocalStorage), Session
+- **API**: REST endpoints, GraphQL (Queries/Mutations)
+- **Security**: Auth flows, Header checks
