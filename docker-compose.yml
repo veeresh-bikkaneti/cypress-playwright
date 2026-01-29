@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # ==========================================================================
+  # TEST APPLICATION SERVICE
+  # ==========================================================================
+  test-app:
+    build:
+      context: ./cypress/test-app
+      dockerfile: Dockerfile
+    container_name: cypress-test-app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+    volumes:
+      - ./cypress/test-app/uploads:/app/uploads
+    healthcheck:
+      test: [ "CMD", "node", "-e", "require('http').get('http://localhost:3000/api/time', (r) => process.exit(r.statusCode === 200 ? 0 : 1))" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - cypress-network
+    restart: unless-stopped
+
+  # ==========================================================================
+  # CYPRESS TEST RUNNER SERVICE
+  # ==========================================================================
+  cypress:
+    image: cypress/included:12.17.4
+    container_name: cypress-runner
+    depends_on:
+      test-app:
+        condition: service_healthy
+    working_dir: /e2e
+    environment:
+      - CYPRESS_baseUrl=http://test-app:3000
+      - CYPRESS_allure=true
+    volumes:
+      # Mount the project root to /e2e so cypress.config.ts is available
+      - ./:/e2e
+    networks:
+      - cypress-network
+    command: [ "run", "--browser", "chrome" ]
+
+  # ==========================================================================
+  # ALLURE REPORT GENERATOR (Optional)
+  # ==========================================================================
+  allure:
+    image: frankescobar/allure-docker-service:latest
+    container_name: allure-reporter
+    ports:
+      - "5050:5050"
+    environment:
+      CHECK_RESULTS_EVERY_SECONDS: 5
+      KEEP_HISTORY: 1
+    volumes:
+      - ./reports/ui/allure-results:/app/allure-results
+      - ./reports/ui/allure-report:/app/default-reports
+    networks:
+      - cypress-network
+    profiles:
+      - reporting
+
+networks:
+  cypress-network:
+    name: cypress-test-network
+    driver: bridge

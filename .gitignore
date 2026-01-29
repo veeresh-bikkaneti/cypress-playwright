@@ -57,6 +57,7 @@ out/
 
 # Test results
 test-results/
+test-output/
 junit.xml
 coverage/
 .nyc_output/

@@ -264,3 +264,5 @@ test.describe('Authentication', () => {
 - Playwright Docs: https://playwright.dev/docs/intro
 - Locators Guide: https://playwright.dev/docs/locators
 - Fixtures Guide: https://playwright.dev/docs/test-fixtures
+
+<!-- run_metadata: last_checked=2026-01-29 -->

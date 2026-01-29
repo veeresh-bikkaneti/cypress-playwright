@@ -1,0 +1,70 @@
+{
+  "name": "cypress-capabilities-demo",
+  "version": "1.0.0",
+  "description": "Automation Testing framework using Cypress and TypeScript with Allure reports",
+  "main": "index.js",
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1"
+  },
+  "scripts": {
+    "cy:e2e:run": "npm run clear && npm run cy:run && npm run report",
+    "cy:open": "cypress open --env allure=true",
+    "cy:run": "npx wait-on http://localhost:3000 && npx cypress run --browser edge --spec cypress/e2e/tests/**/*.test.ts --env allure=true | node scripts/log-output.js test-output/cypress.log",
+    "cy:run:fast": "cypress run --env allure=true,failFast=true | node scripts/log-output.js test-output/cypress-fast.log",
+    "cy:run:parallel": "node run-parallel.js",
+    "cy:run:docker": "docker compose run --rm cypress",
+    "report": "npx allure generate reports/ui/allure-results --clean -o reports/ui/allure-report && npx allure open reports/ui/allure-report",
+    "allure:generate": "npx allure generate allure-results --clean",
+    "clear": "node -e \"(async () => { const fs = require('fs'); try { await fs.promises.rm('reports', { recursive: true, force: true }); } catch (e) {} })()\"",
+    "test:docker": "docker compose up --build --abort-on-container-exit",
+    "test:summary": "powershell -Command \"Get-Content test-output/cypress.log | Select-String -Pattern 'Passed|Failed'\"",
+    "build:prod": "node scripts/strip-testids.js",
+    "lint": "eslint . --ext .ts,.js --max-warnings 0",
+    "lint:fix": "eslint . --ext .ts,.js --fix",
+    "format": "prettier --write \"**/*.{ts,js,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,js,json,md}\"",
+    "type-check": "tsc --noEmit",
+    "validate": "npm run type-check && npm run lint && npm run format:check"
+  },
+  "keywords": [
+    "cypress",
+    "typescript",
+    "allure",
+    "e2e",
+    "testing",
+    "automation",
+    "docker"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vbikkaneti/cypress-playwright"
+  },
+  "author": "Veeresh Bikkaneti",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vbikkaneti/cypress-playwright/issues"
+  },
+  "homepage": "https://github.com/vbikkaneti/cypress-playwright#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@shelex/cypress-allure-plugin": "^2.41.2",
+    "@types/node": "^22.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.54.0",
+    "@typescript-eslint/parser": "^8.54.0",
+    "allure-commandline": "^2.36.0",
+    "cypress": "^12.17.4",
+    "cypress-fail-fast": "^7.1.1",
+    "cypress-mochawesome-reporter": "^4.0.2",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-cypress": "^5.2.1",
+    "eslint-plugin-prettier": "^5.5.5",
+    "prettier": "^3.8.1",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.54.0",
+    "wait-on": "^9.0.3"
+  }
+}
