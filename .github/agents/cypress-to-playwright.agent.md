@@ -3,6 +3,7 @@ name: cypress-to-playwright
 description: "Production-grade Cypress→Playwright migration agent (POM + fixtures, no guessing)."
 argument-hint: "Attach Cypress tests + cypress/support/commands.* + target Playwright fixture and state output paths."
 tools: ['search', 'usages', 'read', 'edit']
+skills: ['webapp-testing', 'clean-code']
 handoffs:
   - label: Validate migration quality
     agent: ask
@@ -21,7 +22,7 @@ Convert Cypress tests + support/custom commands into Playwright TypeScript tests
 
 ## Hard Rules (Enforced)
 
-- **Version Pinning**: Playwright v1.41+ features only.
+- **Version Pinning**: Playwright v1.58.0+ features only.
 - **Thinking Process**: You MUST output a `/* MIGRATION ANALYSIS */` comment block before writing code.
 - **Path Aliases**: Use `@pages/`, `@fixtures/` imports instead of relative `../../` paths. 
 - **Completeness**: No placeholders (`// ...`). Output full files.
@@ -100,14 +101,14 @@ Priority order (highest to lowest):
 
 ### File Organization
 ```
-tests/
+playwright/
   ├── pages/           # Page Object Models
   │   └── LoginPage.ts
   ├── fixtures/        # Custom fixtures
   │   └── auth.fixture.ts
   ├── helpers/         # Utility functions
   │   └── generators.ts
-  └── specs/           # Test files
+  └── e2e/             # Test files
       └── auth/
           └── login.spec.ts
 ```
@@ -120,24 +121,30 @@ import { Page, Locator } from '@playwright/test';
 // ... rest of file
 ```
 
-### Validation Commands
-Provide runnable commands to validate locally:
-```bash
-# Type check
-npx tsc --noEmit
+### Advanced Migration Patterns
 
-# Run tests
-npx playwright test
+#### 1. API Requests (cy.request)
+- **Do NOT** use `page.request` for separate contexts.
+- Use `await request.newContext()` for independent API sessions.
+- Example:
+  ```typescript
+  const context = await request.newContext();
+  const response = await context.post('/api/login', { ... });
+  ```
 
-# Run specific test
-npx playwright test tests/auth/login.spec.ts
+#### 2. Session & Cookies (cy.session)
+- Map `cy.session()` to Playwright `storageState`.
+- Use `test.use({ storageState: 'path/to/state.json' })` in test file or config.
+- Persist auth state in a global setup project if shared across tests.
 
-# Run in headed mode
-npx playwright test --headed
+#### 3. Soft Assertions
+- Cypress assertions are soft-ish (retriable). Playwright `expect` is hard by default.
+- If migration requires non-blocking checks, use `expect.soft(...)`.
+- **Prefer** standard `await expect(...)` for better stability.
 
-# Run with parallelization
-npx playwright test --workers=4
-```
+#### 4. Non-Serializable Arguments
+- `cy.task()` often passes functions. Playwright `page.evaluate()` cannot pass functions directly.
+- Solution: Convert to pure data or stringified body, or expose helper in `window` context.
 
 ## Migration Workflow
 
@@ -313,4 +320,5 @@ Before delivering output:
 - Repository Guidelines: `.github/copilot-instructions.md`
 - Migration Prompt: `.github/prompts/migrate-cypress-to-playwright.prompt.md`
 - Playwright Docs: https://playwright.dev/docs/intro
+- **Migration Guide**: https://demo.playwright.dev/cy2pw/
 - Best Practices: https://playwright.dev/docs/best-practices

@@ -22,8 +22,15 @@
 // Import custom commands
 import './commands';
 
+import 'cypress-mochawesome-reporter/register';
+import 'cypress-plugin-api';
+import 'cypress-real-events/support';
 // Import Allure plugin for reporting
 import '@shelex/cypress-allure-plugin';
+
+// Import logging plugins for Agentic Support
+import 'cypress-failed-log';
+import 'cypress-terminal-report/src/installLogsCollector';
 
 // ============================================================================
 // GLOBAL CONFIGURATION

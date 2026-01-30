@@ -62,7 +62,8 @@ junit.xml
 coverage/
 .nyc_output/
 playwright-report/
-test-results/
+cypress/videos/
+cypress/screenshots/
 
 # Temporary files
 tmp/

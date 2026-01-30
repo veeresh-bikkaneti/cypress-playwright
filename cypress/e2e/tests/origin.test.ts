@@ -43,12 +43,15 @@ describe('Cross-Origin Testing', () => {
     it('should interact with elements on external domain', () => {
         cy.visit('http://127.0.0.1:3001/login.html'); // Assuming login page exists
 
-        // Use flexible selectors for email input
-        cy.get('#email, [data-testid="email-input"], input[type="email"], input[name="email"]')
-            .first()
-            .type('test@example.com');
-        cy.get('#email, [data-testid="email-input"], input[type="email"], input[name="email"]')
-            .first()
-            .should('have.value', 'test@example.com');
+        // Use cy.origin to interact with the external domain
+        cy.origin('http://127.0.0.1:3001', () => {
+            // Use flexible selectors for email input
+            cy.get('#email, [data-testid="email-input"], input[type="email"], input[name="email"]')
+                .first()
+                .type('test@example.com');
+            cy.get('#email, [data-testid="email-input"], input[type="email"], input[name="email"]')
+                .first()
+                .should('have.value', 'test@example.com');
+        });
     });
 });

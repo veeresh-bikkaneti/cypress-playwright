@@ -10,6 +10,7 @@ model: gpt-4o
 # Cypress → Playwright Migration Prompt
 
 You are an expert QA architect migrating Cypress (cypress.io) E2E tests to Playwright TypeScript using @playwright/test.
+Refer to the official migration patterns at: https://demo.playwright.dev/cy2pw/
 
 ## Pre-requisites
 
@@ -106,11 +107,47 @@ For each Cypress test file:
 
 4. **Handle network**:
    - Replace `cy.intercept()` with `page.route()`
+     - Mocking: `page.route('**/api/user', route => route.fulfill({ json: mockUser }))`
    - Replace `cy.wait('@alias')` with `page.waitForResponse()`
 
 5. **Handle dialogs**:
    - Add `page.once('dialog', async dialog => await dialog.accept())`
    - **MUST** call `accept()` or `dismiss()` to prevent freeze
+115: 
+116: ### Phase 5: Advanced Patterns (Strict Mode & API)
+117: 
+118: 1. **API Contexts**:
+119:    - **Do NOT** use `page.request` for isolated sessions (it shares cookies).
+120:    - Use `await request.newContext()`:
+121:      ```typescript
+122:      const api = await request.newContext();
+123:      await api.post('/login', { ... });
+124:      ```
+
+### Phase 5: Advanced Patterns (Strict Mode & API)
+
+1. **API Contexts**:
+   - **Do NOT** use `page.request` for isolated sessions (it shares cookies).
+   - Use `await request.newContext()`:
+     ```typescript
+     const api = await request.newContext();
+     await api.post('/login', { ... });
+     ```
+
+2. **Session Persistence**:
+   - Map `cy.session()` to `test.use({ storageState: '...' })`.
+   - Don't reimplement login UI flows in every test; use signed-in states.
+
+3. **Strict Mode Violations**:
+   - Playwright fails if multiple elements match. Cypress picks the first.
+   - **Fix**: Use `.first()`, `.filter()`, or precise semantic locators like `getByRole('button', { name: 'Save' })`.
+
+4. **Advanced Capabilities**:
+   - `cy.origin(...)` → Use `page` for same-origin or multiple contexts for distinct profiles.
+     - *Note*: Playwright handles cross-origin auto-waiting naturally within `page` if strict CSP is handled.
+   - `cy.task(...)` → Replace with pure Node.js in `helpers/` or use `fs` directly in test files (Playwright runs in Node).
+   - `cy.clock()` → `page.clock.install()` + `page.clock.fastForward()`.
+   - `cy.readFile`/`writeFile` → Use native `fs.readFileSync`/`writeFileSync`.
 
 ### Phase 4: Verify Output
 
