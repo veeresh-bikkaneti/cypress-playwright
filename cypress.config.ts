@@ -2,8 +2,8 @@ import { defineConfig } from 'cypress';
 
 export default defineConfig({
   video: true,
-  screenshotsFolder: 'cypress/reports/screenshots',
-  videosFolder: 'cypress/reports/videos',
+  screenshotsFolder: 'test-output/cypress-output/screenshots',
+  videosFolder: 'test-output/cypress-output/videos',
   defaultCommandTimeout: 10000,
   execTimeout: 10000,
   taskTimeout: 10000,
@@ -19,16 +19,33 @@ export default defineConfig({
   },
   env: {
     allure: true,
-    allureResultsPath: 'cypress/reports/ui/allure-results'
+    allureResultsPath: 'test-output/cypress-output/allure-results'
   },
   e2e: {
     baseUrl: process.env.BASE_URL || 'http://localhost:3000',
+    chromeWebSecurity: false,
     specPattern: 'cypress/e2e/tests/**/*.test.ts',
     supportFile: 'cypress/support/e2e.ts',
-    fixturesFolder: 'cypress/fixtures',
+    downloadsFolder: 'test-output/cypress-output/downloads',
     reporter: 'cypress-mochawesome-reporter',
+    reporterOptions: {
+      reportDir: 'test-output/cypress-output/html',
+      charts: true,
+      reportPageTitle: 'Cypress Test Report',
+      embeddedScreenshots: true,
+      inlineAssets: true,
+      saveAllAttempts: false,
+      overwrite: false,
+      html: true,
+      json: true
+    },
     setupNodeEvents(on, config) {
       require('cypress-mochawesome-reporter/plugin')(on);
+      require('cypress-terminal-report/src/installLogsPrinter')(on);
+      require('cypress-failed-log/on')(on);
+      // cypress-plugin-api auto-loads, no specific task required but good to note
+
+
       // Use require for plugins as standard in Cypress CommonJS config loading
       const allureWriter = require('@shelex/cypress-allure-plugin/writer');
       allureWriter(on, config);
@@ -38,6 +55,7 @@ export default defineConfig({
           console.log(message);
           return null;
         },
+        failed: require('cypress-failed-log/src/failed')(),
         getTimestamp() {
           return Date.now();
         },

@@ -1,0 +1,60 @@
+name: Update Agent Definitions
+
+on:
+  schedule:
+    # Run twice a month (1st and 15th at 00:00 UTC)
+    - cron: '0 0 1,15 * *'
+  workflow_dispatch:
+    inputs:
+      force_update:
+        description: 'Force update of all agents'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-agents:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Agent Update Script
+        run: node scripts/update_agents.js
+
+      - name: Check for Changes
+        id: git_check
+        run: |
+          if git diff --quiet; then
+            echo "changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request
+        if: steps.git_check.outputs.changes == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: "chore: update agent definitions [bot]"
+          title: "🤖 Agent Definition Updates"
+          body: |
+            This PR updates the Agent definitions and Prompts based on the latest project dependencies.
+            
+            **Updates:**
+            - Synced Playwright/Cypress version requirements.
+            - Updated 'last_checked' metadata.
+            
+            *Generated automatically by the Agent Maintenance Workflow.*
+          branch: agent-updates
+          base: main
