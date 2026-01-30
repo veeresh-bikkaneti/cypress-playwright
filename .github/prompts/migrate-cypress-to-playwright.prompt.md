@@ -302,4 +302,4 @@ test.describe('Authentication', () => {
 - Locators Guide: https://playwright.dev/docs/locators
 - Fixtures Guide: https://playwright.dev/docs/test-fixtures
 
-<!-- run_metadata: last_checked=2026-01-29 -->
+<!-- run_metadata: last_checked=2026-01-30 -->
