@@ -53,6 +53,7 @@
   },
   "homepage": "https://github.com/vbikkaneti/cypress-playwright#readme",
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.3",
     "@eslint/js": "^9.39.2",
     "@playwright/test": "^1.58.0",
     "@shelex/cypress-allure-plugin": "^2.41.2",
