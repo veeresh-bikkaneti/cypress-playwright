@@ -53,6 +53,13 @@ npx playwright test
 # Output: test-output/playwright-output/report/index.html
 ```
 
+**Option C: Hybrid (Parallel Mode) ⚔️**
+Run both frameworks simultaneously to compare results or speed up CI:
+```bash
+npm run test:hybrid
+# Runs cy:run and test:pw in parallel
+```
+
 ---
 
 ## 🧭 Documentation Map

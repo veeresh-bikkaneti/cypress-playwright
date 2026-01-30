@@ -1,0 +1,102 @@
+name: Hybrid Test Execution
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  # 1. Shared Setup (Build App)
+  build-app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install Dependencies
+        run: npm ci
+      - name: Build App
+        run: npm run build:prod
+
+  # 2. Cypress Job
+  cypress-run:
+    needs: build-app
+    runs-on: ubuntu-latest
+    container: cypress/browsers:node-18.16.0-chrome-114.0.5735.133-1-ff-114.0.2-edge-114.0.1823.51-1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Dependencies
+        run: npm ci
+      
+      - name: Run Cypress Tests
+        uses: cypress-io/github-action@v6
+        with:
+          start: node app-under-test/server.js
+          wait-on: 'http://localhost:3000'
+          browser: chrome
+          # Generate Allure results
+          command: npm run cy:run
+
+      - name: Upload Cypress Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-results
+          path: test-output/cypress-output
+          retention-days: 7
+
+  # 3. Playwright Job (Runs in Parallel with Cypress)
+  playwright-run:
+    needs: build-app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install Dependencies
+        run: npm ci
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Start App
+        run: node app-under-test/server.js & npx wait-on http://localhost:3000
+
+      - name: Run Playwright Tests
+        run: npx playwright test
+
+      - name: Upload Playwright Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: test-output/playwright-output
+          retention-days: 7
+
+  # 4. Merge Reports (Optional - Demonstrate unification)
+  merge-reports:
+    needs: [cypress-run, playwright-run]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Cypress Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: cypress-results
+          path: combined-reports/cypress
+      
+      - name: Download Playwright Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: playwright-results
+          path: combined-reports/playwright
+      
+      - name: Upload Combined Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-migration-report
+          path: combined-reports

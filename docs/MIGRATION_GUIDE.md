@@ -89,6 +89,23 @@ await loginPage.login('user', 'pass');
 
 ---
 
+## 🏎️ Migration Strategy: The Hybrid Approach
+
+You don't have to rewrite everything at once. This repository supports **running both frameworks in parallel**.
+
+### 1. Verification (CI/CD)
+The `.github/workflows/hybrid-ci.yml` action runs Cypress and Playwright jobs in parallel. Use this during your migration phase:
+- **Cypress**: Guard the existing legacy features.
+- **Playwright**: Validate the newly migrated features.
+
+### 2. Local Execution
+Use the hybrid command to check for regressions in both suites instantly:
+```bash
+npm run test:hybrid
+```
+
+---
+
 ## 🛠️ How to Migrate a File
 
 1.  **Identify**: Pick a Cypress spec (e.g., `cypress/e2e/login.cy.ts`).
