@@ -1,0 +1,176 @@
+trigger: none  # Only manually triggered or by other pipelines
+
+pr: none
+
+parameters:
+  - name: testFile
+    displayName: 'Specific test file to heal (optional)'
+    type: string
+    default: ''
+  - name: framework
+    displayName: 'Framework'
+    type: string
+    default: 'playwright'
+    values:
+      - 'playwright'
+      - 'cypress'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  framework: ${{ parameters.framework }}
+  testFile: ${{ parameters.testFile }}
+
+stages:
+  - stage: DetectFailures
+    displayName: 'Detect Test Failures'
+    jobs:
+      - job: ParseTestResults
+        displayName: 'Parse Failed Tests'
+        steps:
+          - checkout: self
+
+          - task: Bash@3
+            displayName: 'Download previous build artifacts'
+            inputs:
+              targetType: 'inline'
+              script: |
+                # Download test results from previous build
+                # This assumes test results are published as artifacts
+                echo "Checking for test failures..."
+                
+                # You may need to adjust this based on your artifact naming
+                # For now, we'll look in the test-output directory
+                if [[ -d "test-output" ]]; then
+                  echo "Test output directory found"
+                else
+                  echo "No test output directory found"
+                  exit 0
+                fi
+
+          - task: Bash@3
+            name: parseResults
+            displayName: 'Parse failed tests'
+            inputs:
+              targetType: 'inline'
+              script: |
+                FRAMEWORK="${{ parameters.framework }}"
+                
+                # Parse test results based on framework
+                if [[ "$FRAMEWORK" == "playwright" ]]; then
+                  if [[ -d "test-output/playwright-output" ]]; then
+                    FAILED=$(find test-output/playwright-output -name "*.json" -exec grep -l "FAILED\|failed" {} \; | head -10)
+                  else
+                    FAILED=""
+                  fi
+                else
+                  if [[ -d "test-output/cypress-output" ]]; then
+                    FAILED=$(find test-output/cypress-output -name "*.json" -exec grep -l "failing" {} \; | head -10)
+                  else
+                    FAILED=""
+                  fi
+                fi
+                
+                if [[ -z "$FAILED" ]]; then
+                  echo "No failures detected"
+                  echo "##vso[task.setvariable variable=hasFailures;isOutput=true]false"
+                else
+                  echo "Failed tests detected:"
+                  echo "$FAILED"
+                  echo "##vso[task.setvariable variable=hasFailures;isOutput=true]true"
+                  echo "##vso[task.setvariable variable=failedTests;isOutput=true]$FAILED"
+                fi
+
+  - stage: CreateHealingWorkItem
+    displayName: 'Create Healing Work Item'
+    dependsOn: DetectFailures
+    condition: eq(dependencies.DetectFailures.outputs['ParseTestResults.parseResults.hasFailures'], 'true')
+    jobs:
+      - job: CreateWorkItem
+        displayName: 'Create Azure DevOps Work Item'
+        steps:
+          - checkout: none
+
+          - task: PowerShell@2
+            displayName: 'Create Work Item for Healing'
+            inputs:
+              targetType: 'inline'
+              script: |
+                $framework = "${{ parameters.framework }}"
+                $agent = if ($framework -eq "playwright") { "@playwright-healer" } else { "@cypress-healer" }
+                $failedTests = "$(parseResults.failedTests)"
+                
+                $title = "🔧 Auto-Heal: Test Failures Detected"
+                $description = @"
+                ## Test Healing Request
+                
+                **Framework**: $framework
+                **Agent**: $agent
+                **Failed Tests**:
+                ``````
+                $failedTests
+                ``````
+                
+                **Instructions for Developer**:
+                1. Open GitHub Copilot Chat in VS Code
+                2. Use: ``$agent fix the failing tests``
+                3. Review the proposed fix
+                4. Apply changes and close this work item
+                
+                **Automated Analysis**:
+                - Build: [$(Build.BuildNumber)]($(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId))
+                - Test Results: Check pipeline artifacts
+                
+                **Quick Commands**:
+                ``````
+                # Playwright
+                $agent analyze trace at test-output/playwright-output/trace.zip
+                
+                # Cypress
+                $agent check screenshots in test-output/cypress-output/screenshots
+                ``````
+                "@
+                
+                # Create work item using Azure DevOps REST API
+                $url = "$(System.CollectionUri)$(System.TeamProject)/_apis/wit/workitems/`$Task?api-version=6.0"
+                
+                $body = @(
+                  @{
+                    op = "add"
+                    path = "/fields/System.Title"
+                    value = $title
+                  },
+                  @{
+                    op = "add"
+                    path = "/fields/System.Description"
+                    value = $description
+                  },
+                  @{
+                    op = "add"
+                    path = "/fields/System.Tags"
+                    value = "test-failure; ai-healing; $framework"
+                  }
+                ) | ConvertTo-Json -Depth 10
+                
+                $headers = @{
+                  "Content-Type" = "application/json-patch+json"
+                  "Authorization" = "Bearer $(System.AccessToken)"
+                }
+                
+                try {
+                  $response = Invoke-RestMethod -Uri $url -Method POST -Body $body -Headers $headers
+                  Write-Host "Created work item: $($response.id)"
+                  Write-Host "##vso[task.setvariable variable=workItemId]$($response.id)"
+                } catch {
+                  Write-Host "Failed to create work item: $_"
+                }
+
+          - task: Bash@3
+            displayName: 'Post summary'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "🔧 Test failures detected. Healing work item created."
+                echo "Developer should use ${{ parameters.framework == 'playwright' && '@playwright-healer' || '@cypress-healer' }}"
+                echo "Work Item ID: $(workItemId)"

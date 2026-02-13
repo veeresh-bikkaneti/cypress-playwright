@@ -1,0 +1,147 @@
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+  paths:
+    include:
+      - playwright/**/*.spec.ts
+      - cypress/**/*.cy.ts
+      - playwright/pages/**/*.ts
+
+pr:
+  branches:
+    include:
+      - main
+      - develop
+
+parameters:
+  - name: sessionDescription
+    displayName: 'Description of AI session'
+    type: string
+    default: ''
+  - name: agentUsed
+    displayName: 'Which agent was used'
+    type: string
+    default: 'Manual'
+    values:
+      - '@qa-orchestrator'
+      - '@qa-engineer'
+      - '@qa-architect'
+      - '@automation-engineer'
+      - '@sdet'
+      - '@cypress-healer'
+      - '@playwright-healer'
+      - '@playwright-test-generator'
+      - 'Manual'
+      - 'Other'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  agentName: ${{ parameters.agentUsed }}
+
+steps:
+  - checkout: self
+    fetchDepth: 2
+    persistCredentials: true
+
+  - task: Bash@3
+    displayName: 'Detect changed test files'
+    name: detectChanges
+    inputs:
+      targetType: 'inline'
+      script: |
+        echo "## Changed Files"
+        git diff --name-only HEAD~1 HEAD | grep -E '\.(spec|cy)\.ts$' | tee changed_files.txt || echo "No test files changed"
+        
+        CHANGED_FILES=$(cat changed_files.txt | tr '\n' ',')
+        echo "##vso[task.setvariable variable=changedFiles;isOutput=true]$CHANGED_FILES"
+
+  - task: Bash@3
+    displayName: 'Extract commit message and detect agent'
+    name: extractCommit
+    inputs:
+      targetType: 'inline'
+      script: |
+        COMMIT_MSG=$(git log -1 --pretty=%B)
+        echo "Commit message: $COMMIT_MSG"
+        echo "##vso[task.setvariable variable=commitMessage;isOutput=true]$COMMIT_MSG"
+        
+        AGENT="${{ parameters.agentUsed }}"
+        
+        # Auto-detect agent from commit message if not manually specified
+        if [[ "$AGENT" == "Manual" ]]; then
+          if [[ "$COMMIT_MSG" =~ @qa-orchestrator ]]; then AGENT="@qa-orchestrator"
+          elif [[ "$COMMIT_MSG" =~ @cypress-healer ]]; then AGENT="@cypress-healer"
+          elif [[ "$COMMIT_MSG" =~ @playwright-healer ]]; then AGENT="@playwright-healer"
+          elif [[ "$COMMIT_MSG" =~ @playwright-test-generator ]]; then AGENT="@playwright-test-generator"
+          elif [[ "$COMMIT_MSG" =~ @automation-engineer ]]; then AGENT="@automation-engineer"
+          fi
+        fi
+        
+        echo "Detected agent: $AGENT"
+        echo "##vso[task.setvariable variable=detectedAgent;isOutput=true]$AGENT"
+
+  - task: Bash@3
+    displayName: 'Append to session log'
+    inputs:
+      targetType: 'inline'
+      script: |
+        SESSION_DATE=$(date '+%Y-%m-%d %H:%M UTC')
+        AGENT="$(extractCommit.detectedAgent)"
+        FILES="$(detectChanges.changedFiles)"
+        COMMIT_MSG="$(extractCommit.commitMessage)"
+        COMMIT_SHA=$(git rev-parse HEAD)
+        
+        # Create session entry
+        cat >> .github/memory/session-log.md << EOF
+        
+        ---
+        
+        ### Session: $SESSION_DATE
+        
+        **User Request**: $COMMIT_MSG
+        
+        **Agent(s) Used**: $AGENT
+        
+        **Files Modified**:
+        $(echo "$FILES" | tr ',' '\n' | sed 's/^/- /')
+        
+        **Commit**: \`$COMMIT_SHA\`
+        
+        **Triggered By**: Azure Pipelines - $(Build.Reason)
+        
+        **Build**: [$(Build.BuildNumber)]($(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId))
+        
+        ---
+        
+        EOF
+        
+        echo "Session logged successfully"
+
+  - task: Bash@3
+    displayName: 'Commit session log'
+    inputs:
+      targetType: 'inline'
+      script: |
+        git config user.name "Azure Pipelines Session Logger"
+        git config user.email "azure-pipelines@example.com"
+        git add .github/memory/session-log.md
+        git commit -m "📝 Log AI session: $(extractCommit.detectedAgent)" || echo "No changes to commit"
+        
+        # Push using System.AccessToken
+        git -c http.extraheader="AUTHORIZATION: bearer $(System.AccessToken)" push origin HEAD:$(Build.SourceBranchName)
+
+  - task: Bash@3
+    displayName: 'Create session summary'
+    inputs:
+      targetType: 'inline'
+      script: |
+        echo "## AI Session Logged"
+        echo ""
+        echo "**Agent**: $(extractCommit.detectedAgent)"
+        echo "**Files Changed**: $(detectChanges.changedFiles)"
+        echo "**Commit**: $(Build.SourceVersion)"
+        echo "**Build**: $(Build.BuildNumber)"

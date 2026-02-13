@@ -1,0 +1,117 @@
+name: AI Session Logger
+
+on:
+  push:
+    paths:
+      - 'playwright/**/*.spec.ts'
+      - 'cypress/**/*.cy.ts'
+      - 'playwright/pages/**/*.ts'
+  workflow_dispatch:
+    inputs:
+      session_description:
+        description: 'Description of AI session'
+        required: true
+        type: string
+      agent_used:
+        description: 'Which agent was used'
+        required: true
+        type: choice
+        options:
+          - '@qa-orchestrator'
+          - '@qa-engineer'
+          - '@qa-architect'
+          - '@automation-engineer'
+          - '@sdet'
+          - '@cypress-healer'
+          - '@playwright-healer'
+          - '@playwright-test-generator'
+          - 'Other'
+
+jobs:
+  log-session:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Fetch last 2 commits to compare changes
+
+      - name: Detect changed test files
+        id: changes
+        run: |
+          echo "## Changed Files" >> $GITHUB_STEP_SUMMARY
+          git diff --name-only HEAD~1 HEAD | grep -E '\.(spec|cy)\.ts$' | tee changed_files.txt || echo "No test files changed"
+          echo "files=$(cat changed_files.txt | tr '\n' ',')" >> $GITHUB_OUTPUT
+
+      - name: Extract commit message
+        id: commit
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "message=$COMMIT_MSG" >> $GITHUB_OUTPUT
+
+      - name: Determine agent from commit message
+        id: agent
+        run: |
+          COMMIT_MSG="${{ steps.commit.outputs.message }}"
+          AGENT="Manual"
+          
+          # Check for agent mentions in commit message
+          if [[ "$COMMIT_MSG" =~ @qa-orchestrator ]]; then AGENT="@qa-orchestrator"
+          elif [[ "$COMMIT_MSG" =~ @cypress-healer ]]; then AGENT="@cypress-healer"
+          elif [[ "$COMMIT_MSG" =~ @playwright-healer ]]; then AGENT="@playwright-healer"
+          elif [[ "$COMMIT_MSG" =~ @playwright-test-generator ]]; then AGENT="@playwright-test-generator"
+          elif [[ "$COMMIT_MSG" =~ @automation-engineer ]]; then AGENT="@automation-engineer"
+          fi
+          
+          # Use workflow input if provided
+          if [[ "${{ github.event.inputs.agent_used }}" != "" ]]; then
+            AGENT="${{ github.event.inputs.agent_used }}"
+          fi
+          
+          echo "name=$AGENT" >> $GITHUB_OUTPUT
+
+      - name: Append to session log
+        run: |
+          SESSION_DATE=$(date '+%Y-%m-%d %H:%M UTC')
+          AGENT="${{ steps.agent.outputs.name }}"
+          FILES="${{ steps.changes.outputs.files }}"
+          COMMIT_MSG="${{ steps.commit.outputs.message }}"
+          
+          # Create session entry
+          cat >> .github/memory/session-log.md << EOF
+          
+          ---
+          
+          ### Session: $SESSION_DATE
+          
+          **User Request**: $COMMIT_MSG
+          
+          **Agent(s) Used**: $AGENT
+          
+          **Files Modified**:
+          $(echo "$FILES" | tr ',' '\n' | sed 's/^/- /')
+          
+          **Commit**: \`${{ github.sha }}\`
+          
+          **Triggered By**: ${{ github.event_name }}
+          
+          ---
+          
+          EOF
+
+      - name: Commit session log
+        run: |
+          git config user.name "AI Session Logger"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/memory/session-log.md
+          git commit -m "📝 Log AI session: ${{ steps.agent.outputs.name }}" || echo "No changes to commit"
+          git push
+
+      - name: Create session summary
+        run: |
+          echo "## AI Session Logged" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Agent**: ${{ steps.agent.outputs.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Files Changed**: ${{ steps.changes.outputs.files }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY

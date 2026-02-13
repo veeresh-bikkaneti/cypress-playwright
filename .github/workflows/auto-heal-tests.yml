@@ -1,0 +1,120 @@
+name: Auto-Heal Failing Tests
+
+on:
+  workflow_run:
+    workflows: ["Hybrid CI"]  # Trigger after CI workflow
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      test_file:
+        description: 'Specific test file to heal (optional)'
+        required: false
+        type: string
+      framework:
+        description: 'Framework'
+        required: true
+        type: choice
+        options:
+          - 'playwright'
+          - 'cypress'
+
+jobs:
+  detect-failures:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' || github.event_name == 'workflow_dispatch' }}
+    
+    outputs:
+      failed_tests: ${{ steps.parse.outputs.tests }}
+      framework: ${{ steps.detect.outputs.framework }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Detect framework
+        id: detect
+        run: |
+          FRAMEWORK="${{ github.event.inputs.framework }}"
+          if [[ "$FRAMEWORK" == "" ]]; then
+            # Auto-detect from workflow artifacts or repo structure
+            if [[ -d "playwright" ]]; then FRAMEWORK="playwright"; fi
+            if [[ -d "cypress" ]]; then FRAMEWORK="cypress"; fi
+          fi
+          echo "framework=$FRAMEWORK" >> $GITHUB_OUTPUT
+
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results
+          path: ./test-results
+
+      - name: Parse failed tests
+        id: parse
+        run: |
+          # Parse Playwright or Cypress output to extract failed test files
+          if [[ "${{ steps.detect.outputs.framework }}" == "playwright" ]]; then
+            FAILED=$(grep -r "FAILED" ./test-results | awk '{print $2}' | sort -u)
+          else
+            FAILED=$(grep -r "failing" ./test-results | awk '{print $3}' | sort -u)
+          fi
+          
+          echo "tests=$FAILED" >> $GITHUB_OUTPUT
+          echo "## Failed Tests Detected" >> $GITHUB_STEP_SUMMARY
+          echo "$FAILED" >> $GITHUB_STEP_SUMMARY
+
+  create-healing-issue:
+    runs-on: ubuntu-latest
+    needs: detect-failures
+    if: ${{ needs.detect-failures.outputs.failed_tests != '' }}
+    
+    steps:
+      - name: Create GitHub Issue for Healing
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const failedTests = `${{ needs.detect-failures.outputs.failed_tests }}`;
+            const framework = `${{ needs.detect-failures.outputs.framework }}`;
+            const agent = framework === 'playwright' ? '@playwright-healer' : '@cypress-healer';
+            
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🔧 Auto-Heal: ${failedTests.split('\n')[0]}`,
+              body: `## Test Healing Request
+              
+              **Framework**: ${framework}
+              **Agent**: ${agent}
+              **Failed Tests**:
+              \`\`\`
+              ${failedTests}
+              \`\`\`
+              
+              **Instructions for Developer**:
+              1. Open GitHub Copilot Chat in VS Code
+              2. Use: \`${agent} fix the test ${failedTests.split('\n')[0]}\`
+              3. Review the proposed fix
+              4. Apply changes and close this issue
+              
+              **Automated Analysis**:
+              - Test results: [View artifacts](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+              - Trace/Screenshots: Check test-output directory
+              
+              **Quick Commands**:
+              \`\`\`
+              # Playwright
+              ${agent} analyze trace at test-output/playwright-output/trace.zip
+              
+              # Cypress
+              ${agent} check screenshots in test-output/cypress-output/screenshots
+              \`\`\`
+              `,
+              labels: ['test-failure', 'ai-healing', framework]
+            });
+            
+            console.log(`Created issue #${issue.data.number}`);
+
+      - name: Post to Slack/Teams (Optional)
+        run: |
+          echo "🔧 Test failures detected. Healing issue created." >> $GITHUB_STEP_SUMMARY
+          echo "Developer should use ${{ needs.detect-failures.outputs.framework == 'playwright' && '@playwright-healer' || '@cypress-healer' }}" >> $GITHUB_STEP_SUMMARY

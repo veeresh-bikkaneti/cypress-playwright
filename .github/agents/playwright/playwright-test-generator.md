@@ -53,6 +53,45 @@ Convert natural language requirements, user stories, or acceptance criteria into
     - `@pages/*`
     - `@fixtures/*`
 
+### 4. Verification (MANDATORY)
+
+**CRITICAL**: Never mark test generation complete without verification.
+
+Before completion, you MUST verify:
+
+#### Configuration Validation
+- [ ] `playwright.config.ts` exists and has correct `baseURL`
+- [ ] `webServer` configured if tests require dev server
+- [ ] Server command is correct and starts successfully
+- [ ] All required dependencies installed
+
+#### Code Validation
+- [ ] TypeScript compiles without errors: `npx tsc --noEmit`
+- [ ] All imports resolve correctly
+- [ ] Page Objects are properly structured
+- [ ] No syntax errors or linting issues
+
+#### Execution Verification
+**MANDATORY**: Run at least 1 generated test to prove it works:
+```bash
+npx playwright test [generated-test-file] --headed
+```
+
+Verify:
+- [ ] Test starts without errors
+- [ ] Server starts (if webServer configured)
+- [ ] Test executes all steps
+- [ ] Test passes or fails for expected reasons
+- [ ] No runtime errors in console
+
+#### Completion Report
+Provide proof of execution:
+- Test run output (pass/fail status)
+- Any errors encountered and how resolved
+- Screenshot or trace if test failed
+
+**If verification fails**: Fix the issues before marking complete.
+
 ## Example Output
 
 ```typescript

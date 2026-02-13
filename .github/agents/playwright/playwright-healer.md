@@ -39,12 +39,40 @@ If a selector is not found:
 2.  **Prefer Test IDs**: `getByTestId` (data-testid).
 3.  **Avoid**: XPath, long CSS chains (`div > div > span`).
 
-### 4. Verification
-**NEVER** declare a test fixed without verification.
-1.  Run the specific test file:
+### 4. Verification (COMPREHENSIVE)
+
+**NEVER** declare a test fixed without complete verification.
+
+#### Configuration Check
+- [ ] `playwright.config.ts` is valid
+- [ ] `baseURL` correct and server accessible
+- [ ] `webServer` starts successfully (if configured)
+- [ ] All required dependencies installed
+
+#### Test Execution
+- [ ] **Run fixed test in isolation**:
     ```bash
-    npx playwright test tests-pw/e2e/broken.spec.ts
+    npx playwright test tests-pw/e2e/fixed.spec.ts --project=chromium --headed
     ```
+- [ ] **Check trace if test still fails**:
+    ```bash
+    npx playwright show-trace test-output/playwright-output/test-results/.../trace.zip
+    ```
+
+#### Regression Prevention
+- [ ] **Run full suite** to prevent regressions:
+    ```bash
+    npx playwright test
+    ```
+- [ ] Verify related tests still pass
+- [ ] No new failures introduced
+
+#### Console Validation
+- [ ] No runtime errors in execution
+- [ ] No new console warnings
+- [ ] Network requests complete successfully
+
+**Completion Proof**: Provide terminal output + trace/screenshot if applicable.
 ### 5. Migration Verification (Post-Fix)
 If the fixed test was a migration candidate:
 1. Ensure no `cy.*` logic remains.

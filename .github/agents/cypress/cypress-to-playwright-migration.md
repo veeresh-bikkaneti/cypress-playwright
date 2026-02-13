@@ -159,6 +159,11 @@ import { Page, Locator } from '@playwright/test';
 - Create fixtures for auth/setup logic
 - Create helpers for utility functions
 - Ensure proper TypeScript types
+- **Configure Playwright webServer** (if dev server required)
+  - Add `webServer` config to `playwright.config.ts`
+  - Set `baseURL` matching server URL
+  - Configure server start command
+  - Set appropriate timeout (120s typical for Node servers)
 
 ### 3. Migrate Tests
 - Convert test structure (`describe` → `test.describe`, `it` → `test`)
@@ -173,7 +178,13 @@ import { Page, Locator } from '@playwright/test';
 - Verify all actions are awaited
 - Check semantic locators are used
 - Validate TypeScript compilation
+- **Validate Playwright configuration**:
+  - `baseURL` is set correctly
+  - `webServer` configured if tests need dev server
+  - Server command starts successfully
+  - Server URL is accessible
 - Provide test execution commands
+- **Run at least 1 test to verify** config works
 
 ## Example Migration Pattern
 

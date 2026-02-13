@@ -22,6 +22,16 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
 
+  /* Configure web server to start before tests (automatically starts test app) */
+  webServer: {
+    command: 'cd app-under-test && npm run dev',
+    url: 'http://127.0.0.1:3000',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000,
+    stdout: 'pipe',
+    stderr: 'pipe',
+  },
+
   /* Configure projects for major browsers */
   projects: [
     {

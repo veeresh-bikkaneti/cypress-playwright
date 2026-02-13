@@ -1,0 +1,65 @@
+{
+    "orchestrator": {
+        "name": "qa-orchestrator",
+        "primary_model": "gpt-4",
+        "tier": "1X",
+        "fallback_model": "gpt-3.5-turbo",
+        "fallback_tier": "0X",
+        "description": "Premium model for strategic decisions and requirement inference"
+    },
+    "personas": {
+        "default_model": "gpt-3.5-turbo",
+        "tier": "0X",
+        "roles": [
+            {
+                "name": "qa-engineer",
+                "model": "gpt-3.5-turbo",
+                "tier": "0X"
+            },
+            {
+                "name": "qa-architect",
+                "model": "gpt-3.5-turbo",
+                "tier": "0X"
+            },
+            {
+                "name": "manual-tester",
+                "model": "gpt-3.5-turbo",
+                "tier": "0X"
+            },
+            {
+                "name": "automation- engineer",
+                "model": "gpt-3.5-turbo",
+                "tier": "0X"
+            },
+            {
+                "name": "sdet",
+                "model": "gpt-3.5-turbo",
+                "tier": "0X"
+            }
+        ]
+    },
+    "frameworks": {
+        "cypress": {
+            "supported_versions": [
+                "10.x",
+                "11.x",
+                "12.x",
+                "13.x"
+            ],
+            "current_version": "13.x"
+        },
+        "playwright": {
+            "supported_versions": [
+                "1.38",
+                "1.40",
+                "1.44",
+                "1.48+"
+            ],
+            "current_version": "1.48+"
+        }
+    },
+    "pricing_info": {
+        "1X_tier": "Premium models - Higher quality, strategic decisions",
+        "0X_tier": "Free/low-cost models - Efficient execution tasks"
+    }
+}

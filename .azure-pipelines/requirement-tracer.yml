@@ -1,0 +1,149 @@
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+  paths:
+    include:
+      - playwright/**/*.spec.ts
+      - cypress/**/*.cy.ts
+
+pr:
+  branches:
+    include:
+      - main
+      - develop
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+  - checkout: self
+    persistCredentials: true
+
+  - task: NodeTool@0
+    displayName: 'Setup Node.js'
+    inputs:
+      versionSpec: '20.x'
+
+  - task: Bash@3
+    displayName: 'Extract requirement metadata from tests'
+    name: extractMetadata
+    inputs:
+      targetType: 'inline'
+      script: |
+        # Create a script to extract traceability comments from test files
+        cat > extract_metadata.sh << 'SCRIPT'
+        #!/bin/bash
+        
+        echo "# Requirement Traceability Matrix" > .github/memory/traceability-matrix.md
+        echo "" >> .github/memory/traceability-matrix.md
+        echo "Generated: $(date '+%Y-%m-%d %H:%M UTC')" >> .github/memory/traceability-matrix.md
+        echo "" >> .github/memory/traceability-matrix.md
+        echo "| Feature ID | User Story | Test File | Acceptance Criteria | Unstated Requirements |" >> .github/memory/traceability-matrix.md
+        echo "|------------|------------|-----------|--------------------|-----------------------|" >> .github/memory/traceability-matrix.md
+        
+        # Find all test files
+        find playwright cypress -type f \( -name "*.spec.ts" -o -name "*.cy.ts" \) 2>/dev/null | while read -r file; do
+          # Extract @feature, @user-story, @acceptance-criteria from comments
+          if grep -q "@feature" "$file"; then
+            FEATURE=$(grep -oP '@feature\s+\K.+' "$file" | head -1)
+            USER_STORY=$(grep -oP '@user-story\s+\K.+' "$file" | head -1)
+            AC=$(grep -A5 "@acceptance-criteria" "$file" | grep -oP '^\s*-\s*\K.+' | head -3 | tr '\n' '; ')
+            UNSTATED=$(grep -A5 "@unstated-requirements" "$file" | grep -oP '^\s*-\s*\K.+' | head -3 | tr '\n' '; ')
+            
+            echo "| $FEATURE | $USER_STORY | \`$file\` | $AC | $UNSTATED |" >> .github/memory/traceability-matrix.md
+          fi
+        done
+        
+        echo "" >> .github/memory/traceability-matrix.md
+        echo "---" >> .github/memory/traceability-matrix.md
+        echo "" >> .github/memory/traceability-matrix.md
+        echo "**Total Test Files Analyzed**: $(find playwright cypress -type f \( -name "*.spec.ts" -o -name "*.cy.ts" \) 2>/dev/null | wc -l)" >> .github/memory/traceability-matrix.md
+        SCRIPT
+        
+        chmod +x extract_metadata.sh
+        ./extract_metadata.sh
+
+  - task: Bash@3
+    displayName: 'Check coverage'
+    name: checkCoverage
+    inputs:
+      targetType: 'inline'
+      script: |
+        # Count requirements with test coverage
+        COVERED=$(grep -c "^|" .github/memory/traceability-matrix.md || echo "0")
+        
+        echo "## Requirement Coverage"
+        echo "✅ **Covered**: $COVERED requirements"
+        
+        echo "##vso[task.setvariable variable=coveredCount;isOutput=true]$COVERED"
+
+  - task: Bash@3
+    displayName: 'Commit traceability artifacts'
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    inputs:
+      targetType: 'inline'
+      script: |
+        git config user.name "Azure Pipelines Requirement Tracer"
+        git config user.email "azure-pipelines@example.com"
+        
+        git add .github/memory/traceability*.md || true
+        git commit -m "📊 Update requirement traceability matrix [skip ci]" || echo "No changes to commit"
+        
+        # Push using System.AccessToken
+        git -c http.extraheader="AUTHORIZATION: bearer $(System.AccessToken)" push origin HEAD:$(Build.SourceBranchName) || echo "Push failed or no changes"
+
+  - task: PowerShell@2
+    displayName: 'Comment on PR (if applicable)'
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    inputs:
+      targetType: 'inline'
+      script: |
+        $matrix = Get-Content .github/memory/traceability-matrix.md -Raw
+        $coveredCount = "$(checkCoverage.coveredCount)"
+        
+        $comment = @"
+        ## 📊 Requirement Traceability Report
+        
+        **Requirements Covered**: $coveredCount
+        
+        $matrix
+        
+        **Action**: Review the traceability matrix to ensure all requirements are covered.
+        "@
+        
+        # Post comment to PR using Azure DevOps REST API
+        $url = "$(System.CollectionUri)$(System.TeamProject)/_apis/git/repositories/$(Build.Repository.ID)/pullRequests/$(System.PullRequest.PullRequestId)/threads?api-version=6.0"
+        
+        $body = @{
+          comments = @(
+            @{
+              parentCommentId = 0
+              content = $comment
+              commentType = 1
+            }
+          )
+          status = 1
+        } | ConvertTo-Json -Depth 10
+        
+        $headers = @{
+          "Content-Type" = "application/json"
+          "Authorization" = "Bearer $(System.AccessToken)"
+        }
+        
+        try {
+          if ("$(System.PullRequest.PullRequestId)" -ne "") {
+            Invoke-RestMethod -Uri $url -Method POST -Body $body -Headers $headers
+            Write-Host "Posted comment to PR"
+          }
+        } catch {
+          Write-Host "Failed to post PR comment: $_"
+        }
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish traceability matrix'
+    inputs:
+      PathtoPublish: '.github/memory'
+      ArtifactName: 'traceability-reports'
+      publishLocation: 'Container'

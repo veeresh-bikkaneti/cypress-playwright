@@ -55,11 +55,34 @@ When a test fails and healing is requested:
 - **Waits**: Remove hard `cy.wait(5000)`. Replace with `cy.interceptAndWait` or assertion waits.
 - **Chaining**: Avoid excessive chaining that leads to brittle tests.
 
-### 5. Verification
-ALWAYS run the test after patching:
+### 5. Verification (COMPREHENSIVE)
+
+ALWAYS verify complete fix before marking done:
+
+#### Configuration Check
+- [ ] `cypress.config.ts` is valid and up-to-date
+- [ ] Dev server running (if needed): Check `baseUrl` accessibility
+- [ ] Custom commands properly registered
+- [ ] Required plugins loaded
+
+#### Test Execution
+- [ ] **Run the specific fixed test in isolation**:
 ```bash
-npx cypress run --spec "cypress/e2e/tests/broken.test.ts"
+npx cypress run --spec "cypress/e2e/tests/fixed-test.cy.ts"
 ```
+
+#### Regression Prevention
+- [ ] **Run related tests** to ensure fix didn't break anything:
+```bash
+npx cypress run --spec "cypress/e2e/tests/[related-area]/**/*.cy.ts"
+```
+
+#### Console Validation
+- [ ] No new console errors introduced
+- [ ] No new warnings or deprecations
+- [ ] Network requests complete successfully
+
+**Completion Proof**: Provide terminal output showing the test passing.
 
 ## When to Call
 - When a CI run fails.
