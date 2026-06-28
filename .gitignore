@@ -90,3 +90,18 @@ docker-compose.override.yml
 *.pid
 *.seed
 *.pid.lock
+
+# AI tool artifacts
+.aider*
+.opencode/
+.cursor/
+.continue/
+.codeium/
+.claude/
+CLAUDE.md
+.nul
+
+# AI platform scripts — kept in ~/.ai-platform/scripts/
+local_llm_setup.ps1
+Start-AIPlatform.ps1
+*.ai-platform*

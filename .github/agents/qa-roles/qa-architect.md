@@ -118,7 +118,7 @@ export { expect } from '@playwright/test';
 ### Project Structure Design
 
 ```
-tests/
+playwright/
 ├── e2e/                    # End-to-end tests
 │   ├── auth/
 │   │   ├── login.spec.ts
@@ -161,10 +161,10 @@ jobs:
       matrix:
         shard: [1, 2, 3, 4]  # Parallel execution
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'npm'
       
       - name: Install dependencies
@@ -178,7 +178,7 @@ jobs:
       
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-report-${{ matrix.shard }}
           path: playwright-report/

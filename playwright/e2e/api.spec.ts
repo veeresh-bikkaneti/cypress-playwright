@@ -33,14 +33,17 @@ test.describe('API Testing - Network Capabilities', () => {
             await page.route('**/api/products', async route => {
                 const json = {
                     products: [
-                        { id: 1, name: 'Product A', price: 10 },
-                        { id: 2, name: 'Product B', price: 20 }
+                        { id: 1, name: 'Product A', price: 10, inStock: true },
+                        { id: 2, name: 'Product B', price: 20, inStock: true }
                     ]
                 };
                 await route.fulfill({ json });
             });
 
             await page.goto('/');
+
+            // Wait for products to render before counting
+            await expect(page.locator('[data-testid="product-card"]').first()).toBeVisible();
 
             // Verify multiple products are displayed
             const count = await page.locator('[data-testid="product-card"]').count();

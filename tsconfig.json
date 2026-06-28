@@ -20,18 +20,18 @@
         "baseUrl": ".",
         "paths": {
             "@pages/*": [
-                "tests/pages/*"
+                "playwright/pages/*"
             ],
             "@fixtures/*": [
-                "tests/fixtures/*"
+                "playwright/fixtures/*"
             ],
             "@helpers/*": [
-                "tests/helpers/*"
+                "playwright/helpers/*"
             ]
         }
     },
     "include": [
-        "tests/**/*.ts",
+        "playwright/**/*.ts",
         "playwright.config.ts"
     ],
     "exclude": [

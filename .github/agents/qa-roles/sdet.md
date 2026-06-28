@@ -458,11 +458,10 @@ jobs:
         browser: [chromium, firefox, webkit]
     
     steps:
-      - uses: actions/checkout@v3
-      
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+        - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'npm'
       
       - name: Install dependencies
@@ -478,7 +477,7 @@ jobs:
       
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-report-${{ matrix.browser }}-${{ matrix.shard }}
           path: playwright-report/
@@ -486,7 +485,7 @@ jobs:
       
       - name: Upload trace
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-traces-${{ matrix.browser }}-${{ matrix.shard }}
           path: test-results/*/trace.zip
@@ -497,14 +496,14 @@ jobs:
     needs: [test]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
       - name: Download all reports
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
       - name: Merge reports
         run: npx playwright merge-reports --reporter html ./playwright-report-*
       - name: Upload merged report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: final-playwright-report
           path: merged-report/

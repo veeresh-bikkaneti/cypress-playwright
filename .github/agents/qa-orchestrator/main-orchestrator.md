@@ -161,17 +161,29 @@ Debug and repair failing checkout test
 
 ## Framework-Specific Guidance
 
-### Cypress (Versions 10.x - 13.x)
+### Cypress (Versions 10.x - 15.x)
 - Use `cy.*` commands with proper chaining
 - Leverage `cy.intercept()` for API mocking
 - Support component testing (`cy.mount()`)
 - Handle `cy.origin()` for cross-domain flows
+- **Node.js 20+ required** (Cypress 14+)
+- **Webpack 5 or Vite required** (Webpack 4 dropped in Cypress 14+)
+- `cy.exec()` uses `exitCode` (renamed from `code`)
+- `cy.stub()` three-argument form removed; use `.callsFake()` or `.returns()`
+- Bun package manager support added
 
-### Playwright (Versions 1.38 - 1.48+)
+### Playwright (Versions 1.38 - 1.61+)
 - Use `await page.*` patterns
 - Prefer semantic locators (`getByRole`, `getByLabel`)
 - Support component testing (`@playwright/experimental-ct-react`)
 - Use `page.route()` for network interception
+- **WebAuthn/Passkeys**: `Credentials` virtual authenticator for passkey testing
+- **`page.screencast()`**: Real-time frame capture for agent workflows
+- **`page.localStorage`/`page.sessionStorage`**: Direct web storage APIs
+- **`locator.drop()`**: Drag-and-drop support
+- **`test.abort()`**: Immediate test stoppage from hooks/fixtures
+- **`on-all-retries`**: New video/trace recording mode
+- **`@playwright/mcp`**: AI agent integration toolkit
 
 ## Testing Principles to Enforce
 

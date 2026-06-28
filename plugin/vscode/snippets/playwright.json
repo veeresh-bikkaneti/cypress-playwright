@@ -1,0 +1,84 @@
+{
+  "Playwright Test Block": {
+    "prefix": "pw-test",
+    "body": [
+      "test('${1:test name}', async ({ page }) => {",
+      "\t${2:// test body}",
+      "});"
+    ],
+    "description": "Playwright test block"
+  },
+  "Playwright Describe Block": {
+    "prefix": "pw-describe",
+    "body": [
+      "test.describe('${1:suite name}', () => {",
+      "\t${2:// tests}",
+      "});"
+    ],
+    "description": "Playwright test.describe block"
+  },
+  "Page Object Class": {
+    "prefix": "pw-page-object",
+    "body": [
+      "import { Page, Locator, expect } from '@playwright/test';",
+      "",
+      "export class ${1:PageName} {",
+      "\treadonly page: Page;",
+      "",
+      "\tconstructor(page: Page) {",
+      "\t\tthis.page = page;",
+      "\t}",
+      "",
+      "\tasync ${2:navigate}() {",
+      "\t\tawait this.page.goto('/${3:path}');",
+      "\t}",
+      "}"
+    ],
+    "description": "Playwright Page Object class"
+  },
+  "Auth Fixture": {
+    "prefix": "pw-auth-fixture",
+    "body": [
+      "import { test as base, Page } from '@playwright/test';",
+      "import { LoginPage } from '../pages/LoginPage';",
+      "",
+      "type AuthFixtures = {",
+      "\tauthenticatedPage: Page;",
+      "};",
+      "",
+      "export const test = base.extend<AuthFixtures>({",
+      "\tauthenticatedPage: async ({ page }, use) => {",
+      "\t\tconst loginPage = new LoginPage(page);",
+      "\t\tawait loginPage.login('${1:user@example.com}', '${2:password123}');",
+      "\t\tawait use(page);",
+      "\t},",
+      "});",
+      "",
+      "export { expect } from '@playwright/test';"
+    ],
+    "description": "Playwright authentication fixture"
+  },
+  "API Mock Route": {
+    "prefix": "pw-mock-api",
+    "body": [
+      "await page.route('**/api/${1:endpoint}', async route => {",
+      "\tawait route.fulfill({",
+      "\t\tstatus: 200,",
+      "\t\tcontentType: 'application/json',",
+      "\t\tbody: JSON.stringify(${2:{ data: 'mock' }}),",
+      "\t});",
+      "});"
+    ],
+    "description": "Playwright API mock route"
+  },
+  "Dialog Handler": {
+    "prefix": "pw-dialog",
+    "body": [
+      "page.once('dialog', async dialog => {",
+      "\texpect(dialog.message()).toBe('${1:Expected message}');",
+      "\tawait dialog.accept();",
+      "});"
+    ],
+    "description": "Playwright dialog handler"
+  }
+}

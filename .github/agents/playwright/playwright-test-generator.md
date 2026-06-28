@@ -48,10 +48,9 @@ Convert natural language requirements, user stories, or acceptance criteria into
 
 ### 3. Output Requirements
 - Complete, runnable files.
-- No placeholders.
-- Imports must be relative to the `playwright/` structure:
-    - `@pages/*`
-    - `@fixtures/*`
+- No placeholders.    - Imports must be relative to the `playwright/` structure:
+        - `@pages/*`
+        - `@fixtures/*`
 
 ### 4. Verification (MANDATORY)
 
@@ -95,7 +94,7 @@ Provide proof of execution:
 ## Example Output
 
 ```typescript
-// tests/pages/CartPage.ts
+// playwright/pages/CartPage.ts
 import { Page, Locator, expect } from '@playwright/test';
 
 export class CartPage {
@@ -108,7 +107,7 @@ export class CartPage {
     }
 }
 
-// tests/e2e/cart.spec.ts
+// playwright/e2e/cart.spec.ts
 import { test, expect } from '@playwright/test';
 import { CartPage } from '../pages/CartPage';
 

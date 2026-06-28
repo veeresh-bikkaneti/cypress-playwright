@@ -1,373 +1,527 @@
-# Cypress to Playwright Migration Project
+# Cypress ↔ Playwright Hybrid Testing Framework
 
-> 🎓 **Perfect for beginners!** Learn test automation by exploring real Cypress and Playwright tests side-by-side.
+> A production-grade dual-framework test suite demonstrating Cypress-to-Playwright migration patterns, Page Object Models, and AI-assisted test automation.
 
-[![Playwright](https://img.shields.io/badge/Playwright-v1.41+-45ba4b?style=flat-square&logo=playwright)](https://playwright.dev)
+[![Playwright](https://img.shields.io/badge/Playwright-v1.58+-45ba4b?style=flat-square&logo=playwright)](https://playwright.dev)
 [![Cypress](https://img.shields.io/badge/Cypress-v12+-17202C?style=flat-square&logo=cypress)](https://cypress.io)
-[![Agents](https://img.shields.io/badge/AI_Agents-Active-8A2BE2?style=flat-square)](./.github/README.md)
+[![Node](https://img.shields.io/badge/Node.js-20+-339933?style=flat-square&logo=node.js)](https://nodejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7+-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org)
 
 ---
 
-## 🤔 What is this project?
+## Architecture
 
-This is a **learning playground** that shows you how to migrate from Cypress to Playwright. It includes:
+```mermaid
+graph TB
+    subgraph "Test Frameworks"
+        PW[Playwright v1.58+]
+        CY[Cypress v12+]
+    end
 
-1. ✅ **A working test app** - A simple website to test against (no setup headaches!)
-2. ✅ **Real Cypress tests** - See how tests are written in Cypress
-3. ✅ **Real Playwright tests** - See the same tests migrated to Playwright
-4. ✅ **AI helpers** - Optional AI agents that can help you write or fix tests
+    subgraph "Test Application"
+        APP[Express.js Server<br/>Port 3000]
+        API[REST API Endpoints]
+        GQL[GraphQL Endpoint]
+        UI[Static HTML Pages]
+    end
 
-**Perfect for**:
-- 👨‍💻 Beginners learning test automation
-- 🔄 Teams migrating from Cypress to Playwright
-- 🎯 Interview prep (show off your testing skills!)
+    subgraph "Playwright Test Suite"
+        PW_E2E[pw/e2e/]
+        PW_PAGES[pw/pages/]
+        PW_FIX[pw/fixtures/]
+    end
 
----
+    subgraph "Cypress Test Suite"
+        CY_E2E[cy/e2e/tests/]
+        CY_PAGES[cy/e2e/pages/]
+        CY_SUP[cy/support/]
+    end
 
-## 🚀 Get Started in 5 Minutes
+    subgraph "CI/CD"
+        GHA[GitHub Actions]
+        AZP[Azure Pipelines]
+    end
 
-### Step 1: Check You Have Node.js
+    PW --> PW_E2E
+    PW_E2E --> PW_PAGES
+    PW_E2E --> PW_FIX
+    PW_E2E --> APP
+    PW_E2E --> API
 
-You need Node.js version 16 or higher. Check by running:
+    CY --> CY_E2E
+    CY_E2E --> CY_PAGES
+    CY_E2E --> CY_SUP
+    CY_E2E --> APP
 
-```bash
-node --version
+    GHA --> PW
+    GHA --> CY
+    AZP --> PW
+    AZP --> CY
+
+    APP --> API
+    APP --> GQL
+    APP --> UI
 ```
 
-**Don't have Node.js?** Download it from [nodejs.org](https://nodejs.org/)
+### Page Object Model Architecture
 
-### Step 2: Download This Project
+```mermaid
+graph LR
+    subgraph "Test File"
+        SPEC[*.spec.ts]
+    end
+
+    subgraph "Fixtures"
+        AUTH[auth.fixture.ts]
+        TD[test-data.ts]
+    end
+
+    subgraph "Page Objects"
+        LP[LoginPage.ts]
+        MAP[MyAccountPage.ts]
+    end
+
+    subgraph "Test App"
+        SERVER[server.js]
+        HTML[public/*.html]
+    end
+
+    SPEC --> AUTH
+    AUTH --> LP
+    AUTH --> MAP
+    SPEC --> TD
+    LP --> SERVER
+    MAP --> SERVER
+    SERVER --> HTML
+```
+
+### Test Execution Flow
+
+```mermaid
+sequenceDiagram
+    participant Dev as Developer
+    participant PW as Playwright
+    participant App as Test App
+    participant Browser as Browser
+
+    Dev->>PW: npx playwright test
+    PW->>App: Start webServer (port 3000)
+    App-->>PW: Server ready
+    PW->>Browser: Launch Chromium/Firefox/WebKit
+
+    loop For each test file
+        PW->>Browser: Navigate to page
+        Browser->>App: GET /page
+        App-->>Browser: HTML response
+        Browser-->>PW: Page loaded
+
+        loop For each test
+            PW->>Browser: Execute actions
+            Browser->>App: API calls
+            App-->>Browser: JSON responses
+            Browser-->>PW: Assertions pass/fail
+        end
+    end
+
+    PW->>App: Shutdown webServer
+    PW-->>Dev: Test report generated
+```
+
+### Cypress vs Playwright Command Mapping
+
+```mermaid
+graph LR
+    subgraph "Cypress"
+        CY_VISIT[cy.visit]
+        CY_GET[cy.get]
+        CY_INTERCEPT[cy.intercept]
+        CY_WAIT[cy.wait]
+        CY_ASSERT[cy.should]
+    end
+
+    subgraph "Playwright"
+        PW_GOTO[page.goto]
+        PW_LOCATOR[page.locator<br/>getByRole/getByLabel]
+        PW_ROUTE[page.route]
+        PW_WAIT[page.waitForResponse]
+        PW_ASSERT[expect]
+    end
+
+    CY_VISIT --> PW_GOTO
+    CY_GET --> PW_LOCATOR
+    CY_INTERCEPT --> PW_ROUTE
+    CY_WAIT --> PW_WAIT
+    CY_ASSERT --> PW_ASSERT
+```
+
+---
+
+## Quick Start
 
 ```bash
-# Clone the repository
-git clone <repository-url>
+# 1. Clone and install
+git clone https://github.com/vbikkaneti/cypress-playwright.git
 cd cypress-playwright
-
-# Install everything
 npm install
 
-# Install Playwright browsers (this takes a minute)
+# 2. Install Playwright browsers
 npx playwright install
-```
 
-**What just happened?** 
-- `npm install` downloaded all the testing tools
-- `npx playwright install` downloaded the browsers Playwright needs
-
-### Step 3: Run Your First Test!
-
-**Option A: Run Playwright Tests (Recommended)**
-
-```bash
+# 3. Run Playwright tests (auto-starts server)
 npx playwright test
-```
 
-That's it! Playwright will:
-1. ✅ Start the test app automatically
-2. ✅ Run all tests
-3. ✅ Show you the results
-
-**See the results**:
-```bash
-npx playwright show-report
-```
-
-**Option B: Run Cypress Tests**
-
-```bash
-# Terminal 1: Start the app
-cd app-under-test
-npm run dev
-
-# Terminal 2: Run Cypress tests
-npm run cy:run
-```
-
----
-
-## 📚 What Can I Do Here?
-
-### 1. Learn Test Automation Basics
-
-**Start here** if you're new to testing:
-
-1. Look at the test app: http://localhost:3000 (after running `cd app-under-test && npm run dev`)
-2. Read a simple test: `playwright/e2e/auth/login.spec.ts`
-3. Run just that test: `npx playwright test login.spec.ts --headed`
-
-The `--headed` flag shows the browser so you can see what's happening!
-
-### 2. Compare Cypress vs Playwright
-
-**See the difference** between the two frameworks:
-
-- **Cypress version**: `cypress/e2e/tests/login.test.ts`
-- **Playwright version**: `playwright/e2e/auth/login.spec.ts`
-
-**Key differences**:
-- Cypress uses `cy.` commands (like `cy.get()`)
-- Playwright uses `await page.` (like `await page.fill()`)
-- Playwright needs `await` but is more powerful!
-
-### 3. Try the AI Helpers (Optional)
-
-If you use **GitHub Copilot** in VS Code, try these commands:
-
-```
-@qa-orchestrator create tests for login
-/playwright-create checkout flow
-/cypress-heal cypress/e2e/broken-test.cy.ts
-```
-
-**Don't have GitHub Copilot?** No worries! You can still learn everything manually.
-
----
-
-## 🎯 Common Tasks
-
-### Run a Single Test
-
-```bash
-# Playwright (easier - auto-starts app)
-npx playwright test login.spec.ts
-
-# Cypress (need to start app first)
-cd app-under-test && npm run dev    # Terminal 1
-npm run cy:run -- --spec "cypress/e2e/tests/login.test.ts"  # Terminal 2
-```
-
-### See Tests Run in the Browser
-
-```bash
-# Playwright
-npx playwright test --headed
-
-# Or use UI mode (interactive!)
-npx playwright test --ui
-```
-
-### Debug a Failing Test
-
-```bash
-# Playwright shows you exactly what happened
-npx playwright test --debug
-
-# Or check the report
+# 4. View report
 npx playwright show-report
 ```
 
 ---
 
-## 📂 Project Structure Explained
+## Project Structure
 
 ```
 cypress-playwright/
+├── app-under-test/              # Express.js test application
+│   ├── server.js                #   API + static file server
+│   └── public/                  #   HTML pages (login, dashboard, forms, dialogs)
 │
-├── app-under-test/          # 🌐 The website being tested
-│   ├── server.js            #    - Starts the test server
-│   └── public/              #    - HTML pages for testing
+├── playwright/                  # Playwright test suite (modern)
+│   ├── e2e/                     #   Test specifications
+│   │   ├── auth/                #     Authentication tests
+│   │   ├── forms/               #     Form interaction tests
+│   │   ├── api.spec.ts          #     API & network tests
+│   │   ├── smoke.spec.ts        #     Smoke tests
+│   │   └── *.spec.ts            #     Other test files
+│   ├── pages/                   #   Page Object Models
+│   │   ├── LoginPage.ts
+│   │   └── MyAccountPage.ts
+│   └── fixtures/                #   Test data & auth fixtures
+│       ├── auth.fixture.ts
+│       └── test-data.ts
 │
-├── cypress/                 # 🧪 OLD way (Cypress tests)
-│   ├── e2e/tests/           #    - Test files
-│   └── support/commands.ts  #    - Custom helper commands
+├── cypress/                     # Cypress test suite (legacy)
+│   ├── e2e/tests/               #   15 test files (55 capabilities)
+│   ├── e2e/pages/               #   Page Objects
+│   ├── support/                 #   Custom commands
+│   └── fixtures/                #   Test data (JSON)
 │
-├── playwright/              # ✨ NEW way (Playwright tests)
-│   ├── e2e/                 #    - Test files
-│   ├── pages/               #    - Page Objects (reusable code)
-│   └── fixtures/            #    - Test data and helpers
+├── scripts/                     # Utility scripts
+│   ├── diagnose-cypress.js      #   Cypress failure diagnosis
+│   ├── update_agents.js         #   Agent version sync
+│   └── validate-migration.*     #   Migration quality gates
 │
-├── test-output/             # 📊 Test results appear here
-│   ├── playwright-output/   #    - Playwright reports
-│   └── cypress-output/      #    - Cypress reports
-│
-└── .github/                 # 🤖 AI agent configurations (optional)
+├── playwright.config.ts         # Playwright configuration
+├── cypress.config.ts            # Cypress configuration
+└── package.json                 # Dependencies & scripts
 ```
 
 ---
 
-## ❓ Help! Something's Not Working
+## Usage Guide
 
-### "Port 3000 is already in use"
+### Running Tests
 
-Something is already running on port 3000. Kill it:
+| Command | Description | Auto-Starts Server |
+|---------|-------------|:------------------:|
+| `npx playwright test` | Run all Playwright tests (3 browsers) | ✅ |
+| `npx playwright test --project=chromium` | Chromium only | ✅ |
+| `npx playwright test --headed` | See browser actions | ✅ |
+| `npx playwright test --ui` | Interactive UI mode | ✅ |
+| `npx playwright test --debug` | Step-through debugging | ✅ |
+| `npx playwright test auth/login` | Specific test file | ✅ |
+| `npm run cy:run` | Run all Cypress tests | ❌ |
+| `npm run cy:open` | Open Cypress Test Runner | ❌ |
+| `npm run test:hybrid` | Run both frameworks in parallel | Partial |
 
-**Windows:**
-```powershell
-npx kill-port 3000
-```
-
-**Mac/Linux:**
-```bash
-lsof -ti:3000 | xargs kill
-```
-
-### "Cannot navigate to invalid URL"
-
-The test app isn't running. Playwright should start it automatically, but if not:
+### Playwright Advanced
 
 ```bash
-# Start it manually
-cd app-under-test
-npm install   # Make sure dependencies are installed
-npm run dev   # Start the server
-```
+# Run with trace recording
+npx playwright test --trace on
 
-Wait for "Server running on http://localhost:3000" then run tests.
+# Run specific test by title
+npx playwright test -g "login with valid"
 
-### "Playwright browser not found"
-
-The Playwright browsers aren't installed:
-
-```bash
-npx playwright install
-```
-
-### "Tests are failing"
-
-1. **First, check the app is running**: Visit http://localhost:3000
-2. **Check the error message**: Run `npx playwright show-report`
-3. **See what happened**: Screenshots and videos are in `test-output/`
-
----
-
-## 🎓 Learning Path
-
-**Complete beginner?** Follow this path:
-
-### Week 1: Understand the Basics
-- [ ] Run Playwright tests and see them pass
-- [ ] Open `login.spec.ts` and read the comments
-- [ ] Run ONE test with `--headed` to watch it work
-- [ ] Look at the HTML report: `npx playwright show-report`
-
-### Week 2: Write Your First Test
-- [ ] Look at `app-under-test/public/` to see what you can test
-- [ ] Copy `login.spec.ts` and modify it (change the test data)
-- [ ] Add a new test case
-- [ ] Make it fail on purpose, then fix it
-
-### Week 3: Understand Page Objects
-- [ ] Read `playwright/pages/LoginPage.ts`
-- [ ] See how tests use it: `playwright/e2e/auth/login.spec.ts`
-- [ ] Create your own Page Object for a different page
-
-### Week 4: Compare Frameworks
-- [ ] Run the same test in both Cypress and Playwright
-- [ ] Compare the syntax differences
-- [ ] Understand why async/await is needed in Playwright
-
----
-
-## 🚀 Advanced Features
-
-### Run Tests in Parallel
-
-```bash
-# Playwright runs in parallel by default
-npx playwright test
-
-# Cypress can too
-npm run cy:run -- --parallel
-```
-
-### Run Tests in Different Browsers
-
-```bash
-# Playwright
-npx playwright test --project=chromium
+# Run in different browsers
 npx playwright test --project=firefox
 npx playwright test --project=webkit
 
-# Cypress
-npm run cy:run -- --browser chrome
-npm run cy:run -- --browser firefox
+# Generate HTML report
+npx playwright show-report test-output/playwright-output/report
 ```
 
-### Generate Test Report
+### Cypress
 
 ```bash
-# Playwright (automatic)
-npx playwright show-report
+# Start server first (separate terminal)
+cd app-under-test && npm run dev
 
-# Cypress (after running tests)
-# Open: test-output/cypress-output/html/index.html
+# Run specific spec
+npx cypress run --spec "cypress/e2e/tests/login.test.ts"
+
+# Run with Allure reporter
+npm run cy:run
+
+# Open interactive runner
+npm run cy:open
 ```
 
----
-
-## 🤖 About the AI Agents (Optional)
-
-This project includes AI helpers that can:
-- ✅ Write tests for you based on descriptions
-- ✅ Fix broken tests automatically
-- ✅ Migrate Cypress tests to Playwright
-
-**How to use them**: See the [AI Guide](./.github/README.md)
-
-**Don't want to use AI?** That's fine! Everything can be done manually.
-
----
-
-## 📖 Further Reading
-
-| Guide | What You'll Learn |
-|-------|-------------------|
-| [Migration Guide](./docs/MIGRATION_GUIDE.md) | How to convert Cypress code to Playwright |
-| [Playwright Test Setup](./playwright/TEST_SETUP.md) | Why tests auto-start the server |
-| [AI Agents Guide](./.github/README.md) | How to use AI helpers |
-
----
-
-## 💡 Tips for Success
-
-1. **Start small**: Run one test at a time until you understand it
-2. **Use `--headed`**: See what the test is doing in a real browser
-3. **Read error messages**: Playwright gives great error messages with screenshots
-4. **Check the reports**: Visual HTML reports make debugging easy
-5. **Don't skip Page Objects**: They make your tests easier to maintain
-
----
-
-## 🙋 FAQ
-
-**Q: Do I need to know Cypress to use this?**  
-A: No! You can just learn Playwright. The Cypress tests are here for comparison.
-
-**Q: Can I use this for my real project?**  
-A: Yes! The patterns here work for real projects. Just replace `app-under-test` with your app.
-
-**Q: Why are there two testing frameworks?**  
-A: This shows you how to migrate FROM Cypress TO Playwright. Most new projects should just use Playwright.
-
-**Q: Is Playwright better than Cypress?**  
-A: Playwright is newer and more powerful (supports multiple browsers, faster, more features). But Cypress is still great!
-
-**Q: Do I need the AI agents?**  
-A: Nope! They're optional helpers. You can learn everything without them.
-
-**Q: How long does it take to learn this?**  
-A: Basics: 1-2 days. Comfortable: 1-2 weeks. Proficient: 1-2 months of practice.
-
----
-
-## 🤝 Contributing
-
-Found a bug? Have a suggestion? Open an issue!
-
-Want to add more examples? Pull requests welcome!
-
----
-
-## 📜 License
-
-MIT License - feel free to use this for learning or your own projects!
-
----
-
-**Ready to start?** Run this now:
+### Code Quality
 
 ```bash
-npx playwright test --headed
+npm run lint          # ESLint check
+npm run lint:fix      # Auto-fix lint issues
+npm run type-check    # TypeScript compilation check
+npm run validate      # Full validation (type-check + lint + format)
+npm run format        # Prettier format
 ```
 
-Watch the magic happen! 🎩✨
+---
+
+## Page Object Pattern
+
+### LoginPage (Playwright)
+
+```typescript
+// playwright/pages/LoginPage.ts
+import { Page, Locator, expect } from '@playwright/test';
+
+export class LoginPage {
+    readonly page: Page;
+    readonly emailAddressTxt: Locator;
+    readonly passwordTxt: Locator;
+    readonly signinBtn: Locator;
+
+    constructor(page: Page) {
+        this.page = page;
+        this.emailAddressTxt = page.locator('[data-testid="email-input"]');
+        this.passwordTxt = page.locator('[data-testid="password-input"]');
+        this.signinBtn = page.locator('[data-testid="submit-btn"]');
+    }
+
+    async login(email: string, password: string) {
+        await this.page.goto('/login');
+        await this.emailAddressTxt.fill(email);
+        await this.passwordTxt.fill(password);
+        await this.signinBtn.click();
+    }
+
+    async validateSuccessfulLogin() {
+        await expect(this.page).toHaveURL(/.*\/dashboard/);
+    }
+}
+```
+
+### Auth Fixture (Playwright)
+
+```typescript
+// playwright/fixtures/auth.fixture.ts
+import { test as base, Page } from '@playwright/test';
+import { LoginPage } from '../pages/LoginPage';
+
+type AuthFixtures = {
+    authenticatedPage: Page;
+    loginPage: LoginPage;
+};
+
+export const test = base.extend<AuthFixtures>({
+    authenticatedPage: async ({ page }, use) => {
+        const loginPage = new LoginPage(page);
+        await loginPage.login('test@example.com', 'password123');
+        await use(page);
+    },
+    loginPage: async ({ page }, use) => {
+        await use(new LoginPage(page));
+    },
+});
+
+export { expect } from '@playwright/test';
+```
+
+### Using Fixtures in Tests
+
+```typescript
+// playwright/e2e/auth/login.spec.ts
+import { test, expect } from '../../fixtures/auth.fixture';
+
+test('login with valid credentials', async ({ loginPage, myAccountPage }) => {
+    await loginPage.login('test@example.com', 'password123');
+    await myAccountPage.validateSuccessfulLogin();
+    await myAccountPage.logout();
+    await myAccountPage.validateSuccessfulLogout();
+});
+```
+
+---
+
+## Migration Playbook
+
+### Cypress → Playwright Cheat Sheet
+
+| Cypress | Playwright |
+|---------|-----------|
+| `cy.visit('/page')` | `await page.goto('/page')` |
+| `cy.get('[data-testid="x"]')` | `page.getByTestId('x')` |
+| `cy.contains('text')` | `page.getByText('text')` |
+| `cy.get('button').click()` | `await page.getByRole('button').click()` |
+| `cy.get('input').type('text')` | `await page.getByLabel('Input').fill('text')` |
+| `cy.intercept('GET', '/api', {})` | `await page.route('**/api', r => r.fulfill({json: {}}))` |
+| `cy.wait('@alias')` | `await page.waitForResponse('**/api')` |
+| `cy.get('.el').should('be.visible')` | `await expect(page.locator('.el')).toBeVisible()` |
+| `cy.url().should('include', '/path')` | `await expect(page).toHaveURL(/\/path/)` |
+| `cy.get('.el').should('have.text', 'x')` | `await expect(page.locator('.el')).toHaveText('x')` |
+
+### Migration Steps
+
+1. **Analyze** — Read the Cypress test, identify custom commands and dependencies
+2. **Create Page Object** — Extract selectors and actions into a class
+3. **Create Fixture** — Convert `beforeEach` setup into Playwright fixtures
+4. **Migrate Test** — Convert `cy.*` calls to `await page.*` with semantic locators
+5. **Verify** — Run `npx tsc --noEmit` then `npx playwright test`
+6. **Delete Legacy** — Remove the Cypress test once Playwright equivalent passes
+
+### Quality Gates
+
+```bash
+# Before marking migration complete:
+grep -r '\bcy\.' playwright/           # Should return nothing
+npx tsc --noEmit                        # TypeScript compiles
+npx playwright test --project=chromium  # Tests pass
+```
+
+---
+
+## Test Application API
+
+The `app-under-test/` Express server provides these endpoints:
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|:----:|-------------|
+| `GET` | `/` | No | Home page with product grid |
+| `GET` | `/login` | No | Login form |
+| `GET` | `/dashboard` | Yes | User dashboard |
+| `GET` | `/forms` | No | Form interaction page |
+| `GET` | `/dialogs` | No | Dialog triggers |
+| `GET` | `/upload` | No | File upload page |
+| `POST` | `/api/auth/login` | No | Authenticate user |
+| `POST` | `/api/auth/logout` | No | Clear session |
+| `GET` | `/api/auth/me` | Yes | Current user info |
+| `GET` | `/api/products` | No | List products (filterable) |
+| `GET` | `/api/products/:id` | No | Single product |
+| `GET` | `/api/orders` | Yes | User orders |
+| `POST` | `/api/orders` | Yes | Create order |
+| `POST` | `/api/upload` | No | Upload file |
+| `POST` | `/api/graphql` | Varies | GraphQL endpoint |
+| `GET` | `/api/error/:code` | No | Generate error responses |
+| `GET` | `/api/slow-response` | No | Delayed response (testing) |
+
+**Test Credentials:** `test@example.com` / `password123`
+
+---
+
+## Docker
+
+```bash
+# Run everything in containers
+npm run test:docker
+
+# Or step by step
+docker compose up -d test-app          # Start app only
+docker compose run --rm cypress        # Run Cypress tests
+docker compose down                     # Cleanup
+```
+
+---
+
+## CI/CD
+
+### GitHub Actions (`.github/workflows/hybrid-ci.yml`)
+
+Runs both Cypress and Playwright in parallel on push/PR:
+- Playwright: Chromium, Firefox, WebKit
+- Cypress: Chrome, Edge
+- Merged test reports as artifacts
+
+### Azure Pipelines (`.azure-pipelines/`)
+
+- `auto-heal-tests.yml` — Auto-heal failing tests
+- `ai-session-logger.yml` — Log AI agent sessions
+- `requirement-tracer.yml` — Trace requirements to tests
+
+---
+
+## AI Agents
+
+The `.github/agents/` directory contains specialized AI agents for test automation:
+
+| Agent | Purpose |
+|-------|---------|
+| `qa-orchestrator` | Central coordinator for test creation, debugging, and orchestration |
+| `playwright-test-generator` | Generate Playwright tests from requirements |
+| `playwright-test-planner` | Plan test strategies and coverage |
+| `playwright-healer` | Diagnose and fix broken Playwright tests |
+| `cypress-to-playwright` | Migrate Cypress tests to Playwright |
+| `cypress-healer` | Diagnose and fix broken Cypress tests |
+| `qa-architect` | Design test frameworks, CI/CD integration, and infrastructure |
+| `qa-engineer` | Write and maintain test suites |
+| `automation-engineer` | Build and maintain automation frameworks |
+| `sdet` | Advanced test frameworks, custom tooling, performance/security testing |
+| `manual-tester` | Manual test case design and exploratory testing |
+| `test-engineer` | General test engineering and quality assurance |
+| `qa-automation-engineer` | QA-specific automation patterns and workflows |
+| `backend-specialist` | Backend API and server-side testing |
+| `frontend-specialist` | Frontend UI testing and visual validation |
+| `database-architect` | Database schema testing and data integrity |
+| `devops-engineer` | CI/CD pipeline and infrastructure testing |
+| `debugger` | Test failure diagnosis and root cause analysis |
+| `documentation-writer` | Test documentation and reporting |
+
+### AI Prompts & Skills
+
+| Directory | Contents |
+|-----------|----------|
+| `.github/prompts/cypress/` | Cypress test creation and healing prompts |
+| `.github/prompts/playwright/` | Playwright test creation and healing prompts |
+| `.github/prompts/migration/` | Cypress → Playwright migration prompts |
+| `.github/skills/clean-code/` | Code quality and style guidelines |
+| `.github/skills/testing-patterns/` | Testing best practices and patterns |
+| `.github/skills/webapp-testing/` | Web application testing strategies |
+
+**Usage (with GitHub Copilot):**
+```
+@qa-orchestrator create tests for checkout flow
+@cypress-to-playwright migrate cypress/e2e/tests/login.test.ts
+@playwright-healer fix playwright/e2e/smoke.spec.ts
+@sdet build performance testing framework
+@devops-engineer set up CI/CD pipeline
+```
+
+---
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| Port 3000 in use | `npx kill-port 3000` or stop other servers |
+| Playwright browsers missing | `npx playwright install` |
+| TypeScript errors | `npx tsc --noEmit` to see details |
+| Tests timeout | Check if server starts: `curl http://localhost:3000` |
+| Cypress can't find element | Verify `data-testid` attributes in HTML |
+
+---
+
+## Further Reading
+
+| Document | Description |
+|----------|-------------|
+| [Migration Guide](./docs/MIGRATION_GUIDE.md) | Step-by-step Cypress → Playwright migration |
+| [Beginner Guide](./docs/BEGINNER_GUIDE.md) | Zero-to-hero test automation tutorial |
+| [TypeScript Guide](./docs/TYPESCRIPT_FOR_CYPRESS.md) | TypeScript basics for test automation |
+| [Docker Guide](./docs/DOCKER_HELPER.md) | Running tests in containers |
+| [Security Policy](./docs/SECURITY.md) | Security reporting and best practices |
+| [Copilot Instructions](./.github/copilot-instructions.md) | AI agent migration rules |
+
+---
+
+## License
+
+MIT

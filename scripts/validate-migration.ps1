@@ -24,11 +24,11 @@ else {
 }
 Write-Host ""
 
-# Check 1: No Cypress code in tests/
+# Check 1: No Cypress code in playwright/
 Write-Host "Check 1: Scanning for leftover Cypress code..."
-$cypressCalls = Select-String -Path "..\tests\**\*.ts" -Pattern '\bcy\.' -ErrorAction SilentlyContinue
+$cypressCalls = Select-String -Path "..\playwright\**\*.ts" -Pattern '\bcy\.' -ErrorAction SilentlyContinue
 if ($cypressCalls) {
-    Write-Host "FAIL: Found cy.* calls in tests/ directory" -ForegroundColor Red
+    Write-Host "FAIL: Found cy.* calls in playwright/ directory" -ForegroundColor Red
     foreach ($match in $cypressCalls) {
         Write-Host "   -> $($match.Filename):$($match.LineNumber): $($match.Line.Trim())" -ForegroundColor Yellow
     }
@@ -41,9 +41,9 @@ Write-Host ""
 
 # Check 2: No Cypress imports
 Write-Host "Check 2: Scanning for Cypress imports..."
-$cypressImports = Select-String -Path "..\tests\**\*.ts" -Pattern "from ['""]cypress['""]" -ErrorAction SilentlyContinue
+$cypressImports = Select-String -Path "..\playwright\**\*.ts" -Pattern "from ['""]cypress['""]" -ErrorAction SilentlyContinue
 if ($cypressImports) {
-    Write-Host "FAIL: Found Cypress imports in tests/" -ForegroundColor Red
+    Write-Host "FAIL: Found Cypress imports in playwright/" -ForegroundColor Red
     foreach ($match in $cypressImports) {
         Write-Host "   -> $($match.Filename):$($match.LineNumber)" -ForegroundColor Yellow
     }
@@ -68,8 +68,8 @@ Write-Host ""
 
 # Check 4: Semantic locators usage
 Write-Host "Check 4: Checking semantic locator usage..."
-$semanticCount = (Select-String -Path "..\tests\**\*.ts" -Pattern 'getByRole|getByLabel|getByText|getByPlaceholder|getByAltText|getByTitle' -ErrorAction SilentlyContinue | Measure-Object).Count
-$cssCount = (Select-String -Path "..\tests\**\*.ts" -Pattern '\.locator\(' -ErrorAction SilentlyContinue | Measure-Object).Count
+$semanticCount = (Select-String -Path "..\playwright\**\*.ts" -Pattern 'getByRole|getByLabel|getByText|getByPlaceholder|getByAltText|getByTitle' -ErrorAction SilentlyContinue | Measure-Object).Count
+$cssCount = (Select-String -Path "..\playwright\**\*.ts" -Pattern '\.locator\(' -ErrorAction SilentlyContinue | Measure-Object).Count
 
 Write-Host "   Semantic locators: $semanticCount occurrences"
 Write-Host "   CSS selectors: $cssCount occurrences"
@@ -87,7 +87,7 @@ Write-Host ""
 
 # Check 5: No waitForTimeout usage
 Write-Host "Check 5: Checking for waitForTimeout usage..."
-$timeoutUsage = Select-String -Path "..\tests\**\*.ts" -Pattern 'waitForTimeout' -ErrorAction SilentlyContinue
+$timeoutUsage = Select-String -Path "..\playwright\**\*.ts" -Pattern 'waitForTimeout' -ErrorAction SilentlyContinue
 if ($timeoutUsage) {
     Write-Host "WARNING: Found waitForTimeout usage" -ForegroundColor Yellow
     foreach ($match in $timeoutUsage) {

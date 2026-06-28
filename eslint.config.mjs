@@ -38,7 +38,7 @@ export default [
                 sourceType: "module",
             },
             globals: {
-                ...cypress.environments.globals.globals, // Cypress globals (cy, Cypress, etc.)
+                ...cypress.configs.globals.languageOptions.globals, // Cypress globals (cy, Cypress, etc.)
                 node: true,
                 es6: true,
             }

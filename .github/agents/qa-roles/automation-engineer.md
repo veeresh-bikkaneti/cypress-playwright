@@ -39,7 +39,7 @@ You are an **Automation Engineer** - a hands-on specialist focused on writing cl
 
 ## Test Creation Best Practices
 
-### Cypress (10.x - 13.x)
+### Cypress (10.x - 15.x)
 
 **E2E Test Example**:
 ```typescript
@@ -59,10 +59,10 @@ describe('Checkout Flow', () => {
     cy.url().should('include', '/checkout');
     
     // Fill shipping info
-    cy.getByLabel('Full Name').type('John Doe');
-    cy.getByLabel('Address').type('123 Main St');
-    cy.getByLabel('City').type('New York');
-    cy.getByLabel('ZIP Code').type('10001');
+    cy.contains('label', 'Full Name').parent().find('input').type('John Doe');
+    cy.contains('label', 'Address').parent().find('input').type('123 Main St');
+    cy.contains('label', 'City').parent().find('input').type('New York');
+    cy.contains('label', 'ZIP Code').parent().find('input').type('10001');
     
     // Fill payment info
     cy.get('[data-testid="card-number"]').type('4242424242424242');
@@ -78,11 +78,9 @@ describe('Checkout Flow', () => {
   });
 
   it('shows validation errors for invalid payment', () => {
-    cy.get('[data-testid="checkout-btn"]').click();
-    
-    // Fill shipping, skip payment
-cy.getByLabel('Full Name').type('John Doe');
-    cy.getByLabel('Address').type('123 Main St');
+    cy.get('[data-testid="checkout-btn"]').click();    // Fill shipping, skip payment
+    cy.contains('label', 'Full Name').parent().find('input').type('John Doe');
+    cy.contains('label', 'Address').parent().find('input').type('123 Main St');
     
     cy.get('[data-testid="place-order-btn"]').click();
     
@@ -111,7 +109,7 @@ declare global {
 }
 ```
 
-### Playwright (1.38 - 1.48+)
+### Playwright (1.38 - 1.61+)
 
 **E2E Test Example**:
 ```typescript
