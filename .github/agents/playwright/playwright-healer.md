@@ -52,7 +52,7 @@ If a selector is not found:
 #### Test Execution
 - [ ] **Run fixed test in isolation**:
     ```bash
-    npx playwright test tests-pw/e2e/fixed.spec.ts --project=chromium --headed
+    npx playwright test playwright/e2e/fixed.spec.ts --project=chromium --headed
     ```
 - [ ] **Check trace if test still fails**:
     ```bash

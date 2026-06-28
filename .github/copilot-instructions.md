@@ -1,3 +1,8 @@
+---
+description: Behavioral guidelines to reduce common LLM coding mistakes. Use when writing, reviewing, or refactoring code to avoid overcomplication, make surgical changes, surface assumptions, and define verifiable success criteria.
+alwaysApply: true
+---
+
 # Cypress → Playwright Migration (Repository Instructions)
 
 ## Scope & Goals
@@ -50,12 +55,14 @@ All code and tests must adhere to OWASP Top 10 security best practices.
 
 ### 🔒 Tech Stack & Path Constraints
 
-- **Target Framework**: Playwright Test v1.41+ (Use `mergeExpects` if applicable)
+- **Target Framework**: Playwright Test v1.38+
+- **Cypress**: v10.x – 15.x (for migration source reference)
+- **Node.js**: v20+ required
 - **Language**: TypeScript (Strict Mode)
 - **Path Aliases** (Assume `tsconfig.json` paths):
-  - `@pages/*` → `tests/pages/*`
-  - `@fixtures/*` → `tests/fixtures/*`
-  - `@helpers/*` → `tests/helpers/*`
+  - `@pages/*` → `playwright/pages/*`
+  - `@fixtures/*` → `playwright/fixtures/*`
+  - `@helpers/*` → `playwright/helpers/*`
 
 ### ⛔ Stop Sequences (Refusals)
 
@@ -77,6 +84,8 @@ You MUST **REFUSE** to generate the following patterns unless explicitly instruc
 ---
 
 ## Canonical Cypress → Playwright Mapping
+
+### Locator Priority
 
 Playwright strongly recommends user-facing locators that mirror how users interact with the page.
 
@@ -100,10 +109,6 @@ Playwright strongly recommends user-facing locators that mirror how users intera
 - **Avoid `page.waitForTimeout(ms)`** - use explicit wait conditions instead
 - Prefer `await expect(locator).toBeVisible()` over arbitrary sleeps
 - For custom conditions, use `page.waitForFunction()` or `locator.waitFor()`
-
----
-
-## Canonical Cypress → Playwright Mapping
 
 ### Test Structure & Hooks
 
@@ -258,7 +263,8 @@ cy.wait(['@req1', '@req2'])
 →
 await Promise.all([
   page.waitForResponse('**/api/endpoint1'),
-  page.waitForResponse('**/api/endpoint2')
+  page.waitForResponse('**/api/endpoint2'),
+  page.locator('button').click() // trigger the requests
 ]);
 ```
 
@@ -387,7 +393,7 @@ Cypress.Commands.add('login', (username: string, password: string) => {
   cy.url().should('include', '/dashboard');
 });
 
-// Playwright: tests/pages/LoginPage.ts
+// Playwright: playwright/pages/LoginPage.ts
 import { Page, Locator, expect } from '@playwright/test';
 
 export class LoginPage {
@@ -447,7 +453,7 @@ Cypress.Commands.add('loginViaAPI', (username: string, password: string) => {
     });
 });
 
-// Playwright: tests/fixtures/auth.fixture.ts
+// Playwright: playwright/fixtures/auth.fixture.ts
 import { test as base, Page } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
 
@@ -491,7 +497,7 @@ Cypress.Commands.add('generateRandomEmail', () => {
   return `user-${Date.now()}@example.com`;
 });
 
-// Playwright: tests/helpers/generators.ts
+// Playwright: playwright/helpers/generators.ts
 export function generateRandomEmail(): string {
   return `user-${Date.now()}@example.com`;
 }
@@ -587,6 +593,72 @@ Before considering migration complete, verify:
 - [ ] No shared state between tests (each test is isolated)
 
 ---
+
+# Behavioral Guidelines
+
+Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
+
+**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+
+## 1. Think Before Coding
+
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
+
+Before implementing:
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them - don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
+
+## 2. Simplicity First
+
+**Minimum code that solves the problem. Nothing speculative.**
+
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
+
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+## 3. Surgical Changes
+
+**Touch only what you must. Clean up only your own mess.**
+
+When editing existing code:
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it - don't delete it.
+
+When your changes create orphans:
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+The test: Every changed line should trace directly to the user's request.
+
+## 4. Goal-Driven Execution
+
+**Define success criteria. Loop until verified.**
+
+Transform tasks into verifiable goals:
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+```
+
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+---
+
+**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
 
 ## Additional Resources
 

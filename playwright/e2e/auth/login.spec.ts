@@ -26,8 +26,8 @@
  * @author Veeresh Bikkaneti (Migrated to Playwright)
  */
 
-import { test, expect } from '../fixtures/auth.fixture';
-import { testData } from '../fixtures/test-data';
+import { test, expect } from '../../fixtures/auth.fixture';
+import { testData } from '../../fixtures/test-data';
 
 test.describe('Login Functionality', () => {
 

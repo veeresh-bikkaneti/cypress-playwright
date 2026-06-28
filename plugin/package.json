@@ -1,0 +1,48 @@
+{
+  "name": "cypress2playwright-using-ai",
+  "version": "1.0.0",
+  "description": "AI-powered Cypress to Playwright migration toolkit. Installable plugin for GitHub Copilot, Claude Code, Cursor, Cline, Windsurf, Aider, and Continue.",
+  "main": "lib/index.js",
+  "bin": {
+    "cypress2playwright-setup": "./bin/setup.js"
+  },
+  "scripts": {
+    "setup": "node bin/setup.js",
+    "test": "node bin/setup.js --help"
+  },
+  "keywords": [
+    "cypress",
+    "playwright",
+    "migration",
+    "ai",
+    "copilot",
+    "claude",
+    "cursor",
+    "cline",
+    "windsurf",
+    "aider",
+    "continue",
+    "testing",
+    "e2e",
+    "automation"
+  ],
+  "author": "Veeresh Bikkaneti",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vbikkaneti/cypress-playwright"
+  },
+  "homepage": "https://github.com/vbikkaneti/cypress-playwright#readme",
+  "bugs": {
+    "url": "https://github.com/vbikkaneti/cypress-playwright/issues"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "templates/",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

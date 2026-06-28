@@ -54,7 +54,7 @@ When you detect `Cypress.Commands.add('x', ...)`:
 ### Type C: Utility Helper
 - **If it's a pure function**:
   - Convert to standard TypeScript helper function
-  - Place in `tests/helpers/` directory
+  - Place in `playwright/helpers/` directory
   - Export as named function
 
 **Never** replicate a global "command registry" pattern in Playwright.
@@ -116,7 +116,7 @@ playwright/
 ### Target Path Headers
 Include target path as first line comment:
 ```typescript
-// File: tests/pages/LoginPage.ts
+// File: playwright/pages/LoginPage.ts
 import { Page, Locator } from '@playwright/test';
 // ... rest of file
 ```
@@ -213,7 +213,7 @@ describe('Dashboard', () => {
 
 ### Output (Playwright Page Object + Fixture)
 ```typescript
-// File: tests/pages/LoginPage.ts
+// File: playwright/pages/LoginPage.ts
 import { Page, Locator, expect } from '@playwright/test';
 
 export class LoginPage {
@@ -244,7 +244,7 @@ export class LoginPage {
   }
 }
 
-// File: tests/fixtures/auth.fixture.ts
+// File: playwright/fixtures/auth.fixture.ts
 import { test as base, Page } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
 
@@ -262,7 +262,7 @@ export const test = base.extend<AuthFixtures>({
 
 export { expect } from '@playwright/test';
 
-// File: tests/specs/dashboard/profile.spec.ts
+// File: playwright/e2e/auth/login.spec.ts
 import { test, expect } from '../../fixtures/auth.fixture';
 
 test.describe('Dashboard', () => {
@@ -308,7 +308,7 @@ npx tsc --noEmit
 npx playwright test
 
 # Run specific suite
-npx playwright test tests/specs/dashboard/
+npx playwright test playwright/e2e/auth/
 
 # Debug mode
 npx playwright test --headed --debug
@@ -329,7 +329,7 @@ Before delivering output:
 ## Resources
 
 - Repository Guidelines: `.github/copilot-instructions.md`
-- Migration Prompt: `.github/prompts/migrate-cypress-to-playwright.prompt.md`
+- Migration Prompt: `.github/prompts/migration/migrate-cypress-to-playwright.prompt.md`
 - Playwright Docs: https://playwright.dev/docs/intro
 - **Migration Guide**: https://demo.playwright.dev/cy2pw/
 - Best Practices: https://playwright.dev/docs/best-practices

@@ -1,0 +1,96 @@
+{
+  "name": "cypress2playwright-using-ai",
+  "displayName": "Cypress2Playwright Using AI",
+  "description": "AI-powered Cypress to Playwright migration toolkit with agents for Copilot, Claude Code, Cursor, Cline, Windsurf, Aider, and Continue.",
+  "version": "1.0.0",
+  "publisher": "vbikkaneti",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vbikkaneti/Cypress2PlaywrightUsingAI"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Testing",
+    "Snippets",
+    "Programming Languages",
+    "Linters"
+  ],
+  "keywords": [
+    "cypress",
+    "playwright",
+    "migration",
+    "testing",
+    "e2e",
+    "ai",
+    "copilot"
+  ],
+  "activationEvents": [
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact",
+    "workspaceContains:**/*.spec.ts"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "cypress2playwright.setup",
+        "title": "Cypress2Playwright: Setup AI Agents"
+      },
+      {
+        "command": "cypress2playwright.migrate",
+        "title": "Cypress2Playwright: Migrate Current Test"
+      },
+      {
+        "command": "cypress2playwright.heal",
+        "title": "Cypress2Playwright: Heal Failing Test"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "cypress2playwright.migrate",
+          "when": "editorLangId == typescript && editorHasSelection",
+          "group": "cypress2playwright"
+        },
+        {
+          "command": "cypress2playwright.heal",
+          "when": "editorLangId == typescript && editorHasSelection",
+          "group": "cypress2playwright"
+        }
+      ]
+    },
+    "snippets": [
+      {
+        "language": "typescript",
+        "path": "./snippets/playwright.json"
+      }
+    ],
+    "configuration": {
+      "title": "Cypress2Playwright Using AI",
+      "properties": {
+        "cypress2playwright.autoSetup": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically setup AI agents when opening a Cypress-to-Playwright project."
+        },
+        "cypress2playwright.enabledTools": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["copilot", "claude", "cursor", "cline", "windsurf", "aider", "continue"]
+          },
+          "default": ["copilot"],
+          "description": "Which AI tools to configure when running setup."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "echo 'No build needed'",
+    "test": "echo 'No tests yet'"
+  },
+  "devDependencies": {}
+}

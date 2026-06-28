@@ -27,11 +27,11 @@ else
 fi
 echo ""
 
-# Check 1: No Cypress code in tests/
+# Check 1: No Cypress code in playwright/
 echo "📋 Check 1: Scanning for leftover Cypress code..."
-if grep -r '\bcy\.' ../tests/ --include="*.ts" 2>/dev/null; then
-  echo -e "${RED}❌ FAIL: Found cy.* calls in tests/ directory${NC}"
-  grep -r '\bcy\.' ../tests/ --include="*.ts" --color
+if grep -r '\bcy\.' ../playwright/ --include="*.ts" 2>/dev/null; then
+  echo -e "${RED}❌ FAIL: Found cy.* calls in playwright/ directory${NC}"
+  grep -r '\bcy\.' ../playwright/ --include="*.ts" --color
   ERRORS=$((ERRORS + 1))
 else
   echo -e "${GREEN}✅ PASS: No cy.* calls found${NC}"
@@ -40,9 +40,9 @@ echo ""
 
 # Check 2: No Cypress imports
 echo "📋 Check 2: Scanning for Cypress imports..."
-if grep -r "from ['\"]cypress['\"]" ../tests/ --include="*.ts" 2>/dev/null; then
-  echo -e "${RED}❌ FAIL: Found Cypress imports in tests/${NC}"
-  grep -r "from ['\"]cypress['\"]" ../tests/ --include="*.ts" --color
+if grep -r "from ['\"]cypress['\"]" ../playwright/ --include="*.ts" 2>/dev/null; then
+  echo -e "${RED}❌ FAIL: Found Cypress imports in playwright/${NC}"
+  grep -r "from ['\"]cypress['\"]" ../playwright/ --include="*.ts" --color
   ERRORS=$((ERRORS + 1))
 else
   echo -e "${GREEN}✅ PASS: No Cypress imports found${NC}"
@@ -61,8 +61,8 @@ echo ""
 
 # Check 4: Semantic locators usage
 echo "📋 Check 4: Checking semantic locator usage..."
-SEMANTIC_COUNT=$(grep -rE 'getByRole|getByLabel|getByText|getByPlaceholder|getByAltText|getByTitle' ../tests/ --include="*.ts" 2>/dev/null | wc -l)
-CSS_COUNT=$(grep -rE '\.locator\(' ../tests/ --include="*.ts" 2>/dev/null | wc -l)
+SEMANTIC_COUNT=$(grep -rE 'getByRole|getByLabel|getByText|getByPlaceholder|getByAltText|getByTitle' ../playwright/ --include="*.ts" 2>/dev/null | wc -l)
+CSS_COUNT=$(grep -rE '\.locator\(' ../playwright/ --include="*.ts" 2>/dev/null | wc -l)
 
 echo "   Semantic locators: $SEMANTIC_COUNT occurrences"
 echo "   CSS selectors: $CSS_COUNT occurrences"
@@ -78,9 +78,9 @@ echo ""
 
 # Check 5: No waitForTimeout usage
 echo "📋 Check 5: Checking for waitForTimeout usage..."
-if grep -r 'waitForTimeout' ../tests/ --include="*.ts" 2>/dev/null; then
+if grep -r 'waitForTimeout' ../playwright/ --include="*.ts" 2>/dev/null; then
   echo -e "${YELLOW}⚠️  WARNING: Found waitForTimeout usage${NC}"
-  grep -r 'waitForTimeout' ../tests/ --include="*.ts" --color
+  grep -r 'waitForTimeout' ../playwright/ --include="*.ts" --color
 else
   echo -e "${GREEN}✅ PASS: No waitForTimeout found${NC}"
 fi

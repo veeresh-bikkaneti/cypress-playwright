@@ -81,7 +81,7 @@ test('form validation shows error for invalid email', async ({ page }) => {
 
 ## Framework Support
 
-### Cypress (10.x - 13.x)
+### Cypress (10.x - 15.x)
 ```typescript
 describe('Contact Form', () => {
   it('validates required fields', () => {
@@ -93,7 +93,7 @@ describe('Contact Form', () => {
 });
 ```
 
-### Playwright (1.38 - 1.48+)
+### Playwright (1.38 - 1.61+)
 ```typescript
 test.describe('Contact Form', () => {
   test('validates required fields', async ({ page }) => {

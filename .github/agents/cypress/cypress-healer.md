@@ -68,13 +68,13 @@ ALWAYS verify complete fix before marking done:
 #### Test Execution
 - [ ] **Run the specific fixed test in isolation**:
 ```bash
-npx cypress run --spec "cypress/e2e/tests/fixed-test.cy.ts"
+npx cypress run --spec "cypress/e2e/tests/fixed-test.test.ts"
 ```
 
 #### Regression Prevention
 - [ ] **Run related tests** to ensure fix didn't break anything:
 ```bash
-npx cypress run --spec "cypress/e2e/tests/[related-area]/**/*.cy.ts"
+npx cypress run --spec "cypress/e2e/tests/[related-area]/**/*.test.ts"
 ```
 
 #### Console Validation
