@@ -8,6 +8,25 @@
 
 ---
 
+## 🛡️ Security: Air-Gapped by Design
+
+**This plugin makes ZERO network requests. No data leaves your machine.**
+
+| Security Guarantee | Details |
+|-------------------|---------|
+| **Zero Outbound Traffic** | No `fetch()`, `http`, `https`, or socket calls |
+| **No Telemetry** | No analytics, tracking, or usage reporting |
+| **No API Keys Required** | No credentials needed or stored |
+| **No External Dependencies** | No runtime npm packages that make network calls |
+| **Local-Only Operations** | All file operations are local filesystem only |
+| **Enterprise-Ready** | Designed for air-gapped and outbound-gated environments |
+
+**AI Model Configuration:** All agent configs use `model: inherit` — no cloud models are hardcoded. The plugin respects your AI tool's local/self-hosted model configuration.
+
+**Runtime Documentation:** Agent configs instruct AI tools to fetch official Playwright/Cypress documentation at runtime for version compatibility. These fetches are performed by your AI tool, not by this plugin. You can disable them or redirect to a local docs mirror. See [SECURITY.md](./SECURITY.md) for full details.
+
+---
+
 ## What Is This?
 
 A **single package** that installs AI agent configurations, migration guides, testing standards, and quality rules into your project — pre-configured for whichever AI coding tool you use.
@@ -103,6 +122,14 @@ git clone https://github.com/vbikkaneti/cypress-playwright.git
 | **playwright-healer** | Diagnoses and fixes broken Playwright tests |
 | **cypress-healer** | Diagnoses and fixes broken Cypress tests |
 | **cypress-to-playwright** | Migrates Cypress tests to Playwright |
+| **backend-specialist** | Backend API and server-side testing |
+| **frontend-specialist** | Frontend UI testing and visual validation |
+| **database-architect** | Database schema testing and data integrity |
+| **devops-engineer** | CI/CD pipeline and infrastructure testing |
+| **debugger** | Test failure diagnosis and root cause analysis |
+| **documentation-writer** | Test documentation and reporting |
+| **test-engineer** | General test engineering and quality assurance |
+| **qa-automation-engineer** | QA-specific automation patterns and workflows |
 
 ### Coding Standards
 

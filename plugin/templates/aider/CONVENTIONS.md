@@ -1,5 +1,11 @@
 # Cypress → Playwright Testing Conventions
 
+## ⚠️ Version Compatibility
+
+Before generating code, check the user's installed Playwright/Cypress version (`npx playwright --version` or `npx cypress --version`) and fetch the relevant official documentation to ensure API compatibility:
+- Playwright: https://playwright.dev/docs
+- Cypress: https://docs.cypress.io
+
 ## Project Overview
 This project demonstrates Cypress-to-Playwright migration patterns with AI-assisted test automation.
 

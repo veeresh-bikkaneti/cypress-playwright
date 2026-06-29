@@ -58,6 +58,14 @@ cy.get('[data-testid="submit-btn"]').click();
 2. **Agent Mention**: `@cypress-healer fix the broken checkout test`
 3. **Natural Language**: "The Cypress test file auth.cy.ts is failing"
 
+## Required Artifacts
+
+The healer looks for:
+- Test failure logs
+- `test-output/cypress-output/screenshots/`
+- `test-output/cypress-output/videos/`
+- Error stack traces
+
 ## Output
 
 - Fixed test file with explanatory comments

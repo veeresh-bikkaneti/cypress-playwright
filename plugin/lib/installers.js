@@ -72,8 +72,103 @@ function installAll(toolIds, projectRoot, options = {}) {
   return results;
 }
 
+/**
+ * Version-fetch section patterns to strip in --no-fetch mode.
+ * Each entry is a regex that matches a section header line.
+ */
+const FETCH_SECTION_PATTERNS = [
+  /## ⚠️ Version (Check|Compatibility)/i,
+  /### 🔄 Version Compatibility/i,
+];
+
+/**
+ * Recursively find all markdown/mdc/yml files in a directory.
+ */
+function findMarkdownFiles(dir) {
+  const results = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      results.push(...findMarkdownFiles(full));
+    } else if (/\.(md|mdc|yml|yaml)$/.test(entry.name)) {
+      results.push(full);
+    }
+  }
+  return results;
+}
+
+/**
+ * Strip version-fetch instruction sections from a file's content.
+ * Removes entire sections (header + body) that match FETCH_SECTION_PATTERNS.
+ * A section is defined as content from one header to the next header of equal or higher level.
+ */
+function stripFetchSections(content) {
+  const lines = content.split('\n');
+  const result = [];
+  let skipping = false;
+  let skipLevel = 0;
+
+  for (const line of lines) {
+    // Detect header level (number of # at start)
+    const headerMatch = line.match(/^(#{1,6})\s/);
+
+    if (headerMatch) {
+      const level = headerMatch[1].length;
+
+      if (skipping) {
+        // If we hit a header at same or higher level, stop skipping
+        if (level <= skipLevel) {
+          skipping = false;
+        } else {
+          continue; // Skip sub-headers within the section
+        }
+      }
+
+      // Check if this header matches a fetch section pattern
+      if (FETCH_SECTION_PATTERNS.some((p) => p.test(line))) {
+        skipping = true;
+        skipLevel = level;
+        continue;
+      }
+    }
+
+    // Note: if skipping is still true at end-of-file, remaining lines are skipped.
+    // This is intentional — a fetch section at the end of a file has no content after it.
+    if (!skipping) {
+      result.push(line);
+    }
+  }
+
+  // Clean up multiple consecutive blank lines left by stripping
+  return result.join('\n').replace(/\n{3,}/g, '\n\n');
+}
+
+/**
+ * Strip version-fetch instructions from all installed files.
+ * @param {string} projectRoot - The target project root directory
+ * @returns {number} Number of files modified
+ */
+function stripFetchInstructions(projectRoot) {
+  const files = findMarkdownFiles(projectRoot);
+  let modified = 0;
+
+  for (const file of files) {
+    const content = fs.readFileSync(file, 'utf-8');
+    const stripped = stripFetchSections(content);
+
+    if (stripped !== content) {
+      fs.writeFileSync(file, stripped, 'utf-8');
+      console.log(`  ✂️  Stripped fetch instructions: ${path.relative(process.cwd(), file)}`);
+      modified++;
+    }
+  }
+
+  return modified;
+}
+
 module.exports = {
   installTool,
   installAll,
+  stripFetchInstructions,
   TEMPLATES_DIR,
 };

@@ -2,8 +2,12 @@
 name: qa-orchestrator
 description: Central coordinator for Cypress-to-Playwright test creation, debugging, and orchestration.
 tools: Read, Write, Edit, Grep, Bash
-model: gpt-4o
+model: inherit
 ---
+
+## ⚠️ Version Check Required
+
+Before generating code, run `npx playwright --version` and `npx cypress --version`, then fetch the matching documentation from [playwright.dev/docs](https://playwright.dev/docs) and [docs.cypress.io](https://docs.cypress.io) to ensure API compatibility with the user's installed versions.
 
 # QA Orchestrator
 

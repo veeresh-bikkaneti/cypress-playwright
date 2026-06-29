@@ -16,7 +16,7 @@
 const fs = require('fs');
 const path = require('path');
 const { detectTools, getDetectedToolIds, getAllToolIds } = require('../lib/detectors');
-const { installAll, installTool } = require('../lib/installers');
+const { installAll, installTool, stripFetchInstructions } = require('../lib/installers');
 
 const HELP = `
 ╔══════════════════════════════════════════════════════════════╗
@@ -43,12 +43,14 @@ Options:
   --tools <list>   Comma-separated list of tools to install (e.g., "copilot,claude")
   --all            Install templates for ALL supported tools
   --target <path>  Target project directory (default: cwd)
+  --no-fetch       Strip version-check instructions for air-gapped environments
   --help           Show this help message
 
 Examples:
   npx cypress2playwright-using-ai setup
   npx cypress2playwright-using-ai setup --tools copilot,cursor
   npx cypress2playwright-using-ai setup --all --target /path/to/project
+  npx cypress2playwright-using-ai setup --all --no-fetch
   npx cypress2playwright-using-ai detect
 `;
 
@@ -58,6 +60,7 @@ function parseArgs(argv) {
     tools: null,
     all: false,
     force: false,
+    noFetch: false,
     target: process.cwd(),
     help: false,
   };
@@ -73,6 +76,8 @@ function parseArgs(argv) {
       args.all = true;
     } else if (arg === '--force' || arg === '-f') {
       args.force = true;
+    } else if (arg === '--no-fetch') {
+      args.noFetch = true;
     } else if (arg === '--tools') {
       const next = rawArgs[i + 1];
       if (next && !next.startsWith('--')) {
@@ -178,6 +183,14 @@ function main() {
       console.log('─'.repeat(50));
 
       const results = installAll(toolsToInstall, args.target, { force: args.force });
+
+      // Strip version-fetch instructions in air-gapped mode
+      if (args.noFetch) {
+        console.log('\n🔒 Air-gapped mode: Stripping version-fetch instructions...\n');
+        const stripped = stripFetchInstructions(args.target);
+        console.log(`\n  ✂️  Stripped fetch instructions from ${stripped} file(s)`);
+        console.log('  ℹ️  Templates will use built-in API mappings only (no runtime doc fetching)\n');
+      }
 
       console.log('\n─'.repeat(50));
       console.log('\n✅ Setup complete!\n');
