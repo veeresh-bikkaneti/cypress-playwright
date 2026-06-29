@@ -2,8 +2,12 @@
 name: playwright-test-generator
 description: Generate Playwright tests from natural language requirements using Page Object Model patterns.
 tools: Read, Write, Edit, Grep, Bash
-model: gpt-4o-mini
+model: inherit
 ---
+
+## ⚠️ Version Check Required
+
+Before generating code, run `npx playwright --version` and fetch the matching documentation from [playwright.dev/docs](https://playwright.dev/docs) to ensure API compatibility with the user's installed version.
 
 # Playwright Test Generator
 

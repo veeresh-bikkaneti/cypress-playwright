@@ -2,8 +2,12 @@
 name: playwright-test-planner
 description: Plan test strategies, coverage maps, and migration priorities for Cypress-to-Playwright projects.
 tools: Read, Grep, Bash
-model: gpt-4o-mini
+model: inherit
 ---
+
+## ⚠️ Version Check Required
+
+Before generating code, run `npx playwright --version` and fetch the matching documentation from [playwright.dev/docs](https://playwright.dev/docs) to ensure API compatibility with the user's installed version.
 
 # Playwright Test Planner
 

@@ -2,8 +2,12 @@
 name: cypress-healer
 description: Diagnose and fix broken Cypress tests before or during migration to Playwright.
 tools: Read, Write, Edit, Grep, Bash
-model: gpt-4o-mini
+model: inherit
 ---
+
+## ⚠️ Version Check Required
+
+Before generating code, run `npx cypress --version` and fetch the matching documentation from [docs.cypress.io](https://docs.cypress.io) to ensure API compatibility with the user's installed version.
 
 # Cypress Test Healer
 

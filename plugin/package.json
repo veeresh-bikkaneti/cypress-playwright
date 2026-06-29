@@ -8,7 +8,9 @@
   },
   "scripts": {
     "setup": "node bin/setup.js",
-    "test": "node bin/setup.js --help"
+    "test": "node bin/setup.js --help",
+    "audit:urls": "node scripts/audit-template-urls.js",
+    "audit:urls:verbose": "node scripts/audit-template-urls.js --verbose"
   },
   "keywords": [
     "cypress",
@@ -40,7 +42,8 @@
     "bin/",
     "lib/",
     "templates/",
-    "README.md"
+    "README.md",
+    "SECURITY.md"
   ],
   "engines": {
     "node": ">=18.0.0"

@@ -5,6 +5,12 @@ description: "Core Playwright testing standards for Cypress-to-Playwright migrat
 
 # Playwright Testing Standards
 
+## ⚠️ Version Compatibility
+
+Before generating code, check the user's installed Playwright/Cypress version (`npx playwright --version` or `npx cypress --version`) and fetch the relevant official documentation to ensure API compatibility:
+- Playwright: https://playwright.dev/docs
+- Cypress: https://docs.cypress.io
+
 ## Locator Priority
 1. `page.getByRole()` — preferred for interactive elements
 2. `page.getByLabel()` — for form fields

@@ -56,7 +56,7 @@ await page.getByTestId('submit-btn').click();
 
 Automatically analyzes Playwright trace files:
 ```bash
-npx playwright show-trace test-results/.../trace.zip
+npx playwright show-trace test-output/playwright-output/test-results/.../trace.zip
 ```
 
 Extracts:
@@ -70,6 +70,14 @@ Extracts:
 1. **Slash Command**: `/playwright-heal login.spec.ts`
 2. **Agent Mention**: `@playwright-healer fix the broken checkout test`
 3. **Natural Language**: "The Playwright test auth.spec.ts is failing"
+
+## Required Artifacts
+
+The healer looks for:
+- Test failure logs
+- `test-output/playwright-output/test-results/**/trace.zip`
+- Screenshots and videos
+- Error stack traces
 
 ## Output
 
