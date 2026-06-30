@@ -9,6 +9,10 @@ on:
     types: [opened, synchronize]
   workflow_dispatch:
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   trace-requirements:
     runs-on: ubuntu-latest
@@ -74,6 +78,7 @@ jobs:
 
       - name: Generate traceability matrix
         run: |
+          mkdir -p .github/memory
           cat > .github/memory/traceability-matrix.md << 'EOF'
           # Requirement Traceability Matrix
           
