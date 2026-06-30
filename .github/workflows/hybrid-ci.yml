@@ -81,9 +81,6 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      - name: Start App
-        run: node app-under-test/server.js & npx wait-on http://localhost:3000
-
       - name: Run Playwright Tests
         run: npx playwright test
 
