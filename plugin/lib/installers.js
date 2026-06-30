@@ -3,10 +3,10 @@
  * Copies template files for each AI tool into the target project.
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
-const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
+const TEMPLATES_DIR = path.join(__dirname, "..", "templates");
 
 /**
  * Recursively copy a directory, merging with existing content.
@@ -29,7 +29,9 @@ function copyDirSync(src, dest, force = false) {
         fs.copyFileSync(srcPath, destPath);
         console.log(`  ✅ Created: ${path.relative(process.cwd(), destPath)}`);
       } else {
-        console.log(`  ⏭️  Skipped (exists): ${path.relative(process.cwd(), destPath)}`);
+        console.log(
+          `  ⏭️  Skipped (exists): ${path.relative(process.cwd(), destPath)}`,
+        );
       }
     }
   }
@@ -84,9 +86,21 @@ const FETCH_SECTION_PATTERNS = [
 /**
  * Recursively find all markdown/mdc/yml files in a directory.
  */
+const IGNORED_DIRS = new Set([
+  "node_modules",
+  ".git",
+  "dist",
+  "build",
+  "test-results",
+  "playwright-report",
+  "test-output",
+  "coverage",
+]);
+
 function findMarkdownFiles(dir) {
   const results = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.isDirectory() && IGNORED_DIRS.has(entry.name)) continue;
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       results.push(...findMarkdownFiles(full));
@@ -103,7 +117,8 @@ function findMarkdownFiles(dir) {
  * A section is defined as content from one header to the next header of equal or higher level.
  */
 function stripFetchSections(content) {
-  const lines = content.split('\n');
+  // Normalize CRLF → LF so Windows line endings don't break section detection
+  const lines = content.replace(/\r\n/g, "\n").split("\n");
   const result = [];
   let skipping = false;
   let skipLevel = 0;
@@ -140,7 +155,7 @@ function stripFetchSections(content) {
   }
 
   // Clean up multiple consecutive blank lines left by stripping
-  return result.join('\n').replace(/\n{3,}/g, '\n\n');
+  return result.join("\n").replace(/\n{3,}/g, "\n\n");
 }
 
 /**
@@ -153,12 +168,14 @@ function stripFetchInstructions(projectRoot) {
   let modified = 0;
 
   for (const file of files) {
-    const content = fs.readFileSync(file, 'utf-8');
+    const content = fs.readFileSync(file, "utf-8");
     const stripped = stripFetchSections(content);
 
     if (stripped !== content) {
-      fs.writeFileSync(file, stripped, 'utf-8');
-      console.log(`  ✂️  Stripped fetch instructions: ${path.relative(process.cwd(), file)}`);
+      fs.writeFileSync(file, stripped, "utf-8");
+      console.log(
+        `  ✂️  Stripped fetch instructions: ${path.relative(process.cwd(), file)}`,
+      );
       modified++;
     }
   }

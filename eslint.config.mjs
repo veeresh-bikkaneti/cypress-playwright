@@ -62,6 +62,34 @@ export default [
             "cypress/no-pause": "error"
         },
     },
-    // 3. Prettier Config (Must be last to override)
+    // 3. Override for Node.js scripts (CommonJS require is fine here)
+    {
+        files: ["**/*.js", "**/*.mjs", "scripts/**/*", "plugin/**/*.js", "cypress/plugins/**/*"],
+        rules: {
+            "@typescript-eslint/no-require-imports": "off",
+            "@typescript-eslint/no-unused-expressions": "off",
+            "@typescript-eslint/no-unused-vars": "off",
+        },
+    },
+    // 4. Override for Cypress & Playwright test files
+    {
+        files: [
+            "cypress/**/*.ts",
+            "cypress/**/*.js",
+            "playwright/**/*.ts",
+            "cypress.config.ts",
+        ],
+        rules: {
+            "cypress/unsafe-to-chain-command": "off",
+            "cypress/no-force": "off",
+            "cypress/assertion-before-screenshot": "off",
+            "@typescript-eslint/no-namespace": "off",
+            "@typescript-eslint/no-require-imports": "off",
+            "@typescript-eslint/no-unused-expressions": "off",
+            "@typescript-eslint/no-unused-vars": "off",
+            "@typescript-eslint/no-explicit-any": "off",
+        },
+    },
+    // 5. Prettier Config (Must be last to override)
     prettierConfig,
 ];

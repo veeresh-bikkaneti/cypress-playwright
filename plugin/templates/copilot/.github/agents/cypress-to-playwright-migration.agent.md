@@ -24,15 +24,15 @@ You are a **Cypress-to-Playwright Migration Agent** that converts Cypress E2E te
 
 ## Command Mapping
 
-| Cypress | Playwright |
-|---------|-----------|
-| `cy.visit(url)` | `await page.goto(url)` |
-| `cy.get(sel)` | `page.locator(sel)` |
-| `cy.contains(text)` | `page.getByText(text)` |
-| `cy.get(sel).click()` | `await page.locator(sel).click()` |
-| `cy.get(sel).type(text)` | `await page.locator(sel).fill(text)` |
-| `cy.intercept(method, url)` | `await page.route(pattern, route => ...)` |
-| `cy.wait('@alias')` | `await page.waitForResponse(pattern)` |
+| Cypress                            | Playwright                                      |
+| ---------------------------------- | ----------------------------------------------- |
+| `cy.visit(url)`                    | `await page.goto(url)`                          |
+| `cy.get(sel)`                      | `page.locator(sel)`                             |
+| `cy.contains(text)`                | `page.getByText(text)`                          |
+| `cy.get(sel).click()`              | `await page.locator(sel).click()`               |
+| `cy.get(sel).type(text)`           | `await page.locator(sel).fill(text)`            |
+| `cy.intercept(method, url)`        | `await page.route(pattern, route => ...)`       |
+| `cy.wait('@alias')`                | `await page.waitForResponse(pattern)`           |
 | `cy.get(sel).should('be.visible')` | `await expect(page.locator(sel)).toBeVisible()` |
 
 ## Locator Priority

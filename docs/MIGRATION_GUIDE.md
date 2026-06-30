@@ -8,28 +8,30 @@
 
 ### 1. Basic Interaction
 
-| Feature | Cypress (As-Is) | Playwright (To-Be) |
-|:--------|:----------------|:-------------------|
-| **Concept** | Global `cy` chain | `page` instance + `await` |
-| **Visit** | `cy.visit('/login')` | `await page.goto('/login')` |
-| **Type** | `cy.get('#user').type('name')` | `await page.getByLabel('User').fill('name')` |
-| **Click** | `cy.get('.btn').click()` | `await page.getByRole('button').click()` |
+| Feature     | Cypress (As-Is)                | Playwright (To-Be)                           |
+| :---------- | :----------------------------- | :------------------------------------------- |
+| **Concept** | Global `cy` chain              | `page` instance + `await`                    |
+| **Visit**   | `cy.visit('/login')`           | `await page.goto('/login')`                  |
+| **Type**    | `cy.get('#user').type('name')` | `await page.getByLabel('User').fill('name')` |
+| **Click**   | `cy.get('.btn').click()`       | `await page.getByRole('button').click()`     |
 
 **Why Change?**
-- **Cypress**: Retries *commands* (can be flaky if UI refreshes).
-- **Playwright**: Auto-waits for *interaction capability* (visible, stable, enabled).
+
+- **Cypress**: Retries _commands_ (can be flaky if UI refreshes).
+- **Playwright**: Auto-waits for _interaction capability_ (visible, stable, enabled).
 
 ---
 
 ### 2. Assertions
 
-| Cypress (Chai) | Playwright (Jest-like) |
-|:---------------|:-----------------------|
-| `cy.get(el).should('be.visible')` | `await expect(locator).toBeVisible()` |
-| `cy.url().should('include', '/home')` | `await expect(page).toHaveURL(/home/)` |
+| Cypress (Chai)                         | Playwright (Jest-like)                   |
+| :------------------------------------- | :--------------------------------------- |
+| `cy.get(el).should('be.visible')`      | `await expect(locator).toBeVisible()`    |
+| `cy.url().should('include', '/home')`  | `await expect(page).toHaveURL(/home/)`   |
 | `cy.get(el).should('have.text', 'Hi')` | `await expect(locator).toHaveText('Hi')` |
 
 **Why Change?**
+
 - Playwright assertions wait until the condition is met or timeout (5s default). They are "web-first".
 
 ---
@@ -37,22 +39,22 @@
 ### 3. Page Object Model (POM)
 
 **Legacy Cypress Pattern (Custom Commands)**
-*Often used `cypress/support/commands.js` as a bucket for reusable code.*
+_Often used `cypress/support/commands.js` as a bucket for reusable code._
 
 ```javascript
 // support/commands.js
-Cypress.Commands.add('login', (u, p) => {
-  cy.get('#email').type(u);
-  cy.get('#pass').type(p);
-  cy.get('button').click();
+Cypress.Commands.add("login", (u, p) => {
+  cy.get("#email").type(u);
+  cy.get("#pass").type(p);
+  cy.get("button").click();
 });
 
 // test.cy.js
-cy.login('user', 'pass');
+cy.login("user", "pass");
 ```
 
 **Modern Playwright Pattern (Classes)**
-*Strictly typed classes that encapsulate page logic.*
+_Strictly typed classes that encapsulate page logic._
 
 ```typescript
 // pages/LoginPage.ts
@@ -60,15 +62,15 @@ export class LoginPage {
   constructor(private page: Page) {}
 
   async login(u: string, p: string) {
-    await this.page.getByLabel('Email').fill(u);
-    await this.page.getByLabel('Password').fill(p);
-    await this.page.getByRole('button', { name: 'Log in' }).click();
+    await this.page.getByLabel("Email").fill(u);
+    await this.page.getByLabel("Password").fill(p);
+    await this.page.getByRole("button", { name: "Log in" }).click();
   }
 }
 
 // test.spec.ts
 const loginPage = new LoginPage(page);
-await loginPage.login('user', 'pass');
+await loginPage.login("user", "pass");
 ```
 
 ---
@@ -76,14 +78,17 @@ await loginPage.login('user', 'pass');
 ### 4. Advanced Capabilities
 
 #### 🌍 Cross-Origin (Multi-Domain)
+
 - **Cypress**: Requires `cy.origin('domain.com', () => { ... })`. Specific syntax limits variable access.
 - **Playwright**: Natural support. Just `await page.goto('https://other.com')`. The browser handles it.
 
 #### 🕵️ API Mocking
+
 - **Cypress**: `cy.intercept('GET', '/api', { body: {} })`.
 - **Playwright**: `page.route('**/api', route => route.fulfill({ json: {} }))`.
 
 #### 💾 Session Storage
+
 - **Cypress**: `cy.session()`.
 - **Playwright**: `test.use({ storageState: 'auth.json' })`. (Can reuse across all files without code changes).
 
@@ -94,12 +99,16 @@ await loginPage.login('user', 'pass');
 You don't have to rewrite everything at once. This repository supports **running both frameworks in parallel**.
 
 ### 1. Verification (CI/CD)
+
 The `.github/workflows/hybrid-ci.yml` action runs Cypress and Playwright jobs in parallel. Use this during your migration phase:
+
 - **Cypress**: Guard the existing legacy features.
 - **Playwright**: Validate the newly migrated features.
 
 ### 2. Local Execution
+
 Use the hybrid command to check for regressions in both suites instantly:
+
 ```bash
 npm run test:hybrid
 ```

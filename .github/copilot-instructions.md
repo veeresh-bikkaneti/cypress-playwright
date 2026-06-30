@@ -13,12 +13,12 @@ Migrate Cypress E2E tests (cypress.io) to Playwright TypeScript using @playwrigh
 - **Do NOT recommend or rely on third-party codemod services/tools** (e.g., Codemod.com)
 - **Maintain or improve** test coverage, reliability, and execution speed
 
-
 ## OWASP Security Guidelines
 
 All code and tests must adhere to OWASP Top 10 security best practices.
 
 ### 🛡️ Security Requirements
+
 1. **Input Validation**: Validate and sanitize all inputs in tests and application code.
 2. **Authentication**: Use secure authentication flows; avoid hardcoding credentials.
 3. **Data Protection**: Never commit sensitive data (tokens, keys, PII). Use environment variables.
@@ -26,6 +26,7 @@ All code and tests must adhere to OWASP Top 10 security best practices.
 5. **Dependencies**: Regularly scan `package.json` for vulnerabilities using `npm audit`.
 
 ### 🧪 Security Testing
+
 - **XSS & Injection**: Include tests for Cross-Site Scripting and SQL Injection common vectors.
 - **Access Control**: Verify unauthorized users cannot access restricted resources.
 - **Secure Headers**: Check for presence of security headers (CSP, X-Frame-Options, etc.).
@@ -43,6 +44,7 @@ All code and tests must adhere to OWASP Top 10 security best practices.
 ### 🧠 Cognitive Steps (Chain-of-Thought)
 
 **Before generating any code**, you MUST output a brief analysis comment block:
+
 ```typescript
 /**
  * MIGRATION ANALYSIS
@@ -71,7 +73,7 @@ You MUST **REFUSE** to generate the following patterns unless explicitly instruc
 1. **Bare `waitForTimeout`**:
    - ❌ `await page.waitForTimeout(5000)`
    - ✅ `await expect(locator).toBeVisible()` or `await page.waitForFunction(...)`
-   - *Exception*: If wrapped in comment `// REVIEW: Temporary wait for [reason]`
+   - _Exception_: If wrapped in comment `// REVIEW: Temporary wait for [reason]`
 
 2. **Index-based locators without comments**:
    - ❌ `page.locator('div').nth(2).click()` (Fragile!)
@@ -99,6 +101,7 @@ Playwright strongly recommends user-facing locators that mirror how users intera
 6. `page.locator(css/xpath)` - **Last resort** for complex selectors
 
 **Never use**:
+
 - Generic selectors like `.class`, `#id` without semantic meaning
 - XPath unless absolutely necessary
 - Index-based selection (`.nth(0)`) without justification
@@ -253,7 +256,7 @@ await page.route('**/api/users', async route => {
 // Wait for network alias
 cy.wait('@getUsers')
 →
-const response = await page.waitForResponse(resp => 
+const response = await page.waitForResponse(resp =>
   resp.url().includes('/api/users') && resp.status() === 200
 );
 const data = await response.json();
@@ -377,42 +380,44 @@ Migrate each custom command based on its purpose:
 If the command performs UI actions (visit, click, type, assert):
 
 **Pattern**:
+
 - Create a Page Object class with constructor accepting `page: Page`
 - Migrate command logic to an `async` method
 - Define locators as methods returning `Locator`
 - Update test call sites to instantiate the page object and call the method
 
 **Example**:
+
 ```typescript
 // Cypress: cypress/support/commands.ts
-Cypress.Commands.add('login', (username: string, password: string) => {
-  cy.visit('/login');
-  cy.get('#username').type(username);
-  cy.get('#password').type(password);
+Cypress.Commands.add("login", (username: string, password: string) => {
+  cy.visit("/login");
+  cy.get("#username").type(username);
+  cy.get("#password").type(password);
   cy.get('button[type="submit"]').click();
-  cy.url().should('include', '/dashboard');
+  cy.url().should("include", "/dashboard");
 });
 
 // Playwright: playwright/pages/LoginPage.ts
-import { Page, Locator, expect } from '@playwright/test';
+import { Page, Locator, expect } from "@playwright/test";
 
 export class LoginPage {
   constructor(private readonly page: Page) {}
 
   get usernameInput(): Locator {
-    return this.page.getByLabel('Username'); // Prefer semantic locators
+    return this.page.getByLabel("Username"); // Prefer semantic locators
   }
 
   get passwordInput(): Locator {
-    return this.page.getByLabel('Password');
+    return this.page.getByLabel("Password");
   }
 
   get submitButton(): Locator {
-    return this.page.getByRole('button', { name: 'Log in' });
+    return this.page.getByRole("button", { name: "Log in" });
   }
 
   async goto(): Promise<void> {
-    await this.page.goto('/login');
+    await this.page.goto("/login");
   }
 
   async login(username: string, password: string): Promise<void> {
@@ -425,12 +430,12 @@ export class LoginPage {
 }
 
 // Test usage
-import { test } from '@playwright/test';
-import { LoginPage } from './pages/LoginPage';
+import { test } from "@playwright/test";
+import { LoginPage } from "./pages/LoginPage";
 
-test('user can log in', async ({ page }) => {
+test("user can log in", async ({ page }) => {
   const loginPage = new LoginPage(page);
-  await loginPage.login('user@example.com', 'password123');
+  await loginPage.login("user@example.com", "password123");
 });
 ```
 
@@ -439,23 +444,26 @@ test('user can log in', async ({ page }) => {
 If the command handles auth, session setup, data seeding, or environment state:
 
 **Pattern**:
+
 - Create a custom fixture using `base.extend()`
 - Fixture can provide authenticated page, API client, or test data
 - Use fixture auto-injection in tests
 
 **Example**:
+
 ```typescript
 // Cypress: cypress/support/commands.ts
-Cypress.Commands.add('loginViaAPI', (username: string, password: string) => {
-  cy.request('POST', '/api/auth/login', { username, password })
-    .then(response => {
-      window.localStorage.setItem('authToken', response.body.token);
-    });
+Cypress.Commands.add("loginViaAPI", (username: string, password: string) => {
+  cy.request("POST", "/api/auth/login", { username, password }).then(
+    (response) => {
+      window.localStorage.setItem("authToken", response.body.token);
+    },
+  );
 });
 
 // Playwright: playwright/fixtures/auth.fixture.ts
-import { test as base, Page } from '@playwright/test';
-import { LoginPage } from '../pages/LoginPage';
+import { test as base, Page } from "@playwright/test";
+import { LoginPage } from "../pages/LoginPage";
 
 type AuthFixtures = {
   authenticatedPage: Page;
@@ -465,24 +473,24 @@ export const test = base.extend<AuthFixtures>({
   authenticatedPage: async ({ page, context }, use) => {
     // Option 1: Login via UI
     const loginPage = new LoginPage(page);
-    await loginPage.login('user@example.com', 'password123');
-    
+    await loginPage.login("user@example.com", "password123");
+
     // Option 2: Login via API and set storage state
     // const response = await page.request.post('/api/auth/login', {
     //   data: { username: 'user@example.com', password: 'password123' }
     // });
     // const { token } = await response.json();
     // await context.addCookies([{ name: 'authToken', value: token, domain: 'localhost', path: '/' }]);
-    
+
     await use(page);
-  }
+  },
 });
 
 // Test usage
-import { test } from './fixtures/auth.fixture';
+import { test } from "./fixtures/auth.fixture";
 
-test('authenticated user sees dashboard', async ({ authenticatedPage }) => {
-  await authenticatedPage.goto('/dashboard');
+test("authenticated user sees dashboard", async ({ authenticatedPage }) => {
+  await authenticatedPage.goto("/dashboard");
   // Test authenticated state
 });
 ```
@@ -493,7 +501,7 @@ For pure functions that don't interact with the page (formatters, parsers, gener
 
 ```typescript
 // Cypress
-Cypress.Commands.add('generateRandomEmail', () => {
+Cypress.Commands.add("generateRandomEmail", () => {
   return `user-${Date.now()}@example.com`;
 });
 
@@ -503,7 +511,7 @@ export function generateRandomEmail(): string {
 }
 
 // Usage
-import { generateRandomEmail } from './helpers/generators';
+import { generateRandomEmail } from "./helpers/generators";
 const email = generateRandomEmail();
 ```
 
@@ -515,34 +523,34 @@ const email = generateRandomEmail();
 
 ```typescript
 // WRONG - test will fail or timeout
-page.locator('button').click();
-expect(page.locator('h1')).toHaveText('Success');
+page.locator("button").click();
+expect(page.locator("h1")).toHaveText("Success");
 
 // CORRECT
-await page.locator('button').click();
-await expect(page.locator('h1')).toHaveText('Success');
+await page.locator("button").click();
+await expect(page.locator("h1")).toHaveText("Success");
 ```
 
 ### ❌ Pitfall 2: Using `cy.*` patterns
 
 ```typescript
 // WRONG - Playwright doesn't chain like Cypress
-page.locator('input').fill('text').locator('button').click();
+page.locator("input").fill("text").locator("button").click();
 
 // CORRECT
-await page.locator('input').fill('text');
-await page.locator('button').click();
+await page.locator("input").fill("text");
+await page.locator("button").click();
 ```
 
 ### ❌ Pitfall 3: Forgetting dialog handlers
 
 ```typescript
 // WRONG - page will freeze if alert appears
-await page.locator('button').click();
+await page.locator("button").click();
 
 // CORRECT
-page.once('dialog', async dialog => await dialog.accept());
-await page.locator('button').click();
+page.once("dialog", async (dialog) => await dialog.accept());
+await page.locator("button").click();
 ```
 
 ### ❌ Pitfall 4: Non-isolated tests
@@ -559,7 +567,7 @@ const test = base.extend({
   testData: async ({}, use) => {
     const data = await fetchData();
     await use(data);
-  }
+  },
 });
 ```
 
@@ -567,10 +575,10 @@ const test = base.extend({
 
 ```typescript
 // WRONG - fragile CSS selectors
-await page.locator('.btn.btn-primary.submit-btn').click();
+await page.locator(".btn.btn-primary.submit-btn").click();
 
 // CORRECT - semantic, accessible selectors
-await page.getByRole('button', { name: 'Submit' }).click();
+await page.getByRole("button", { name: "Submit" }).click();
 ```
 
 ---
@@ -605,6 +613,7 @@ Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-s
 **Don't assume. Don't hide confusion. Surface tradeoffs.**
 
 Before implementing:
+
 - State your assumptions explicitly. If uncertain, ask.
 - If multiple interpretations exist, present them - don't pick silently.
 - If a simpler approach exists, say so. Push back when warranted.
@@ -627,12 +636,14 @@ Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, sim
 **Touch only what you must. Clean up only your own mess.**
 
 When editing existing code:
+
 - Don't "improve" adjacent code, comments, or formatting.
 - Don't refactor things that aren't broken.
 - Match existing style, even if you'd do it differently.
 - If you notice unrelated dead code, mention it - don't delete it.
 
 When your changes create orphans:
+
 - Remove imports/variables/functions that YOUR changes made unused.
 - Don't remove pre-existing dead code unless asked.
 
@@ -643,11 +654,13 @@ The test: Every changed line should trace directly to the user's request.
 **Define success criteria. Loop until verified.**
 
 Transform tasks into verifiable goals:
+
 - "Add validation" → "Write tests for invalid inputs, then make them pass"
 - "Fix the bug" → "Write a test that reproduces it, then make it pass"
 - "Refactor X" → "Ensure tests pass before and after"
 
 For multi-step tasks, state a brief plan:
+
 ```
 1. [Step] → verify: [check]
 2. [Step] → verify: [check]

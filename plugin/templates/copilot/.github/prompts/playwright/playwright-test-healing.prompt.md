@@ -3,6 +3,7 @@
 **Slash Command**: `/playwright-heal`
 
 ## Description
+
 Diagnose and fix broken Playwright tests by analyzing trace logs, screenshots, and error messages. Automatically applies self-healing selector strategies and fixes timing issues.
 
 ## Usage
@@ -29,37 +30,41 @@ Diagnose and fix broken Playwright tests by analyzing trace logs, screenshots, a
 
 ## Common Issues Fixed
 
-| Error Type | Root Cause | Healing Strategy |
-|------------|------------|------------------|
-| **TimeoutError** | Selector changed / Slow network | Update selector, add explicit wait |
-| **AssertionError** | Logic changed / Data mismatch | Update expectation, verify test data |
-| **TargetClosed** | Browser crash / Navigation issue | Fix unawaited async, add stability |
-| **strict mode violation** | Multiple elements match | Make selector more specific |
+| Error Type                | Root Cause                       | Healing Strategy                     |
+| ------------------------- | -------------------------------- | ------------------------------------ |
+| **TimeoutError**          | Selector changed / Slow network  | Update selector, add explicit wait   |
+| **AssertionError**        | Logic changed / Data mismatch    | Update expectation, verify test data |
+| **TargetClosed**          | Browser crash / Navigation issue | Fix unawaited async, add stability   |
+| **strict mode violation** | Multiple elements match          | Make selector more specific          |
 
 ## Self-Healing Selectors
 
 Auto-upgrades fragile selectors to resilient ones:
 
 **Before** (Fragile):
+
 ```typescript
-await page.locator('.btn-primary').click();
+await page.locator(".btn-primary").click();
 ```
 
 **After** (Resilient):
+
 ```typescript
-await page.getByRole('button', { name: 'Submit' }).click();
+await page.getByRole("button", { name: "Submit" }).click();
 // or
-await page.getByTestId('submit-btn').click();
+await page.getByTestId("submit-btn").click();
 ```
 
 ## Trace Analysis
 
 Automatically analyzes Playwright trace files:
+
 ```bash
 npx playwright show-trace test-output/playwright-output/test-results/.../trace.zip
 ```
 
 Extracts:
+
 - DOM snapshot at failure point
 - Network activity
 - Console logs
@@ -74,6 +79,7 @@ Extracts:
 ## Required Artifacts
 
 The healer looks for:
+
 - Test failure logs
 - `test-output/playwright-output/test-results/**/trace.zip`
 - Screenshots and videos

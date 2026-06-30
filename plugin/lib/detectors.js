@@ -3,70 +3,48 @@
  * Detects which AI coding tools are configured in the current project.
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 const TOOL_SIGNATURES = {
   copilot: {
-    name: 'GitHub Copilot',
+    name: "GitHub Copilot",
     files: [
-      '.github/copilot-instructions.md',
-      '.github/agents',
-      '.github/instructions',
+      ".github/copilot-instructions.md",
+      ".github/agents",
+      ".github/instructions",
     ],
-    configFiles: ['.github/copilot-instructions.md'],
+    configFiles: [".github/copilot-instructions.md"],
   },
   claude: {
-    name: 'Claude Code',
-    files: [
-      'CLAUDE.md',
-      '.claude',
-      '.claude/commands',
-    ],
-    configFiles: ['CLAUDE.md'],
+    name: "Claude Code",
+    files: ["CLAUDE.md", ".claude", ".claude/commands"],
+    configFiles: ["CLAUDE.md"],
   },
   cursor: {
-    name: 'Cursor',
-    files: [
-      '.cursorrules',
-      '.cursor/rules',
-      '.cursor',
-    ],
-    configFiles: ['.cursorrules'],
+    name: "Cursor",
+    files: [".cursorrules", ".cursor/rules", ".cursor"],
+    configFiles: [".cursorrules"],
   },
   cline: {
-    name: 'Cline',
-    files: [
-      '.clinerules',
-      '.clinerules/',
-    ],
-    configFiles: ['.clinerules'],
+    name: "Cline",
+    files: [".clinerules", ".clinerules/"],
+    configFiles: [".clinerules"],
   },
   windsurf: {
-    name: 'Windsurf',
-    files: [
-      '.windsurfrules',
-      '.windsurf/rules',
-      '.windsurf',
-    ],
-    configFiles: ['.windsurfrules'],
+    name: "Windsurf",
+    files: [".windsurfrules", ".windsurf/rules", ".windsurf"],
+    configFiles: [".windsurfrules"],
   },
   aider: {
-    name: 'Aider',
-    files: [
-      '.aider.conf.yml',
-      '.aider',
-    ],
-    configFiles: ['.aider.conf.yml'],
+    name: "Aider",
+    files: [".aider.conf.yml", ".aider"],
+    configFiles: [".aider.conf.yml"],
   },
   continue: {
-    name: 'Continue',
-    files: [
-      '.continue',
-      '.continue/config.yaml',
-      '.continue/rules',
-    ],
-    configFiles: ['.continue/config.yaml'],
+    name: "Continue",
+    files: [".continue", ".continue/config.yaml", ".continue/rules"],
+    configFiles: [".continue/config.yaml"],
   },
 };
 

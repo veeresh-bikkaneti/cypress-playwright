@@ -12,14 +12,14 @@
 
 **This plugin makes ZERO network requests. No data leaves your machine.**
 
-| Security Guarantee | Details |
-|-------------------|---------|
-| **Zero Outbound Traffic** | No `fetch()`, `http`, `https`, or socket calls |
-| **No Telemetry** | No analytics, tracking, or usage reporting |
-| **No API Keys Required** | No credentials needed or stored |
-| **No External Dependencies** | No runtime npm packages that make network calls |
-| **Local-Only Operations** | All file operations are local filesystem only |
-| **Enterprise-Ready** | Designed for air-gapped and outbound-gated environments |
+| Security Guarantee           | Details                                                 |
+| ---------------------------- | ------------------------------------------------------- |
+| **Zero Outbound Traffic**    | No `fetch()`, `http`, `https`, or socket calls          |
+| **No Telemetry**             | No analytics, tracking, or usage reporting              |
+| **No API Keys Required**     | No credentials needed or stored                         |
+| **No External Dependencies** | No runtime npm packages that make network calls         |
+| **Local-Only Operations**    | All file operations are local filesystem only           |
+| **Enterprise-Ready**         | Designed for air-gapped and outbound-gated environments |
 
 **AI Model Configuration:** All agent configs use `model: inherit` — no cloud models are hardcoded. The plugin respects your AI tool's local/self-hosted model configuration.
 
@@ -33,15 +33,15 @@ A **single package** that installs AI agent configurations, migration guides, te
 
 ### Supported Tools
 
-| Tool | Config Files | How It Works |
-|------|-------------|--------------|
-| **GitHub Copilot** | `.github/copilot-instructions.md`, `.github/agents/*.agent.md` | Agents invoked via `@mentions` |
-| **Claude Code** | `CLAUDE.md`, `.claude/commands/*.md` | Instructions + `/slash` commands |
-| **Cursor** | `.cursor/rules/*.mdc` | Rules triggered by globs, always-on, or `@mentions` |
-| **Cline** | `.clinerules/*.md` | Rules toggled per-task in the UI |
-| **Windsurf** | `.windsurf/rules/*.md` | Rules with `trigger` modes (always_on, glob, manual) |
-| **Aider** | `.aider.conf.yml`, `CONVENTIONS.md` | Read-only context loaded automatically |
-| **Continue** | `.continue/rules/*.md` | Rules injected into chat context |
+| Tool               | Config Files                                                   | How It Works                                         |
+| ------------------ | -------------------------------------------------------------- | ---------------------------------------------------- |
+| **GitHub Copilot** | `.github/copilot-instructions.md`, `.github/agents/*.agent.md` | Agents invoked via `@mentions`                       |
+| **Claude Code**    | `CLAUDE.md`, `.claude/commands/*.md`                           | Instructions + `/slash` commands                     |
+| **Cursor**         | `.cursor/rules/*.mdc`                                          | Rules triggered by globs, always-on, or `@mentions`  |
+| **Cline**          | `.clinerules/*.md`                                             | Rules toggled per-task in the UI                     |
+| **Windsurf**       | `.windsurf/rules/*.md`                                         | Rules with `trigger` modes (always_on, glob, manual) |
+| **Aider**          | `.aider.conf.yml`, `CONVENTIONS.md`                            | Read-only context loaded automatically               |
+| **Continue**       | `.continue/rules/*.md`                                         | Rules injected into chat context                     |
 
 ---
 
@@ -93,20 +93,20 @@ git clone https://github.com/vbikkaneti/cypress-playwright.git
 
 ## CLI Commands
 
-| Command | Description |
-|---------|-------------|
-| `setup` | Install agent configs (auto-detects tools) |
+| Command  | Description                                      |
+| -------- | ------------------------------------------------ |
+| `setup`  | Install agent configs (auto-detects tools)       |
 | `detect` | Show which AI tools are detected in this project |
-| `list` | List all supported tools |
+| `list`   | List all supported tools                         |
 
 ### Options
 
-| Flag | Description |
-|------|-------------|
-| `--tools <list>` | Comma-separated list of tools (e.g., `copilot,claude,cursor`) |
-| `--all` | Install templates for ALL supported tools |
-| `--target <path>` | Target project directory (default: cwd) |
-| `--help` | Show help message |
+| Flag              | Description                                                   |
+| ----------------- | ------------------------------------------------------------- |
+| `--tools <list>`  | Comma-separated list of tools (e.g., `copilot,claude,cursor`) |
+| `--all`           | Install templates for ALL supported tools                     |
+| `--target <path>` | Target project directory (default: cwd)                       |
+| `--help`          | Show help message                                             |
 
 ---
 
@@ -114,22 +114,22 @@ git clone https://github.com/vbikkaneti/cypress-playwright.git
 
 ### Migration Agents
 
-| Agent | What It Does |
-|-------|-------------|
-| **qa-orchestrator** | Central coordinator — routes tasks to the right specialist |
+| Agent                         | What It Does                                                  |
+| ----------------------------- | ------------------------------------------------------------- |
+| **qa-orchestrator**           | Central coordinator — routes tasks to the right specialist    |
 | **playwright-test-generator** | Generates Playwright tests from natural language requirements |
-| **playwright-test-planner** | Plans test strategies and coverage maps |
-| **playwright-healer** | Diagnoses and fixes broken Playwright tests |
-| **cypress-healer** | Diagnoses and fixes broken Cypress tests |
-| **cypress-to-playwright** | Migrates Cypress tests to Playwright |
-| **backend-specialist** | Backend API and server-side testing |
-| **frontend-specialist** | Frontend UI testing and visual validation |
-| **database-architect** | Database schema testing and data integrity |
-| **devops-engineer** | CI/CD pipeline and infrastructure testing |
-| **debugger** | Test failure diagnosis and root cause analysis |
-| **documentation-writer** | Test documentation and reporting |
-| **test-engineer** | General test engineering and quality assurance |
-| **qa-automation-engineer** | QA-specific automation patterns and workflows |
+| **playwright-test-planner**   | Plans test strategies and coverage maps                       |
+| **playwright-healer**         | Diagnoses and fixes broken Playwright tests                   |
+| **cypress-healer**            | Diagnoses and fixes broken Cypress tests                      |
+| **cypress-to-playwright**     | Migrates Cypress tests to Playwright                          |
+| **backend-specialist**        | Backend API and server-side testing                           |
+| **frontend-specialist**       | Frontend UI testing and visual validation                     |
+| **database-architect**        | Database schema testing and data integrity                    |
+| **devops-engineer**           | CI/CD pipeline and infrastructure testing                     |
+| **debugger**                  | Test failure diagnosis and root cause analysis                |
+| **documentation-writer**      | Test documentation and reporting                              |
+| **test-engineer**             | General test engineering and quality assurance                |
+| **qa-automation-engineer**    | QA-specific automation patterns and workflows                 |
 
 ### Coding Standards
 
@@ -142,17 +142,17 @@ git clone https://github.com/vbikkaneti/cypress-playwright.git
 
 ### Migration Cheat Sheet
 
-| Cypress | Playwright |
-|---------|-----------|
-| `cy.visit(url)` | `await page.goto(url)` |
-| `cy.get(sel)` | `page.locator(sel)` |
-| `cy.contains(text)` | `page.getByText(text)` |
-| `cy.get(sel).click()` | `await page.locator(sel).click()` |
-| `cy.get(sel).type(text)` | `await page.locator(sel).fill(text)` |
-| `cy.intercept(method, url)` | `await page.route(pattern, route => ...)` |
-| `cy.wait('@alias')` | `await page.waitForResponse(pattern)` |
-| `cy.get(sel).should('be.visible')` | `await expect(page.locator(sel)).toBeVisible()` |
-| `cy.url().should('include', path)` | `await expect(page).toHaveURL(/path/)` |
+| Cypress                              | Playwright                                      |
+| ------------------------------------ | ----------------------------------------------- |
+| `cy.visit(url)`                      | `await page.goto(url)`                          |
+| `cy.get(sel)`                        | `page.locator(sel)`                             |
+| `cy.contains(text)`                  | `page.getByText(text)`                          |
+| `cy.get(sel).click()`                | `await page.locator(sel).click()`               |
+| `cy.get(sel).type(text)`             | `await page.locator(sel).fill(text)`            |
+| `cy.intercept(method, url)`          | `await page.route(pattern, route => ...)`       |
+| `cy.wait('@alias')`                  | `await page.waitForResponse(pattern)`           |
+| `cy.get(sel).should('be.visible')`   | `await expect(page.locator(sel)).toBeVisible()` |
+| `cy.url().should('include', path)`   | `await expect(page).toHaveURL(/path/)`          |
 | `cy.get(sel).should('have.text', x)` | `await expect(page.locator(sel)).toHaveText(x)` |
 
 ---
@@ -162,10 +162,12 @@ git clone https://github.com/vbikkaneti/cypress-playwright.git
 ### GitHub Copilot
 
 **Files installed:**
+
 - `.github/copilot-instructions.md` — Always-on project rules
 - `.github/agents/*.agent.md` — Invokable agents
 
 **Usage:**
+
 ```
 @qa-orchestrator create tests for login flow
 @cypress-to-playwright migrate cypress/e2e/tests/login.test.ts
@@ -175,10 +177,12 @@ git clone https://github.com/vbikkaneti/cypress-playwright.git
 ### Claude Code
 
 **Files installed:**
+
 - `CLAUDE.md` — Project instructions (auto-loaded)
 - `.claude/commands/*.md` — Slash commands
 
 **Usage:**
+
 ```
 /create-test login form validation
 /heal-test playwright/e2e/smoke.spec.ts
@@ -188,9 +192,11 @@ git clone https://github.com/vbikkaneti/cypress-playwright.git
 ### Cursor
 
 **Files installed:**
+
 - `.cursor/rules/*.mdc` — Context-aware rules
 
 **Usage:** Rules auto-apply based on file globs, or invoke manually:
+
 ```
 @playwright-testing
 @cypress-migration
@@ -199,6 +205,7 @@ git clone https://github.com/vbikkaneti/cypress-playwright.git
 ### Cline
 
 **Files installed:**
+
 - `.clinerules/*.md` — Toggleable rules
 
 **Usage:** Toggle rules on/off in the Cline rules panel.
@@ -206,6 +213,7 @@ git clone https://github.com/vbikkaneti/cypress-playwright.git
 ### Windsurf
 
 **Files installed:**
+
 - `.windsurf/rules/*.md` — Trigger-mode rules
 
 **Usage:** Rules activate via `trigger: always_on`, `glob`, or `@mention`.
@@ -213,6 +221,7 @@ git clone https://github.com/vbikkaneti/cypress-playwright.git
 ### Aider
 
 **Files installed:**
+
 - `.aider.conf.yml` — Auto-loads conventions
 - `CONVENTIONS.md` — Coding standards
 
@@ -221,6 +230,7 @@ git clone https://github.com/vbikkaneti/cypress-playwright.git
 ### Continue
 
 **Files installed:**
+
 - `.continue/rules/*.md` — Chat context rules
 
 **Usage:** Rules inject into chat based on `alwaysApply` or `globs`.

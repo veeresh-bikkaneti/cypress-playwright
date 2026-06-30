@@ -37,7 +37,8 @@ This project tests a **real web application**. We need to start it first.
 ## 🏃 Step 3: Run Your First Test
 
 ### Option A: The "Modern" Way (Playwright)
-*Recommended for new code.*
+
+_Recommended for new code._
 
 1.  Go back to your **first** terminal.
 2.  Run:
@@ -51,7 +52,8 @@ This project tests a **real web application**. We need to start it first.
     ```
 
 ### Option B: The "Legacy" Way (Cypress)
-*Good for understanding where we came from.*
+
+_Good for understanding where we came from._
 
 1.  Run:
     ```bash
@@ -74,8 +76,8 @@ This project tests a **real web application**. We need to start it first.
 
 Stuck? Valid questions to ask your AI Assistant:
 
-*   "How do I write a test for the Login page?"
-*   "Explain the difference between `cy.get` and `page.locator`."
-*   "Fix this broken test for me."
+- "How do I write a test for the Login page?"
+- "Explain the difference between `cy.get` and `page.locator`."
+- "Fix this broken test for me."
 
 See [Agent Workflows](AGENT_WORKFLOWS.md) for more magic.

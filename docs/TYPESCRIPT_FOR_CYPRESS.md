@@ -4,26 +4,28 @@ This guide is designed to teach you **just enough** TypeScript to be effective w
 
 ## 1. The Basics: Types
 
-TypeScript adds "types" to JavaScript variables. This helps catch errors *before* you run your code.
+TypeScript adds "types" to JavaScript variables. This helps catch errors _before_ you run your code.
 
 ### 1.1. Primitive Types
+
 The most common types you'll use are `string`, `number`, and `boolean`.
 
 ```typescript
 // Explicitly typing variables
-let username: string = 'testuser';
+let username: string = "testuser";
 let retryCount: number = 3;
 let isAdmin: boolean = true;
 
 // TypeScript can also "infer" types automatically
-let url = 'https://google.com'; // TypeScript knows this is a string
+let url = "https://google.com"; // TypeScript knows this is a string
 ```
 
 ### 1.2. Arrays
+
 Defining lists of items.
 
 ```typescript
-let validUsers: string[] = ['alice', 'bob', 'charlie'];
+let validUsers: string[] = ["alice", "bob", "charlie"];
 let scores: number[] = [95, 82, 70];
 ```
 
@@ -41,18 +43,19 @@ function login(username: string, attempts: number) {
 }
 
 // Correct usage
-login('admin', 1);
+login("admin", 1);
 
 // Error! TypeScript will complain:
 // login('admin', 'one'); // Argument of type 'string' is not assignable to parameter of type 'number'.
 ```
 
 ### 2.1. Arrow Functions
+
 You'll see these everywhere in Cypress tests (`() => { ... }`).
 
 ```typescript
 // Standard function
-const add = function(a: number, b: number): number {
+const add = function (a: number, b: number): number {
   return a + b;
 };
 
@@ -62,9 +65,11 @@ const addArrow = (a: number, b: number): number => {
 };
 
 // In Cypress tests:
-describe('Login Feature', () => { // Arrow function
-  it('should login successfully', () => { // Arrow function
-    cy.visit('/login');
+describe("Login Feature", () => {
+  // Arrow function
+  it("should login successfully", () => {
+    // Arrow function
+    cy.visit("/login");
   });
 });
 ```
@@ -94,15 +99,15 @@ interface User {
 // 1. Arrange: Create data that matches the interface
 const newUser: User = {
   id: 101,
-  username: 'new_hire',
-  email: 'hire@company.com',
-  isActive: true
+  username: "new_hire",
+  email: "hire@company.com",
+  isActive: true,
   // 'role' is missing, but that's okay because it's optional
 };
 
 // 2. Act/Assert: Use it in an API test
-it('should create a user', () => {
-  cy.request('POST', '/api/users', newUser).then((response) => {
+it("should create a user", () => {
+  cy.request("POST", "/api/users", newUser).then((response) => {
     // We can even type the response body!
     const body = response.body as User;
     expect(body.username).to.eq(newUser.username);
@@ -122,9 +127,9 @@ In `cypress/support/commands.ts`:
 
 ```typescript
 // 1. Write the command
-Cypress.Commands.add('login', (email: string, password: string) => {
-  cy.get('#email').type(email);
-  cy.get('#password').type(password);
+Cypress.Commands.add("login", (email: string, password: string) => {
+  cy.get("#email").type(email);
+  cy.get("#password").type(password);
   cy.get('button[type="submit"]').click();
 });
 
@@ -143,10 +148,11 @@ declare global {
 ```
 
 ### 4.2. Using it in tests
+
 Now, when you type `cy.`, VS Code will suggest `.login()` and show you that it needs an email and password!
 
 ```typescript
-cy.login('admin@test.com', '123456'); // ✅ Valid
+cy.login("admin@test.com", "123456"); // ✅ Valid
 // cy.login('admin@test.com'); // ❌ Error: Expected 2 arguments, but got 1.
 ```
 
