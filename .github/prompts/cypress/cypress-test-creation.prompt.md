@@ -3,6 +3,7 @@
 **Slash Command**: `/cypress-create`
 
 ## Description
+
 Generate comprehensive Cypress tests following BDD or AAA patterns with support for Cypress 10.x - 13.x. Automatically infers unstated requirements (accessibility, security, performance).
 
 ## Usage
@@ -35,35 +36,33 @@ When you use this slash command, the agent will generate:
 ### Cypress E2E Test (Cypress 10.x - 13.x)
 
 ```typescript
-describe('[Feature Name]', () => {
+describe("[Feature Name]", () => {
   beforeEach(() => {
     // Setup (navigate, authenticate, etc.)
   });
 
-  context('Happy Path Scenarios', () => {
-    it('[should description]', () => {
+  context("Happy Path Scenarios", () => {
+    it("[should description]", () => {
       // Arrange
-      
       // Act
-      
       // Assert
     });
   });
 
-  context('Error Scenarios', () => {
-    it('shows validation error for [invalid input]', () => {
+  context("Error Scenarios", () => {
+    it("shows validation error for [invalid input]", () => {
       // Test error handling
     });
   });
 
-  context('Accessibility', () => {
-    it('supports keyboard navigation', () => {
+  context("Accessibility", () => {
+    it("supports keyboard navigation", () => {
       // Test keyboard access
     });
   });
 
-  context('Security', () => {
-    it('prevents XSS attacks', () => {
+  context("Security", () => {
+    it("prevents XSS attacks", () => {
       // Test input sanitization
     });
   });
@@ -75,10 +74,12 @@ describe('[Feature Name]', () => {
 **Supported Cypress Versions**: 10.x, 11.x, 12.x, 13.x
 
 **Test Patterns**:
+
 - BDD (Given-When-Then)
 - AAA (Arrange-Act-Assert)
 
 **Automatic Inclusions**:
+
 - ✅ Accessibility tests (keyboard nav, ARIA labels)
 - ✅ Security tests (XSS prevention, input validation)
 - ✅ Performance checks (page load, API response times)
@@ -89,24 +90,29 @@ describe('[Feature Name]', () => {
 **BEFORE COMPLETION**, agent MUST verify the complete working system:
 
 ### 1. Configuration Check
+
 - [ ] `cypress.config.ts` exists with correct `baseUrl`
 - [ ] Dev server configured or running
 - [ ] All dependencies installed
 - [ ] Custom commands registered (if created)
 
 ### 2. Code Validation
+
 - [ ] TypeScript compiles without errors
 - [ ] All imports resolve correctly
 - [ ] No syntax or linting errors
 - [ ] Cypress plugin requirements met
 
 ### 3. Execution Proof (MANDATORY)
+
 **Agent must run at least 1 generated test**:
+
 ```bash
 npx cypress run --spec "cypress/e2e/[generated-file].cy.ts" --headed
 ```
 
 Verify:
+
 - [ ] Test starts without errors
 - [ ] Dev server accessible (if needed)
 - [ ] Test executes all steps
@@ -114,7 +120,9 @@ Verify:
 - [ ] No runtime errors in console
 
 ### 4. Completion Report
+
 Agent must provide:
+
 - ✅ Terminal output showing test execution
 - ✅ Pass/fail status
 - ✅ Any errors encountered and resolutions
@@ -131,6 +139,7 @@ Agent must provide:
 ## Output Files
 
 The agent will create:
+
 - `cypress/e2e/[feature].cy.ts` - Main test file
 - `cypress/support/commands.ts` - Custom commands (if needed)
 - Test data fixtures (if applicable)

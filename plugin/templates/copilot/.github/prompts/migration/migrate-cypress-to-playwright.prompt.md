@@ -3,6 +3,7 @@
 **Slash Command**: `/migrate-cy-to-pw`
 
 ## Description
+
 Automatically migrate Cypress tests to Playwright, transforming `cy.*` commands to `await page.*` patterns while maintaining test intent. Supports Cypress 10.x-13.x → Playwright 1.38-1.48+.
 
 ## Usage
@@ -32,38 +33,40 @@ Automatically migrate Cypress tests to Playwright, transforming `cy.*` commands 
 
 ### Core Patterns
 
-| Cypress | Playwright |
-|---------|------------|
-| `cy.visit('/login')` | `await page.goto('/login')` |
-| `cy.get('[data-testid="btn"]').click()` | `await page.getByTestId('btn').click()` |
-| `cy.contains('Submit').click()` | `await page.getByText('Submit').click()` |
-| `cy.get('input').type('text')` | `await page.locator('input').fill('text')` |
-| `cy.get(el).should('be.visible')` | `await expect(page.locator(el)).toBeVisible()` |
+| Cypress                                 | Playwright                                     |
+| --------------------------------------- | ---------------------------------------------- |
+| `cy.visit('/login')`                    | `await page.goto('/login')`                    |
+| `cy.get('[data-testid="btn"]').click()` | `await page.getByTestId('btn').click()`        |
+| `cy.contains('Submit').click()`         | `await page.getByText('Submit').click()`       |
+| `cy.get('input').type('text')`          | `await page.locator('input').fill('text')`     |
+| `cy.get(el).should('be.visible')`       | `await expect(page.locator(el)).toBeVisible()` |
 
 ### Custom Commands → Page Objects
 
 **Cypress Custom Command**:
+
 ```typescript
 // cypress/support/commands.ts
-Cypress.Commands.add('login', (email, password) => {
-  cy.visit('/login');
-  cy.get('#email').type(email);
-  cy.get('#password').type(password);
+Cypress.Commands.add("login", (email, password) => {
+  cy.visit("/login");
+  cy.get("#email").type(email);
+  cy.get("#password").type(password);
   cy.get('button[type="submit"]').click();
 });
 ```
 
 **Playwright Page Object**:
+
 ```typescript
 // playwright/pages/LoginPage.ts
 export class LoginPage {
   constructor(private readonly page: Page) {}
 
   async login(email: string, password: string): Promise<void> {
-    await this.page.goto('/login');
-    await this.page.getByLabel('Email').fill(email);
-    await this.page.getByLabel('Password').fill(password);
-    await this.page.getByRole('button', { name: 'Log in' }).click();
+    await this.page.goto("/login");
+    await this.page.getByLabel("Email").fill(email);
+    await this.page.getByLabel("Password").fill(password);
+    await this.page.getByRole("button", { name: "Log in" }).click();
   }
 }
 ```
@@ -87,6 +90,7 @@ export class LoginPage {
 ## Quality Assurance
 
 Every migrated test includes:
+
 - Requirements traceability comments
 - BDD or AAA structure
 - Unstated requirements (a11y, security, performance)
@@ -101,15 +105,15 @@ Every migrated test includes:
 ```typescript
 export default defineConfig({
   use: {
-    baseURL: 'http://127.0.0.1:3000', // Match dev server URL
+    baseURL: "http://127.0.0.1:3000", // Match dev server URL
   },
-  
+
   // If tests need dev server, add webServer config:
   webServer: {
-    command: 'npm run dev',           // Or: cd app-dir && npm start
-    url: 'http://127.0.0.1:3000',    // Server URL
+    command: "npm run dev", // Or: cd app-dir && npm start
+    url: "http://127.0.0.1:3000", // Server URL
     reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,              // 2 minutes for server startup
+    timeout: 120 * 1000, // 2 minutes for server startup
   },
 });
 ```
@@ -125,6 +129,7 @@ export default defineConfig({
 ### Common Patterns
 
 **Pattern 1: Standalone Server**
+
 ```typescript
 webServer: {
   command: 'npm run dev',
@@ -133,6 +138,7 @@ webServer: {
 ```
 
 **Pattern 2: Server in Subdirectory**
+
 ```typescript
 webServer: {
   command: 'cd app-under-test && npm run dev',
@@ -141,6 +147,7 @@ webServer: {
 ```
 
 **Pattern 3: Custom Port**
+
 ```typescript
 webServer: {
   command: 'npm run dev -- --port 8080',
@@ -157,6 +164,7 @@ webServer: {
 ## Output Files
 
 The agent will create:
+
 - `playwright/e2e/[feature].spec.ts` - Migrated test
 - `playwright/pages/[Page]Page.ts` - Page Objects (if custom commands exist)
 - `playwright/fixtures/[feature].fixture.ts` - Fixtures (if needed)
@@ -165,6 +173,7 @@ The agent will create:
 ## Validation Checklist
 
 Before completing migration, ensures:
+
 - [ ] All `cy.*` calls removed
 - [ ] All Playwright actions have `await`
 - [ ] Selectors use semantic locators (getByRole, getByLabel)

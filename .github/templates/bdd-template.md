@@ -14,10 +14,10 @@ test.describe('Feature: [Feature Name]', () => {
     test('Scenario: [Scenario Description]', async ({ page }) => {
       // Given: [Precondition - system state]
       // Setup initial state, navigate to page, authenticate, etc.
-      
+
       // When: [Action - user behavior]
       // Perform the action being tested
-      
+
       // Then: [Expected Outcome - observable result]
       // Verify the expected outcome
     });
@@ -114,21 +114,26 @@ test.describe('Feature: Checkout Process', () => {
 ## BDD Principles
 
 ### 1. Focus on Behavior, Not Implementation
+
 ✅ **Good**: "User receives confirmation email"  
 ❌ **Bad**: "POST request to /api/send-email returns 200"
 
 ### 2. Use Business Language
+
 Write tests that non-technical stakeholders can understand.
 
 ### 3. One Scenario, One Behavior
+
 Each test should verify a single business scenario.
 
 ### 4. Given-When-Then Structure
+
 - **Given**: Set up the world (preconditions)
 - **When**: Perform an action (the behavior)
 - **Then**: Verify the outcome (expected result)
 
 ### 5. Make Tests Readable
+
 Use descriptive names, clear comments, and well-named page objects.
 
 ## Requirements Traceability
@@ -148,7 +153,7 @@ Always link tests to requirements:
  *   - A11Y-001: Checkout form must be keyboard accessible
  *   - PERF-001: Checkout completion < 3 seconds
  */
-test.describe('Feature: Checkout Process', () => {
+test.describe("Feature: Checkout Process", () => {
   // Tests here
 });
 ```
@@ -156,6 +161,7 @@ test.describe('Feature: Checkout Process', () => {
 ## When to Use BDD
 
 Use BDD templates when:
+
 - Working with product owners or business stakeholders
 - Testing user journeys and workflows
 - Documenting feature behavior
@@ -166,20 +172,20 @@ Use BDD templates when:
 For Cypress users, the structure is similar:
 
 ```typescript
-describe('Feature: User Login', () => {
-  context('As a registered user', () => {
-    it('Scenario: Successful login with valid credentials', () => {
+describe("Feature: User Login", () => {
+  context("As a registered user", () => {
+    it("Scenario: Successful login with valid credentials", () => {
       // Given: User is on the login page
-      cy.visit('/login');
+      cy.visit("/login");
 
       // When: User enters valid credentials and clicks login
-      cy.get('[data-testid="email"]').type('user@example.com');
-      cy.get('[data-testid="password"]').type('SecurePass123!');
+      cy.get('[data-testid="email"]').type("user@example.com");
+      cy.get('[data-testid="password"]').type("SecurePass123!");
       cy.get('[data-testid="login-btn"]').click();
 
       // Then: User is redirected to dashboard
-      cy.url().should('include', '/dashboard');
-      cy.contains('Welcome back').should('be.visible');
+      cy.url().should("include", "/dashboard");
+      cy.contains("Welcome back").should("be.visible");
     });
   });
 });
@@ -188,6 +194,7 @@ describe('Feature: User Login', () => {
 ## Tools & Plugins
 
 Consider using:
+
 - **Cucumber**: For `.feature` files with Gherkin syntax
 - **@cucumber/cucumber**: Cucumber JS integration
 - **playwright-bdd**: Playwright + Cucumber integration

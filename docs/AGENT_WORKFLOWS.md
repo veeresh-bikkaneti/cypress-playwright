@@ -6,12 +6,12 @@
 
 ## 🏗️ The Agent Squad
 
-| Agent | File | Specialty |
-|:------|:-----|:----------|
-| **Planner** | `playwright-test-planner.agent.md` | Strategy, Component vs E2E, Coverage |
-| **Generator** | `playwright-test-generator.agent.md` | Writing code from User Stories |
-| **Healer** | `playwright-healer.md` | Diagnosing failures & fixing selectors |
-| **Migrator** | `cypress-to-playwright.agent.md` | Converting Cypress to Playwright |
+| Agent         | File                                 | Specialty                              |
+| :------------ | :----------------------------------- | :------------------------------------- |
+| **Planner**   | `playwright-test-planner.agent.md`   | Strategy, Component vs E2E, Coverage   |
+| **Generator** | `playwright-test-generator.agent.md` | Writing code from User Stories         |
+| **Healer**    | `playwright-healer.md`               | Diagnosing failures & fixing selectors |
+| **Migrator**  | `cypress-to-playwright.agent.md`     | Converting Cypress to Playwright       |
 
 ---
 
@@ -22,9 +22,11 @@
 **Use when**: You have a legacy Cypress test file and want a Playwright version.
 
 **Prompt**:
+
 > "@cypress-to-playwright Migrate `cypress/e2e/login.cy.ts` to Playwright using the Page Object Model."
 
 **What happens**:
+
 1.  Agent reads the file.
 2.  Identifies custom commands (`cy.login`).
 3.  Creates a Page Object (`pages/LoginPage.ts`).
@@ -36,9 +38,11 @@
 **Use when**: You have a new feature request (e.g., "Add a Shopping Cart") but no code yet.
 
 **Prompt**:
+
 > "@playwright-test-planner Create a test plan for the new Shopping Cart feature. Use BDD style."
 
 **What happens**:
+
 1.  Agent outlines scenarios (Happy Path, Edge Cases).
 2.  Recommends Directory Structure.
 3.  Identifies necessary Fixtures.
@@ -48,9 +52,11 @@
 **Use when**: You have a plan and want the actual test code.
 
 **Prompt**:
+
 > "@playwright-test-generator Generate the tests for the Shopping Cart based on this plan."
 
 **What happens**:
+
 1.  Agent writes `pages/CartPage.ts`.
 2.  Agent writes `e2e/cart.spec.ts`.
 3.  Agent ensures all selectors use `getByRole` (Accessibility first).
@@ -60,9 +66,11 @@
 **Use when**: A CI build failed or a test is flaky.
 
 **Prompt**:
+
 > "@playwright-healer Fix the failure in `e2e/cart.spec.ts`. Here are the logs..."
 
 **What happens**:
+
 1.  Agent analyzes the error (e.g., "Timeout waiting for selector").
 2.  Checks the Trace Viewer summary.
 3.  Suggests a fix (e.g., "Selector changed ID -> Class", or "Need to await API response").

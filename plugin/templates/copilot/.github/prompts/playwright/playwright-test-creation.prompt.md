@@ -3,6 +3,7 @@
 **Slash Command**: `/playwright-create`
 
 ## Description
+
 Generate comprehensive Playwright tests following BDD or AAA patterns with support for Playwright 1.38 - 1.48+. Automatically infers unstated requirements (accessibility, security, performance).
 
 ## Usage
@@ -50,9 +51,9 @@ test.describe('[Feature Name]', () => {
   test.describe('Happy Path', () => {
     test('[should description]', async ({ page }) => {
       // Arrange
-      
+
       // Act
-      
+
       // Assert
     });
   });
@@ -103,10 +104,12 @@ export class [Page]Page {
 **Supported Playwright Versions**: 1.38, 1.40, 1.44, 1.48+
 
 **Test Patterns**:
+
 - BDD (Given-When-Then with describe blocks)
 - AAA (Arrange-Act-Assert)
 
 **Automatic Inclusions**:
+
 - ✅ Accessibility tests (keyboard nav, ARIA, screen reader)
 - ✅ Security tests (XSS, CSRF, input validation)
 - ✅ Performance checks (page load, Core Web Vitals)
@@ -118,23 +121,28 @@ export class [Page]Page {
 **BEFORE COMPLETION**, agent MUST verify the complete working system:
 
 ### 1. Configuration Check
+
 - [ ] `playwright.config.ts` exists with correct `baseURL`
 - [ ] `webServer` configured if E2E tests need dev server
 - [ ] Server command is valid and server starts
 - [ ] All dependencies installed
 
 ### 2. Code Validation
+
 - [ ] TypeScript compiles: `npx tsc --noEmit`
 - [ ] All imports resolve correctly
 - [ ] No syntax or linting errors
 
 ### 3. Execution Proof (MANDATORY)
+
 **Agent must run at least 1 generated test**:
+
 ```bash
 npx playwright test [generated-file].spec.ts --project=chromium
 ```
 
 Verify:
+
 - [ ] Test starts without errors
 - [ ] Server starts (if configured)
 - [ ] Test executes all steps
@@ -142,7 +150,9 @@ Verify:
 - [ ] No runtime errors
 
 ### 4. Completion Report
+
 Agent must provide:
+
 - ✅ Terminal output showing test execution
 - ✅ Pass/fail status
 - ✅ Any errors encountered and resolutions
@@ -159,6 +169,7 @@ Agent must provide:
 ## Output Files
 
 The agent will create:
+
 - `playwright/e2e/[feature].spec.ts` - Test specification
 - `playwright/pages/[Feature]Page.ts` - Page Object Model
 - `playwright/fixtures/[feature].fixture.ts` - Custom fixtures (if needed)

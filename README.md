@@ -220,17 +220,17 @@ cypress-playwright/
 
 ### Running Tests
 
-| Command | Description | Auto-Starts Server |
-|---------|-------------|:------------------:|
-| `npx playwright test` | Run all Playwright tests (3 browsers) | ✅ |
-| `npx playwright test --project=chromium` | Chromium only | ✅ |
-| `npx playwright test --headed` | See browser actions | ✅ |
-| `npx playwright test --ui` | Interactive UI mode | ✅ |
-| `npx playwright test --debug` | Step-through debugging | ✅ |
-| `npx playwright test auth/login` | Specific test file | ✅ |
-| `npm run cy:run` | Run all Cypress tests | ❌ |
-| `npm run cy:open` | Open Cypress Test Runner | ❌ |
-| `npm run test:hybrid` | Run both frameworks in parallel | Partial |
+| Command                                  | Description                           | Auto-Starts Server |
+| ---------------------------------------- | ------------------------------------- | :----------------: |
+| `npx playwright test`                    | Run all Playwright tests (3 browsers) |         ✅         |
+| `npx playwright test --project=chromium` | Chromium only                         |         ✅         |
+| `npx playwright test --headed`           | See browser actions                   |         ✅         |
+| `npx playwright test --ui`               | Interactive UI mode                   |         ✅         |
+| `npx playwright test --debug`            | Step-through debugging                |         ✅         |
+| `npx playwright test auth/login`         | Specific test file                    |         ✅         |
+| `npm run cy:run`                         | Run all Cypress tests                 |         ❌         |
+| `npm run cy:open`                        | Open Cypress Test Runner              |         ❌         |
+| `npm run test:hybrid`                    | Run both frameworks in parallel       |      Partial       |
 
 ### Playwright Advanced
 
@@ -283,31 +283,31 @@ npm run format        # Prettier format
 
 ```typescript
 // playwright/pages/LoginPage.ts
-import { Page, Locator, expect } from '@playwright/test';
+import { Page, Locator, expect } from "@playwright/test";
 
 export class LoginPage {
-    readonly page: Page;
-    readonly emailAddressTxt: Locator;
-    readonly passwordTxt: Locator;
-    readonly signinBtn: Locator;
+  readonly page: Page;
+  readonly emailAddressTxt: Locator;
+  readonly passwordTxt: Locator;
+  readonly signinBtn: Locator;
 
-    constructor(page: Page) {
-        this.page = page;
-        this.emailAddressTxt = page.locator('[data-testid="email-input"]');
-        this.passwordTxt = page.locator('[data-testid="password-input"]');
-        this.signinBtn = page.locator('[data-testid="submit-btn"]');
-    }
+  constructor(page: Page) {
+    this.page = page;
+    this.emailAddressTxt = page.locator('[data-testid="email-input"]');
+    this.passwordTxt = page.locator('[data-testid="password-input"]');
+    this.signinBtn = page.locator('[data-testid="submit-btn"]');
+  }
 
-    async login(email: string, password: string) {
-        await this.page.goto('/login');
-        await this.emailAddressTxt.fill(email);
-        await this.passwordTxt.fill(password);
-        await this.signinBtn.click();
-    }
+  async login(email: string, password: string) {
+    await this.page.goto("/login");
+    await this.emailAddressTxt.fill(email);
+    await this.passwordTxt.fill(password);
+    await this.signinBtn.click();
+  }
 
-    async validateSuccessfulLogin() {
-        await expect(this.page).toHaveURL(/.*\/dashboard/);
-    }
+  async validateSuccessfulLogin() {
+    await expect(this.page).toHaveURL(/.*\/dashboard/);
+  }
 }
 ```
 
@@ -315,39 +315,39 @@ export class LoginPage {
 
 ```typescript
 // playwright/fixtures/auth.fixture.ts
-import { test as base, Page } from '@playwright/test';
-import { LoginPage } from '../pages/LoginPage';
+import { test as base, Page } from "@playwright/test";
+import { LoginPage } from "../pages/LoginPage";
 
 type AuthFixtures = {
-    authenticatedPage: Page;
-    loginPage: LoginPage;
+  authenticatedPage: Page;
+  loginPage: LoginPage;
 };
 
 export const test = base.extend<AuthFixtures>({
-    authenticatedPage: async ({ page }, use) => {
-        const loginPage = new LoginPage(page);
-        await loginPage.login('test@example.com', 'password123');
-        await use(page);
-    },
-    loginPage: async ({ page }, use) => {
-        await use(new LoginPage(page));
-    },
+  authenticatedPage: async ({ page }, use) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.login("test@example.com", "password123");
+    await use(page);
+  },
+  loginPage: async ({ page }, use) => {
+    await use(new LoginPage(page));
+  },
 });
 
-export { expect } from '@playwright/test';
+export { expect } from "@playwright/test";
 ```
 
 ### Using Fixtures in Tests
 
 ```typescript
 // playwright/e2e/auth/login.spec.ts
-import { test, expect } from '../../fixtures/auth.fixture';
+import { test, expect } from "../../fixtures/auth.fixture";
 
-test('login with valid credentials', async ({ loginPage, myAccountPage }) => {
-    await loginPage.login('test@example.com', 'password123');
-    await myAccountPage.validateSuccessfulLogin();
-    await myAccountPage.logout();
-    await myAccountPage.validateSuccessfulLogout();
+test("login with valid credentials", async ({ loginPage, myAccountPage }) => {
+  await loginPage.login("test@example.com", "password123");
+  await myAccountPage.validateSuccessfulLogin();
+  await myAccountPage.logout();
+  await myAccountPage.validateSuccessfulLogout();
 });
 ```
 
@@ -357,18 +357,18 @@ test('login with valid credentials', async ({ loginPage, myAccountPage }) => {
 
 ### Cypress → Playwright Cheat Sheet
 
-| Cypress | Playwright |
-|---------|-----------|
-| `cy.visit('/page')` | `await page.goto('/page')` |
-| `cy.get('[data-testid="x"]')` | `page.getByTestId('x')` |
-| `cy.contains('text')` | `page.getByText('text')` |
-| `cy.get('button').click()` | `await page.getByRole('button').click()` |
-| `cy.get('input').type('text')` | `await page.getByLabel('Input').fill('text')` |
-| `cy.intercept('GET', '/api', {})` | `await page.route('**/api', r => r.fulfill({json: {}}))` |
-| `cy.wait('@alias')` | `await page.waitForResponse('**/api')` |
-| `cy.get('.el').should('be.visible')` | `await expect(page.locator('.el')).toBeVisible()` |
-| `cy.url().should('include', '/path')` | `await expect(page).toHaveURL(/\/path/)` |
-| `cy.get('.el').should('have.text', 'x')` | `await expect(page.locator('.el')).toHaveText('x')` |
+| Cypress                                  | Playwright                                               |
+| ---------------------------------------- | -------------------------------------------------------- |
+| `cy.visit('/page')`                      | `await page.goto('/page')`                               |
+| `cy.get('[data-testid="x"]')`            | `page.getByTestId('x')`                                  |
+| `cy.contains('text')`                    | `page.getByText('text')`                                 |
+| `cy.get('button').click()`               | `await page.getByRole('button').click()`                 |
+| `cy.get('input').type('text')`           | `await page.getByLabel('Input').fill('text')`            |
+| `cy.intercept('GET', '/api', {})`        | `await page.route('**/api', r => r.fulfill({json: {}}))` |
+| `cy.wait('@alias')`                      | `await page.waitForResponse('**/api')`                   |
+| `cy.get('.el').should('be.visible')`     | `await expect(page.locator('.el')).toBeVisible()`        |
+| `cy.url().should('include', '/path')`    | `await expect(page).toHaveURL(/\/path/)`                 |
+| `cy.get('.el').should('have.text', 'x')` | `await expect(page.locator('.el')).toHaveText('x')`      |
 
 ### Migration Steps
 
@@ -394,25 +394,25 @@ npx playwright test --project=chromium  # Tests pass
 
 The `app-under-test/` Express server provides these endpoints:
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|:----:|-------------|
-| `GET` | `/` | No | Home page with product grid |
-| `GET` | `/login` | No | Login form |
-| `GET` | `/dashboard` | Yes | User dashboard |
-| `GET` | `/forms` | No | Form interaction page |
-| `GET` | `/dialogs` | No | Dialog triggers |
-| `GET` | `/upload` | No | File upload page |
-| `POST` | `/api/auth/login` | No | Authenticate user |
-| `POST` | `/api/auth/logout` | No | Clear session |
-| `GET` | `/api/auth/me` | Yes | Current user info |
-| `GET` | `/api/products` | No | List products (filterable) |
-| `GET` | `/api/products/:id` | No | Single product |
-| `GET` | `/api/orders` | Yes | User orders |
-| `POST` | `/api/orders` | Yes | Create order |
-| `POST` | `/api/upload` | No | Upload file |
-| `POST` | `/api/graphql` | Varies | GraphQL endpoint |
-| `GET` | `/api/error/:code` | No | Generate error responses |
-| `GET` | `/api/slow-response` | No | Delayed response (testing) |
+| Method | Endpoint             |  Auth  | Description                 |
+| ------ | -------------------- | :----: | --------------------------- |
+| `GET`  | `/`                  |   No   | Home page with product grid |
+| `GET`  | `/login`             |   No   | Login form                  |
+| `GET`  | `/dashboard`         |  Yes   | User dashboard              |
+| `GET`  | `/forms`             |   No   | Form interaction page       |
+| `GET`  | `/dialogs`           |   No   | Dialog triggers             |
+| `GET`  | `/upload`            |   No   | File upload page            |
+| `POST` | `/api/auth/login`    |   No   | Authenticate user           |
+| `POST` | `/api/auth/logout`   |   No   | Clear session               |
+| `GET`  | `/api/auth/me`       |  Yes   | Current user info           |
+| `GET`  | `/api/products`      |   No   | List products (filterable)  |
+| `GET`  | `/api/products/:id`  |   No   | Single product              |
+| `GET`  | `/api/orders`        |  Yes   | User orders                 |
+| `POST` | `/api/orders`        |  Yes   | Create order                |
+| `POST` | `/api/upload`        |   No   | Upload file                 |
+| `POST` | `/api/graphql`       | Varies | GraphQL endpoint            |
+| `GET`  | `/api/error/:code`   |   No   | Generate error responses    |
+| `GET`  | `/api/slow-response` |   No   | Delayed response (testing)  |
 
 **Test Credentials:** `test@example.com` / `password123`
 
@@ -437,6 +437,7 @@ docker compose down                     # Cleanup
 ### GitHub Actions (`.github/workflows/hybrid-ci.yml`)
 
 Runs both Cypress and Playwright in parallel on push/PR:
+
 - Playwright: Chromium, Firefox, WebKit
 - Cypress: Chrome, Edge
 - Merged test reports as artifacts
@@ -453,40 +454,41 @@ Runs both Cypress and Playwright in parallel on push/PR:
 
 The `.github/agents/` directory contains specialized AI agents for test automation:
 
-| Agent | Purpose |
-|-------|---------|
-| `qa-orchestrator` | Central coordinator for test creation, debugging, and orchestration |
-| `playwright-test-generator` | Generate Playwright tests from requirements |
-| `playwright-test-planner` | Plan test strategies and coverage |
-| `playwright-healer` | Diagnose and fix broken Playwright tests |
-| `cypress-to-playwright` | Migrate Cypress tests to Playwright |
-| `cypress-healer` | Diagnose and fix broken Cypress tests |
-| `qa-architect` | Design test frameworks, CI/CD integration, and infrastructure |
-| `qa-engineer` | Write and maintain test suites |
-| `automation-engineer` | Build and maintain automation frameworks |
-| `sdet` | Advanced test frameworks, custom tooling, performance/security testing |
-| `manual-tester` | Manual test case design and exploratory testing |
-| `test-engineer` | General test engineering and quality assurance |
-| `qa-automation-engineer` | QA-specific automation patterns and workflows |
-| `backend-specialist` | Backend API and server-side testing |
-| `frontend-specialist` | Frontend UI testing and visual validation |
-| `database-architect` | Database schema testing and data integrity |
-| `devops-engineer` | CI/CD pipeline and infrastructure testing |
-| `debugger` | Test failure diagnosis and root cause analysis |
-| `documentation-writer` | Test documentation and reporting |
+| Agent                       | Purpose                                                                |
+| --------------------------- | ---------------------------------------------------------------------- |
+| `qa-orchestrator`           | Central coordinator for test creation, debugging, and orchestration    |
+| `playwright-test-generator` | Generate Playwright tests from requirements                            |
+| `playwright-test-planner`   | Plan test strategies and coverage                                      |
+| `playwright-healer`         | Diagnose and fix broken Playwright tests                               |
+| `cypress-to-playwright`     | Migrate Cypress tests to Playwright                                    |
+| `cypress-healer`            | Diagnose and fix broken Cypress tests                                  |
+| `qa-architect`              | Design test frameworks, CI/CD integration, and infrastructure          |
+| `qa-engineer`               | Write and maintain test suites                                         |
+| `automation-engineer`       | Build and maintain automation frameworks                               |
+| `sdet`                      | Advanced test frameworks, custom tooling, performance/security testing |
+| `manual-tester`             | Manual test case design and exploratory testing                        |
+| `test-engineer`             | General test engineering and quality assurance                         |
+| `qa-automation-engineer`    | QA-specific automation patterns and workflows                          |
+| `backend-specialist`        | Backend API and server-side testing                                    |
+| `frontend-specialist`       | Frontend UI testing and visual validation                              |
+| `database-architect`        | Database schema testing and data integrity                             |
+| `devops-engineer`           | CI/CD pipeline and infrastructure testing                              |
+| `debugger`                  | Test failure diagnosis and root cause analysis                         |
+| `documentation-writer`      | Test documentation and reporting                                       |
 
 ### AI Prompts & Skills
 
-| Directory | Contents |
-|-----------|----------|
-| `.github/prompts/cypress/` | Cypress test creation and healing prompts |
-| `.github/prompts/playwright/` | Playwright test creation and healing prompts |
-| `.github/prompts/migration/` | Cypress → Playwright migration prompts |
-| `.github/skills/clean-code/` | Code quality and style guidelines |
-| `.github/skills/testing-patterns/` | Testing best practices and patterns |
-| `.github/skills/webapp-testing/` | Web application testing strategies |
+| Directory                          | Contents                                     |
+| ---------------------------------- | -------------------------------------------- |
+| `.github/prompts/cypress/`         | Cypress test creation and healing prompts    |
+| `.github/prompts/playwright/`      | Playwright test creation and healing prompts |
+| `.github/prompts/migration/`       | Cypress → Playwright migration prompts       |
+| `.github/skills/clean-code/`       | Code quality and style guidelines            |
+| `.github/skills/testing-patterns/` | Testing best practices and patterns          |
+| `.github/skills/webapp-testing/`   | Web application testing strategies           |
 
 **Usage (with GitHub Copilot):**
+
 ```
 @qa-orchestrator create tests for checkout flow
 @cypress-to-playwright migrate cypress/e2e/tests/login.test.ts
@@ -499,26 +501,26 @@ The `.github/agents/` directory contains specialized AI agents for test automati
 
 ## Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| Port 3000 in use | `npx kill-port 3000` or stop other servers |
-| Playwright browsers missing | `npx playwright install` |
-| TypeScript errors | `npx tsc --noEmit` to see details |
-| Tests timeout | Check if server starts: `curl http://localhost:3000` |
-| Cypress can't find element | Verify `data-testid` attributes in HTML |
+| Issue                       | Solution                                             |
+| --------------------------- | ---------------------------------------------------- |
+| Port 3000 in use            | `npx kill-port 3000` or stop other servers           |
+| Playwright browsers missing | `npx playwright install`                             |
+| TypeScript errors           | `npx tsc --noEmit` to see details                    |
+| Tests timeout               | Check if server starts: `curl http://localhost:3000` |
+| Cypress can't find element  | Verify `data-testid` attributes in HTML              |
 
 ---
 
 ## Further Reading
 
-| Document | Description |
-|----------|-------------|
-| [Migration Guide](./docs/MIGRATION_GUIDE.md) | Step-by-step Cypress → Playwright migration |
-| [Beginner Guide](./docs/BEGINNER_GUIDE.md) | Zero-to-hero test automation tutorial |
-| [TypeScript Guide](./docs/TYPESCRIPT_FOR_CYPRESS.md) | TypeScript basics for test automation |
-| [Docker Guide](./docs/DOCKER_HELPER.md) | Running tests in containers |
-| [Security Policy](./docs/SECURITY.md) | Security reporting and best practices |
-| [Copilot Instructions](./.github/copilot-instructions.md) | AI agent migration rules |
+| Document                                                  | Description                                 |
+| --------------------------------------------------------- | ------------------------------------------- |
+| [Migration Guide](./docs/MIGRATION_GUIDE.md)              | Step-by-step Cypress → Playwright migration |
+| [Beginner Guide](./docs/BEGINNER_GUIDE.md)                | Zero-to-hero test automation tutorial       |
+| [TypeScript Guide](./docs/TYPESCRIPT_FOR_CYPRESS.md)      | TypeScript basics for test automation       |
+| [Docker Guide](./docs/DOCKER_HELPER.md)                   | Running tests in containers                 |
+| [Security Policy](./docs/SECURITY.md)                     | Security reporting and best practices       |
+| [Copilot Instructions](./.github/copilot-instructions.md) | AI agent migration rules                    |
 
 ---
 

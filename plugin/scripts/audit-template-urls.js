@@ -15,10 +15,10 @@
  *   node scripts/audit-template-urls.js [--verbose]
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
-const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
+const TEMPLATES_DIR = path.join(__dirname, "..", "templates");
 
 // Whitelisted URL patterns — regex for domain-boundary safety
 const ALLOWED_PATTERNS = [
@@ -34,9 +34,17 @@ const ALLOWED_PATTERNS = [
 ];
 
 // File extensions to scan
-const SCAN_EXTENSIONS = new Set(['.md', '.mdc', '.yml', '.yaml', '.py', '.js', '.ts']);
+const SCAN_EXTENSIONS = new Set([
+  ".md",
+  ".mdc",
+  ".yml",
+  ".yaml",
+  ".py",
+  ".js",
+  ".ts",
+]);
 
-const VERBOSE = process.argv.includes('--verbose');
+const VERBOSE = process.argv.includes("--verbose");
 
 /**
  * Extract all URLs from text
@@ -44,7 +52,7 @@ const VERBOSE = process.argv.includes('--verbose');
 function extractUrls(text) {
   const matches = text.match(/https?:\/\/[^\s"'<>\])`]+/g) || [];
   // Clean trailing punctuation that gets captured
-  return matches.map((u) => u.replace(/[.,;:!?)}\]]+$/, ''));
+  return matches.map((u) => u.replace(/[.,;:!?)}\]]+$/, ""));
 }
 
 /**
@@ -63,7 +71,10 @@ function findFiles(dir) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       results.push(...findFiles(full));
-    } else if (entry.isFile() && SCAN_EXTENSIONS.has(path.extname(entry.name))) {
+    } else if (
+      entry.isFile() &&
+      SCAN_EXTENSIONS.has(path.extname(entry.name))
+    ) {
       results.push(full);
     }
   }
@@ -74,7 +85,7 @@ function findFiles(dir) {
  * Main audit
  */
 function audit() {
-  console.log('\n🔒 Template URL Security Audit\n');
+  console.log("\n🔒 Template URL Security Audit\n");
   console.log(`  Scanning: ${TEMPLATES_DIR}\n`);
 
   const files = findFiles(TEMPLATES_DIR);
@@ -85,7 +96,7 @@ function audit() {
 
   for (const file of files) {
     const relPath = path.relative(process.cwd(), file);
-    const content = fs.readFileSync(file, 'utf-8');
+    const content = fs.readFileSync(file, "utf-8");
     const lines = content.split(/\r?\n/); // Handle both \n and \r\n
 
     for (let i = 0; i < lines.length; i++) {
@@ -106,28 +117,34 @@ function audit() {
 
   // Report
   if (violations.length === 0) {
-    console.log('✅ PASS: No unauthorized outbound URLs found.\n');
+    console.log("✅ PASS: No unauthorized outbound URLs found.\n");
     console.log(`  Total unique URLs: ${allUrls.size}`);
-    console.log('  All URLs are whitelisted (Playwright/Cypress docs, localhost, example domains)\n');
+    console.log(
+      "  All URLs are whitelisted (Playwright/Cypress docs, localhost, example domains)\n",
+    );
   } else {
     console.log(`❌ FAIL: Found ${violations.length} unauthorized URL(s):\n`);
     for (const v of violations) {
       console.log(`  ${v.file}:${v.line}`);
       console.log(`    URL:       ${v.url}`);
       console.log(`    Context:   ${v.context}`);
-      console.log('');
+      console.log("");
     }
-    console.log('  Fix: Remove the URL or add it to ALLOWED_PATTERNS in scripts/audit-template-urls.js\n');
+    console.log(
+      "  Fix: Remove the URL or add it to ALLOWED_PATTERNS in scripts/audit-template-urls.js\n",
+    );
   }
 
   if (VERBOSE) {
-    console.log('📋 All unique URLs found:\n');
-    const sorted = [...allUrls.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+    console.log("📋 All unique URLs found:\n");
+    const sorted = [...allUrls.entries()].sort((a, b) =>
+      a[0].localeCompare(b[0]),
+    );
     for (const [url, occurrences] of sorted) {
-      const status = isAllowed(url) ? '✅' : '❌';
+      const status = isAllowed(url) ? "✅" : "❌";
       console.log(`  ${status} ${url}  (${occurrences.length} occurrence(s))`);
     }
-    console.log('');
+    console.log("");
   }
 
   return violations.length === 0;

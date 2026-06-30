@@ -22,6 +22,7 @@ webServer: {
 ```
 
 **What this does**:
+
 - ✅ Automatically starts `app-under-test/server.js` before running tests
 - ✅ Waits for server to be ready at http://127.0.0.1:3000
 - ✅ Reuses existing server if already running (saves time)
@@ -48,6 +49,7 @@ npx playwright test --headed
 ```
 
 Playwright will automatically:
+
 1. Start the test server
 2. Wait for it to be ready
 3. Run tests
@@ -56,12 +58,14 @@ Playwright will automatically:
 ### Option 2: Manual Server (For Development)
 
 Terminal 1 - Start server:
+
 ```bash
 cd app-under-test
 npm run dev
 ```
 
 Terminal 2 - Run tests:
+
 ```bash
 npx playwright test
 ```
@@ -102,11 +106,13 @@ Stop-Process -Id <PID> -Force
 ### "Cannot navigate to invalid URL"
 
 **Causes**:
+
 1. Server didn't start in time → Increase `timeout` in `webServer` config
 2. Server crashed → Check `app-under-test/server.js` for errors
 3. Port conflict → Change port in both `server.js` and `playwright.config.ts`
 
 **Quick fix**: Start server manually first:
+
 ```bash
 cd app-under-test && npm run dev
 ```
@@ -129,16 +135,18 @@ npx playwright test
 ### Login Tests (`e2e/auth/login.spec.ts`)
 
 ✅ 6 tests should pass:
+
 - login with valid credentials
 - login with valid credentials read data from fixture
 - login with invalid email credentials
-- login with invalid password credentials  
+- login with invalid password credentials
 - login with wrong email format
 - should show password error for short password
 
 ### Form Tests (`e2e/forms/form-interactions.spec.ts`)
 
 ✅ 33 tests should pass covering:
+
 - Text input (type, fill, special chars)
 - Clear operations
 - Dropdown selection (by value, text, index, multiple)
@@ -162,6 +170,7 @@ npx playwright test
 ## 📝 CI/CD Note
 
 In CI (`process.env.CI === true`):
+
 - `webServer.reuseExistingServer` is `false` (always fresh server)
 - Server shuts down immediately after tests
 - Test retries are enabled (`retries: 2`)

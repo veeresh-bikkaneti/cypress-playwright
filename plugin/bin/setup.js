@@ -13,10 +13,18 @@
  *   npx cypress2playwright-using-ai detect
  */
 
-const fs = require('fs');
-const path = require('path');
-const { detectTools, getDetectedToolIds, getAllToolIds } = require('../lib/detectors');
-const { installAll, installTool, stripFetchInstructions } = require('../lib/installers');
+const fs = require("fs");
+const path = require("path");
+const {
+  detectTools,
+  getDetectedToolIds,
+  getAllToolIds,
+} = require("../lib/detectors");
+const {
+  installAll,
+  installTool,
+  stripFetchInstructions,
+} = require("../lib/installers");
 
 const HELP = `
 ╔══════════════════════════════════════════════════════════════╗
@@ -70,24 +78,24 @@ function parseArgs(argv) {
   for (let i = 0; i < rawArgs.length; i++) {
     const arg = rawArgs[i];
 
-    if (arg === '--help' || arg === '-h') {
+    if (arg === "--help" || arg === "-h") {
       args.help = true;
-    } else if (arg === '--all') {
+    } else if (arg === "--all") {
       args.all = true;
-    } else if (arg === '--force' || arg === '-f') {
+    } else if (arg === "--force" || arg === "-f") {
       args.force = true;
-    } else if (arg === '--no-fetch') {
+    } else if (arg === "--no-fetch") {
       args.noFetch = true;
-    } else if (arg === '--tools') {
+    } else if (arg === "--tools") {
       const next = rawArgs[i + 1];
-      if (next && !next.startsWith('--')) {
-        args.tools = next.split(',').map((t) => t.trim());
+      if (next && !next.startsWith("--")) {
+        args.tools = next.split(",").map((t) => t.trim());
         i++;
       }
-    } else if (arg === '--target' && rawArgs[i + 1]) {
+    } else if (arg === "--target" && rawArgs[i + 1]) {
       args.target = path.resolve(rawArgs[i + 1]);
       i++;
-    } else if (!arg.startsWith('--')) {
+    } else if (!arg.startsWith("--")) {
       args.command = arg;
     }
   }
@@ -98,25 +106,27 @@ function parseArgs(argv) {
 function printDetectionResults(projectRoot) {
   const results = detectTools(projectRoot);
 
-  console.log('\n🔍 Detected AI tools in project:\n');
-  console.log('  Tool            Status');
-  console.log('  ─────────────── ──────────');
+  console.log("\n🔍 Detected AI tools in project:\n");
+  console.log("  Tool            Status");
+  console.log("  ─────────────── ──────────");
 
   for (const [toolId, info] of Object.entries(results)) {
-    const status = info.detected ? '✅ Detected' : '❌ Not found';
+    const status = info.detected ? "✅ Detected" : "❌ Not found";
     const name = info.name.padEnd(15);
     console.log(`  ${name} ${status}`);
   }
 
   const detected = getDetectedToolIds(projectRoot);
-  console.log(`\n  Found ${detected.length} tool(s): ${detected.length > 0 ? detected.join(', ') : 'none'}\n`);
+  console.log(
+    `\n  Found ${detected.length} tool(s): ${detected.length > 0 ? detected.join(", ") : "none"}\n`,
+  );
 
   return detected;
 }
 
 function printToolList() {
   const allTools = getAllToolIds();
-  console.log('\n📋 All supported AI coding tools:\n');
+  console.log("\n📋 All supported AI coding tools:\n");
   for (const toolId of allTools) {
     console.log(`  • ${toolId}`);
   }
@@ -138,35 +148,43 @@ function main() {
   }
 
   switch (args.command) {
-    case 'detect': {
+    case "detect": {
       printDetectionResults(args.target);
       break;
     }
 
-    case 'list': {
+    case "list": {
       printToolList();
       break;
     }
 
-    case 'setup': {
-      console.log('\n🚀 Cypress2PlaywrightUsingAI Setup\n');
+    case "setup": {
+      console.log("\n🚀 Cypress2PlaywrightUsingAI Setup\n");
       console.log(`  Target project: ${args.target}\n`);
 
       let toolsToInstall;
 
       if (args.all) {
         toolsToInstall = getAllToolIds();
-        console.log(`  Mode: Installing ALL ${toolsToInstall.length} tool templates\n`);
+        console.log(
+          `  Mode: Installing ALL ${toolsToInstall.length} tool templates\n`,
+        );
       } else if (args.tools) {
         toolsToInstall = args.tools;
-        console.log(`  Mode: Installing specified tools: ${toolsToInstall.join(', ')}\n`);
+        console.log(
+          `  Mode: Installing specified tools: ${toolsToInstall.join(", ")}\n`,
+        );
       } else {
-        console.log('  Mode: Auto-detecting installed tools\n');
+        console.log("  Mode: Auto-detecting installed tools\n");
         toolsToInstall = printDetectionResults(args.target);
 
         if (toolsToInstall.length === 0) {
-          console.log('  ⚠️  No AI tools detected. Use --all to install for all tools,');
-          console.log('     or --tools <list> to specify which tools to install.\n');
+          console.log(
+            "  ⚠️  No AI tools detected. Use --all to install for all tools,",
+          );
+          console.log(
+            "     or --tools <list> to specify which tools to install.\n",
+          );
           process.exit(1);
         }
       }
@@ -175,40 +193,50 @@ function main() {
       const allValid = getAllToolIds();
       const invalid = toolsToInstall.filter((t) => !allValid.includes(t));
       if (invalid.length > 0) {
-        console.error(`❌ Unknown tools: ${invalid.join(', ')}`);
-        console.error(`   Valid tools: ${allValid.join(', ')}`);
+        console.error(`❌ Unknown tools: ${invalid.join(", ")}`);
+        console.error(`   Valid tools: ${allValid.join(", ")}`);
         process.exit(1);
       }
 
-      console.log('─'.repeat(50));
+      console.log("─".repeat(50));
 
-      const results = installAll(toolsToInstall, args.target, { force: args.force });
+      const results = installAll(toolsToInstall, args.target, {
+        force: args.force,
+      });
 
       // Strip version-fetch instructions in air-gapped mode
       if (args.noFetch) {
-        console.log('\n🔒 Air-gapped mode: Stripping version-fetch instructions...\n');
+        console.log(
+          "\n🔒 Air-gapped mode: Stripping version-fetch instructions...\n",
+        );
         const stripped = stripFetchInstructions(args.target);
-        console.log(`\n  ✂️  Stripped fetch instructions from ${stripped} file(s)`);
-        console.log('  ℹ️  Templates will use built-in API mappings only (no runtime doc fetching)\n');
+        console.log(
+          `\n  ✂️  Stripped fetch instructions from ${stripped} file(s)`,
+        );
+        console.log(
+          "  ℹ️  Templates will use built-in API mappings only (no runtime doc fetching)\n",
+        );
       }
 
-      console.log('\n─'.repeat(50));
-      console.log('\n✅ Setup complete!\n');
+      console.log("\n─".repeat(50));
+      console.log("\n✅ Setup complete!\n");
 
       const succeeded = Object.entries(results).filter(([, v]) => v);
       const failed = Object.entries(results).filter(([, v]) => !v);
 
       if (succeeded.length > 0) {
-        console.log(`  Installed: ${succeeded.map(([k]) => k).join(', ')}`);
+        console.log(`  Installed: ${succeeded.map(([k]) => k).join(", ")}`);
       }
       if (failed.length > 0) {
-        console.log(`  Failed:    ${failed.map(([k]) => k).join(', ')}`);
+        console.log(`  Failed:    ${failed.map(([k]) => k).join(", ")}`);
       }
 
-      console.log('\n  Next steps:');
-      console.log('  1. Review the installed files in your project');
-      console.log('  2. Customize the agent configs for your team\'s workflow');
-      console.log('  3. Start using @mentions or slash commands with your AI tool\n');
+      console.log("\n  Next steps:");
+      console.log("  1. Review the installed files in your project");
+      console.log("  2. Customize the agent configs for your team's workflow");
+      console.log(
+        "  3. Start using @mentions or slash commands with your AI tool\n",
+      );
       break;
     }
 

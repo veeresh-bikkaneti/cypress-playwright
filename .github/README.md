@@ -7,6 +7,7 @@ This directory contains AI agents, prompts, and configuration that power the **A
 The **QA Orchestrator** (`@qa-orchestrator`) is the central AI controller that analyzes your testing needs, infers unstated requirements, and delegates work to specialized personas.
 
 ### Key Features
+
 - 🧠 **Requirement Inference**: Automatically identifies accessibility, security, and performance needs
 - 🎯 **Smart Delegation**: Routes tasks to the right QA persona
 - 💰 **Cost-Optimized**: Uses premium models (1X) for strategy, low-cost models (0X) for execution
@@ -15,6 +16,7 @@ The **QA Orchestrator** (`@qa-orchestrator`) is the central AI controller that a
 ### How to Use
 
 **Invoke the Orchestrator**:
+
 ```
 @qa-orchestrator create comprehensive tests for the login feature
 @qa-orchestrator fix the failing checkout test
@@ -22,6 +24,7 @@ The **QA Orchestrator** (`@qa-orchestrator`) is the central AI controller that a
 ```
 
 The orchestrator will:
+
 1. Analyze your request (stated + unstated requirements)
 2. Select appropriate personas (QA Engineer, SDET, etc.)
 3. Coordinate the work
@@ -33,22 +36,24 @@ The orchestrator will:
 
 All personas use **low-cost models (0X tier)** for efficient execution:
 
-| Persona | Focus | When to Use |
-|---------|-------|-------------|
-| **[@qa-engineer](./agents/qa-roles/qa-engineer.md)** | Functional testing, bug detection | Test case review, exploratory testing |
-| **[@qa-architect](./agents/qa-roles/qa-architect.md)** | Framework design, CI/CD | Test architecture, infrastructure planning |
-| **[@manual-tester](./agents/qa-roles/manual-tester.md)** | Exploratory testing, usability | Manual test cases, edge case discovery |
-| **[@automation-engineer](./agents/qa-roles/automation-engineer.md)** | Test automation, POM | Writing automated tests, page objects |
-| **[@sdet](./agents/qa-roles/sdet.md)** | Advanced frameworks, API/performance testing | Custom tools, performance tests |
+| Persona                                                              | Focus                                        | When to Use                                |
+| -------------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------ |
+| **[@qa-engineer](./agents/qa-roles/qa-engineer.md)**                 | Functional testing, bug detection            | Test case review, exploratory testing      |
+| **[@qa-architect](./agents/qa-roles/qa-architect.md)**               | Framework design, CI/CD                      | Test architecture, infrastructure planning |
+| **[@manual-tester](./agents/qa-roles/manual-tester.md)**             | Exploratory testing, usability               | Manual test cases, edge case discovery     |
+| **[@automation-engineer](./agents/qa-roles/automation-engineer.md)** | Test automation, POM                         | Writing automated tests, page objects      |
+| **[@sdet](./agents/qa-roles/sdet.md)**                               | Advanced frameworks, API/performance testing | Custom tools, performance tests            |
 
 ### Framework-Specific Agents
 
 **Cypress** (10.x - 13.x):
+
 - **[@cypress-healer](./agents/cypress/cypress-healer.md)**: Fix broken Cypress tests
 - **[@cypress-to-playwright-migration](./agents/cypress/cypress-to-playwright-migration.md)**: Migrate to Playwright
 
 **Playwright** (1.38 - 1.48+):
-- **[@playwright-healer](./agents/playwright/playwright-healer.md)**: Fix broken Playwright tests  
+
+- **[@playwright-healer](./agents/playwright/playwright-healer.md)**: Fix broken Playwright tests
 - **[@playwright-test-generator](./agents/playwright/playwright-test-generator.md)**: Generate new tests
 - **[@playwright-test-planner](./agents/playwright/playwright-test-planner.md)**: Plan test strategy
 
@@ -59,17 +64,21 @@ All personas use **low-cost models (0X tier)** for efficient execution:
 Quick commands for VS Code GitHub Copilot Chat:
 
 ### Cypress Commands
+
 - `/cypress-create [feature]` - Generate Cypress tests
 - `/cypress-heal [test file]` - Fix broken Cypress tests
 
 ### Playwright Commands
+
 - `/playwright-create [feature]` - Generate Playwright tests
 - `/playwright-heal [test file]` - Fix broken Playwright tests
 
 ### Migration Commands
+
 - `/migrate-cy-to-pw [file]` - Migrate Cypress to Playwright
 
 ### Example Usage
+
 ```
 /playwright-create login page with email and password
 /cypress-heal cypress/e2e/checkout.cy.ts
@@ -81,11 +90,13 @@ Quick commands for VS Code GitHub Copilot Chat:
 ## 💰 Model Pricing & Strategy
 
 ### Orchestrator (Premium - 1X Tier)
+
 - **Model**: GPT-4 or equivalent premium model
 - **Use Case**: Strategic decisions, requirement analysis, delegation
 - **Fallback**: GPT-3.5-turbo (0X) on rate limits
 
 ### Personas (Low-Cost - 0X Tier)
+
 - **Model**: GPT-3.5-turbo or equivalent
 - **Use Case**: Task execution, test generation, code fixes
 - **Cost**: Free or minimal cost per request
@@ -97,11 +108,13 @@ See [model-config.json](./agents/qa-orchestrator/model-config.json) for full con
 ## 📚 Documentation & Templates
 
 ### Test Structure Templates
+
 - **[BDD Template](./templates/bdd-template.md)**: Given-When-Then format
 - **[AAA Template](./templates/aaa-template.md)**: Arrange-Act-Assert format
 - **[Requirements Traceability](./templates/requirements-traceability.md)**: Link tests to requirements
 
 ### Prompts Directory
+
 ```
 prompts/
 ├── cypress/              # Cypress-specific prompts
@@ -121,6 +134,7 @@ prompts/
 ### Step 1: Understanding the System
 
 This repository uses AI agents to help you with testing. Think of it as having a team of QA experts available 24/7:
+
 - **Orchestrator**: The team lead who assigns work
 - **Personas**: Specialists (engineer, architect, tester, etc.)
 
@@ -139,6 +153,7 @@ This repository uses AI agents to help you with testing. Think of it as having a
 ### Step 3: What the AI Will Do
 
 The AI will:
+
 1. **Ask clarifying questions** (if needed)
 2. **Analyze requirements** (stated + unstated)
 3. **Generate tests** with:
@@ -150,6 +165,7 @@ The AI will:
 ### Step 4: Review the Output
 
 The AI will create:
+
 - Test files (`*.spec.ts` or `*.cy.ts`)
 - Page Objects (`*Page.ts`)
 - Fixtures (if needed)
@@ -171,21 +187,26 @@ npm run cy:run
 ## 🔧 Troubleshooting
 
 ### "Agent not found"
+
 Make sure you're using the correct agent name with `@` prefix:
+
 ```
 @qa-orchestrator (not qa-orchestrator)
 @cypress-healer (not cypress healer)
 ```
 
 ### "Slash command not recognized"
+
 Slash commands only work in GitHub Copilot Chat (VS Code). Make sure Copilot is enabled.
 
 ### "Tests still failing after healing"
+
 1. Check the error logs carefully
 2. Share the trace file or screenshot with the healer
 3. Invoke: `/playwright-heal [test] --verbose` for detailed analysis
 
 ### "How do I know which agent to use?"
+
 Use `@qa-orchestrator` and let it decide! It will analyze your request and delegate to the right persona.
 
 ---
@@ -193,12 +214,14 @@ Use `@qa-orchestrator` and let it decide! It will analyze your request and deleg
 ## 🧠 Memory & Automated Workflows
 
 👉 **Dual Support**: All workflows available for both **GitHub Actions** and **Azure DevOps Pipelines**
+
 - GitHub: `.github/workflows/`
 - Azure: `.azure-pipelines/` ([Setup Guide](.../.azure-pipelines/README.md))
 
 ### Session Logging
 
 All AI interactions can be tracked in [`.github/memory/session-log.md`](./memory/session-log.md):
+
 - **What**: Logs agent usage, decisions made, files modified
 - **When**: Automatically on test file changes (via `ai-session-logger.yml`)
 - **Why**: Provides continuity across sessions and requirement traceability
@@ -208,11 +231,13 @@ All AI interactions can be tracked in [`.github/memory/session-log.md`](./memory
 ### Automated Workflows
 
 #### 1. **AI Session Logger** ([`ai-session-logger.yml`](./workflows/ai-session-logger.yml))
+
 - **Triggers**: When test files (`.spec.ts`, `.cy.ts`) are modified
 - **Action**: Logs agent used, files changed, commit message to `session-log.md`
 - **Usage**: Commit with agent mention: `git commit -m "@playwright-healer fixed checkout test"`
 
 #### 2. **Auto-Heal Failing Tests** ([`auto-heal-tests.yml`](./workflows/auto-heal-tests.yml))
+
 - **Triggers**: When CI fails or manual dispatch
 - **Action**: Creates GitHub issue with:
   - Failed test file names
@@ -225,6 +250,7 @@ All AI interactions can be tracked in [`.github/memory/session-log.md`](./memory
   ```
 
 #### 3. **Requirement Tracer** ([`requirement-tracer.yml`](./workflows/requirement-tracer.yml))
+
 - **Triggers**: When test files are modified
 - **Action**: Extracts `@feature`, `@acceptance-criteria` from test comments
 - **Output**: Generates `traceability-matrix.md` linking requirements → tests
@@ -308,4 +334,3 @@ graph TD
 ---
 
 **Need Help?** Invoke `@qa-orchestrator what can you help me with?` in GitHub Copilot Chat.
-

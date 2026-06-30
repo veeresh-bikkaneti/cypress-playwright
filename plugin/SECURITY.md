@@ -6,13 +6,13 @@
 
 ### Core Security Principles
 
-| Principle | Guarantee |
-|-----------|-----------|
-| **Zero Outbound Traffic** | The plugin makes NO network requests. No data leaves your machine. |
-| **No Telemetry** | No analytics, tracking, phone-home, or usage reporting. |
-| **No API Keys Required** | No credentials are needed or stored. |
-| **No External Dependencies** | No runtime npm packages that make network calls. |
-| **Local-Only Operations** | All file operations are local filesystem only. |
+| Principle                    | Guarantee                                                          |
+| ---------------------------- | ------------------------------------------------------------------ |
+| **Zero Outbound Traffic**    | The plugin makes NO network requests. No data leaves your machine. |
+| **No Telemetry**             | No analytics, tracking, phone-home, or usage reporting.            |
+| **No API Keys Required**     | No credentials are needed or stored.                               |
+| **No External Dependencies** | No runtime npm packages that make network calls.                   |
+| **Local-Only Operations**    | All file operations are local filesystem only.                     |
 
 ### What This Means for Enterprise Users
 
@@ -37,10 +37,10 @@ The plugin and all installed templates have been audited for:
 
 The agent configurations instruct AI tools to fetch official documentation at runtime to ensure version compatibility:
 
-| Source | URLs | Purpose |
-|--------|------|---------|
+| Source          | URLs                    | Purpose                                         |
+| --------------- | ----------------------- | ----------------------------------------------- |
 | Playwright docs | `playwright.dev/docs/*` | Ensure API compatibility with installed version |
-| Cypress docs | `docs.cypress.io/*` | Ensure API compatibility with installed version |
+| Cypress docs    | `docs.cypress.io/*`     | Ensure API compatibility with installed version |
 
 **Important:** These fetches are performed by the user's AI coding tool (e.g., Copilot, Claude, Cursor) at the user's discretion, not by this plugin. The plugin only installs instructions that tell the AI tool to check documentation. Enterprise users can:
 

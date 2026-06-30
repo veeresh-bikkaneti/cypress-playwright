@@ -3,6 +3,7 @@
 **Slash Command**: `/cypress-heal`
 
 ## Description
+
 Diagnose and fix broken Cypress tests by analyzing error logs, screenshots, videos, and stack traces. Automatically applies self-healing selector strategies.
 
 ## Usage
@@ -29,25 +30,27 @@ Diagnose and fix broken Cypress tests by analyzing error logs, screenshots, vide
 
 ## Common Issues Fixed
 
-| Error Type | Root Cause | Healing Strategy |
-|------------|------------|------------------|
-| **Timed out retrying** | Element not found | Update selector, check for iframes |
-| **Detached from DOM** | Re-render happened | Re-query element, avoid stale references |
-| **XHR Failure** | API changed | Update intercept route, fix mock data |
-| **Assertion Error** | Expected value changed | Review test data, update assertion |
+| Error Type             | Root Cause             | Healing Strategy                         |
+| ---------------------- | ---------------------- | ---------------------------------------- |
+| **Timed out retrying** | Element not found      | Update selector, check for iframes       |
+| **Detached from DOM**  | Re-render happened     | Re-query element, avoid stale references |
+| **XHR Failure**        | API changed            | Update intercept route, fix mock data    |
+| **Assertion Error**    | Expected value changed | Review test data, update assertion       |
 
 ## Self-Healing Selectors
 
 Auto-upgrades fragile selectors to resilient ones:
 
 **Before** (Fragile):
+
 ```typescript
-cy.get('.btn-primary').click();
+cy.get(".btn-primary").click();
 ```
 
 **After** (Resilient):
+
 ```typescript
-cy.getByRole('button', { name: 'Submit' });
+cy.getByRole("button", { name: "Submit" });
 // or
 cy.get('[data-testid="submit-btn"]').click();
 ```
@@ -61,6 +64,7 @@ cy.get('[data-testid="submit-btn"]').click();
 ## Required Artifacts
 
 The healer looks for:
+
 - Test failure logs
 - `test-output/cypress-output/screenshots/`
 - `test-output/cypress-output/videos/`

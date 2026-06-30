@@ -5,8 +5,13 @@
  * Provides agent configurations for 7 major AI coding tools.
  */
 
-const { detectTools, getDetectedToolIds, getAllToolIds, TOOL_SIGNATURES } = require('./detectors');
-const { installTool, installAll, TEMPLATES_DIR } = require('./installers');
+const {
+  detectTools,
+  getDetectedToolIds,
+  getAllToolIds,
+  TOOL_SIGNATURES,
+} = require("./detectors");
+const { installTool, installAll, TEMPLATES_DIR } = require("./installers");
 
 module.exports = {
   detectTools,
