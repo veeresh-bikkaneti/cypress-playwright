@@ -190,7 +190,7 @@ graph LR
 
 ```bash
 # 1. Clone and install
-git clone https://github.com/vbikkaneti/cypress-playwright.git
+git clone https://github.com/veeresh-bikkaneti/cypress-playwright.git
 cd cypress-playwright
 npm install
 
@@ -313,9 +313,9 @@ export class LoginPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.emailAddressTxt = page.locator('[data-testid="email-input"]');
-    this.passwordTxt = page.locator('[data-testid="password-input"]');
-    this.signinBtn = page.locator('[data-testid="submit-btn"]');
+    this.emailAddressTxt = page.getByLabel("Email Address");
+    this.passwordTxt = page.getByLabel("Password");
+    this.signinBtn = page.getByRole("button", { name: "Sign In" });
   }
 
   async login(email: string, password: string) {

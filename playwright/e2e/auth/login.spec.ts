@@ -30,6 +30,8 @@ import { test, expect } from "../../fixtures/auth.fixture";
 import { testData } from "../../fixtures/test-data";
 
 test.describe("Login Functionality", () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   test("login with valid credentials", async ({ loginPage, myAccountPage }) => {
     // Use valid credentials from test data
     await loginPage.login(

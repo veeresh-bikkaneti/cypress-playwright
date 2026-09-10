@@ -2,7 +2,8 @@ name: Auto-Heal Failing Tests
 
 on:
   workflow_run:
-    workflows: ["Hybrid CI"]  # Trigger after CI workflow
+    # Must match hybrid-ci.yml `name:`
+    workflows: ["Hybrid Test Execution"]
     types:
       - completed
   workflow_dispatch:
@@ -43,21 +44,30 @@ jobs:
           fi
           echo "framework=$FRAMEWORK" >> $GITHUB_OUTPUT
 
-      - name: Download test results
+      - name: Download Playwright results
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
-          name: test-results
-          path: ./test-results
+          name: playwright-results
+          path: ./test-results/playwright
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Download Cypress results
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: cypress-results
+          path: ./test-results/cypress
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
 
       - name: Parse failed tests
         id: parse
         run: |
           # Parse Playwright or Cypress output to extract failed test files
-          if [[ "${{ steps.detect.outputs.framework }}" == "playwright" ]]; then
-            FAILED=$(grep -r "FAILED" ./test-results | awk '{print $2}' | sort -u)
-          else
-            FAILED=$(grep -r "failing" ./test-results | awk '{print $3}' | sort -u)
-          fi
+          FAILED=$(grep -rE "FAILED|failing" ./test-results 2>/dev/null | head -n 50 || true)
+          FAILED=${FAILED:-"(see artifacts)"}
           
           echo "tests=$FAILED" >> $GITHUB_OUTPUT
           echo "## Failed Tests Detected" >> $GITHUB_STEP_SUMMARY
@@ -75,7 +85,9 @@ jobs:
           script: |
             const failedTests = `${{ needs.detect-failures.outputs.failed_tests }}`;
             const framework = `${{ needs.detect-failures.outputs.framework }}`;
-            const agent = framework === 'playwright' ? '@playwright-healer' : '@cypress-healer';
+            const skill = framework === 'playwright'
+              ? 'skills/playwright-testing (Heal section)'
+              : 'skills/cypress-to-playwright-migration';
             
             const issue = await github.rest.issues.create({
               owner: context.repo.owner,
@@ -84,30 +96,20 @@ jobs:
               body: `## Test Healing Request
               
               **Framework**: ${framework}
-              **Agent**: ${agent}
+              **Skill**: \`${skill}\`
               **Failed Tests**:
               \`\`\`
               ${failedTests}
               \`\`\`
               
-              **Instructions for Developer**:
-              1. Open GitHub Copilot Chat in VS Code
-              2. Use: \`${agent} fix the test ${failedTests.split('\n')[0]}\`
-              3. Review the proposed fix
-              4. Apply changes and close this issue
+              **Instructions** (any enterprise coding agent):
+              1. Open the repo in Copilot / Claude Code / Cursor / Grok / Codex / Gemini / OpenCode
+              2. Ask: \`heal ${failedTests.split('\\n')[0]} using ${skill}\`
+              3. Copilot-optional: \`@playwright-healer\` for Playwright only
+              4. Review the proposed fix, apply, close this issue
               
-              **Automated Analysis**:
-              - Test results: [View artifacts](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
-              - Trace/Screenshots: Check test-output directory
-              
-              **Quick Commands**:
-              \`\`\`
-              # Playwright
-              ${agent} analyze trace at test-output/playwright-output/trace.zip
-              
-              # Cypress
-              ${agent} check screenshots in test-output/cypress-output/screenshots
-              \`\`\`
+              **Artifacts**:
+              - [Workflow run](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
               `,
               labels: ['test-failure', 'ai-healing', framework]
             });

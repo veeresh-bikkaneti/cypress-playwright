@@ -17,13 +17,13 @@ test.describe("API Testing - Network Capabilities", () => {
       // Verify real products load from API
       // Wait for at least one product to appear
       await expect(
-        page.locator('[data-testid="product-card"]').first(),
+        page.getByTestId("product-card").first(),
       ).toBeVisible();
 
-      const count = await page.locator('[data-testid="product-card"]').count();
+      const count = await page.getByTestId("product-card").count();
       expect(count).toBeGreaterThan(0);
 
-      const firstCard = page.locator('[data-testid="product-card"]').first();
+      const firstCard = page.getByTestId("product-card").first();
       await expect(firstCard.locator("h3")).toHaveCount(1);
       await expect(firstCard.locator(".price")).toHaveCount(1);
     });
@@ -44,11 +44,11 @@ test.describe("API Testing - Network Capabilities", () => {
 
       // Wait for products to render before counting
       await expect(
-        page.locator('[data-testid="product-card"]').first(),
+        page.getByTestId("product-card").first(),
       ).toBeVisible();
 
       // Verify multiple products are displayed
-      const count = await page.locator('[data-testid="product-card"]').count();
+      const count = await page.getByTestId("product-card").count();
       expect(count).toBeGreaterThan(1);
     });
 
@@ -74,7 +74,7 @@ test.describe("API Testing - Network Capabilities", () => {
 
       await page.goto("/");
 
-      const firstCard = page.locator('[data-testid="product-card"]').first();
+      const firstCard = page.getByTestId("product-card").first();
       await expect(firstCard.locator("h3")).not.toBeEmpty();
       await expect(firstCard.locator(".price")).toContainText("$");
     });
@@ -83,7 +83,7 @@ test.describe("API Testing - Network Capabilities", () => {
       const start = Date.now();
       await page.goto("/");
       await expect(
-        page.locator('[data-testid="product-card"]').first(),
+        page.getByTestId("product-card").first(),
       ).toBeVisible({ timeout: 3000 });
       const duration = Date.now() - start;
       expect(duration).toBeLessThan(5000); // Relaxed timeout for Playwright execution
@@ -99,7 +99,7 @@ test.describe("API Testing - Network Capabilities", () => {
 
       // Grid should exist but be empty
       // Grid should exist but be empty
-      await expect(page.locator('[data-testid="product-card"]')).toHaveCount(0);
+      await expect(page.getByTestId("product-card")).toHaveCount(0);
     });
   });
 

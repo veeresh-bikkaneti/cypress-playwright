@@ -4,13 +4,14 @@ Pre-flight:
 
 | Task | Produces | Consumes | Finding |
 | --- | --- | --- | --- |
-| 1,3,6,9,10 | AGENTS.md, adapters, installer | none | Drafted on this branch; smoke green |
-| 2 | code-review skill + script | skills/ | Independent of tests |
-| 4 | skill audit + catalog | skills/, plugin/ | Overlaps 2 on skills/ — same worktree |
-| 5 | playwright pages/specs/config | AGENTS.md locator policy | Independent file tree |
-| 7 | .github/workflows | none | Independent |
-| 8 | package.json, leftover docs | README already updated | Light overlap with README — avoid README unless needed |
+| 1,3,6,9,10 | AGENTS.md, adapters, installer | none | Committed 062f172 |
+| 2 | code-review skill + script | skills/ | Implementing in parent after subagent stall |
+| 4 | skill audit + catalog | skills/, plugin/ | Paired with 2 |
+| 5 | playwright pages/specs/config | locator policy | Implementing in parent |
+| 7 | .github/workflows | none | Implementing in parent |
+| 8 | package.json, leftover docs | README | Implementing in parent |
 
-Ruling: pair 2+4 in one implementer (shared `skills/`). 5, 7, 8 are parallel worktrees.
+Ruling: parallel subagents stalled after planning. Supervisor implemented remaining tasks in-tree. Isolated review + E2E still required before PR.
 
-Task 1/3/6/9/10: in progress (commit pending)
+Task 1/3/6/9/10: complete (commits 07bd215..062f172)
+Task 2/4/5/7/8: in progress

@@ -57,6 +57,7 @@ const required = [
   "skills/playwright-testing/SKILL.md",
   "skills/code-review/SKILL.md",
   "skills/code-review/code-reviewer.md",
+  "skills/code-review/scripts/review-range.sh",
   "skills/webapp-testing/SKILL.md",
   ".agents/skills/playwright-testing/SKILL.md",
   ".github/skills/code-review/SKILL.md",
