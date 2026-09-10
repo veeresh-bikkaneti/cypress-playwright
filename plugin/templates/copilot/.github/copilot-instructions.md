@@ -1,14 +1,35 @@
----
-description: Copilot adapter. Follow root AGENTS.md; this file must not contradict it.
-alwaysApply: true
----
+# GitHub Copilot adapter
 
-# Copilot adapter
+**Source of truth is [`AGENTS.md`](../AGENTS.md).** If this file conflicts with it, `AGENTS.md` wins.
 
-**Source of truth is `AGENTS.md` at the repo root.** Skills live in `skills/` (mirrored to `.github/skills/` and `.agents/skills/`).
+This file is always-on for Copilot (IDE, CLI, coding agent). Keep it short. Procedures live in Agent Skills, not here.
 
-- Cypress conversion → skill `cypress-to-playwright-migration`
-- Write/heal Playwright → skill `playwright-testing`
-- Before merge → skill `code-review` (isolated git-range review, not this session)
+## Skills (load on demand)
 
-Optional `@mentions`: `@qa-orchestrator`, `@cypress-to-playwright-migration`, `@playwright-healer`, `@playwright-test-generator`, `@playwright-test-planner`.
+| Task | Skill |
+| --- | --- |
+| Convert Cypress → Playwright | `skills/cypress-to-playwright-migration` (also `.github/skills/`) |
+| Write or heal Playwright | `skills/playwright-testing` |
+| Plan coverage | `skills/webapp-testing` |
+| Review before merge | `skills/code-review` — **isolated** pass with a git range, not this session |
+
+## Optional @mentions
+
+- `@qa-orchestrator` — route when the user has not named a specialist
+- `@cypress-to-playwright-migration`
+- `@playwright-healer`
+- `@playwright-test-generator`
+- `@playwright-test-planner`
+
+Do not require `@` syntax. Natural language must work. Nested files under `.github/agents/cypress/`, `playwright/`, `qa-roles/` are legacy — ignore them unless the user names them.
+
+## Non-negotiables (same as AGENTS.md)
+
+1. No `cy.*` in `playwright/`.
+2. Await every Playwright action and assertion.
+3. Never `page.waitForTimeout`.
+4. Locators: `getByRole` > `getByLabel` > `getByPlaceholder` > `getByText` > `getByTestId` > `locator()`.
+5. Auth via `storageState` or fixtures.
+6. TypeScript strict. No `// ... rest of code`.
+
+Pin APIs to versions in `package.json`. Do not invent Cypress or Playwright methods.

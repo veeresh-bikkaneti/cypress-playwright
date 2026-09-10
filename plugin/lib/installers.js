@@ -21,6 +21,12 @@ const IGNORED_DIRS = new Set([
   "coverage",
 ]);
 
+/** Extra skill discovery paths used by a vendor adapter (in addition to the core mirrors). */
+const ADAPTER_SKILL_MIRRORS = {
+  claude: ".claude/skills",
+  cursor: ".cursor/skills",
+};
+
 function copyDirSync(src, dest, force, copied) {
   if (!fs.existsSync(dest)) {
     fs.mkdirSync(dest, { recursive: true });
@@ -60,6 +66,7 @@ function installShared(projectRoot, force, copied) {
   }
   console.log("\n📦 Installing portable core (AGENTS.md + skills/)...");
   copyDirSync(SHARED_DIR, projectRoot, force, copied);
+  // Codex + Copilot + any AGENTS.md client
   mirrorSkills(projectRoot, ".agents/skills", force, copied);
   mirrorSkills(projectRoot, ".github/skills", force, copied);
   return true;
@@ -81,6 +88,12 @@ function installTool(toolId, projectRoot, force = false, copied = []) {
 
   console.log(`\n📦 Installing ${toolId} adapter...`);
   copyDirSync(templateDir, projectRoot, force, copied);
+
+  const extraMirror = ADAPTER_SKILL_MIRRORS[toolId];
+  if (extraMirror) {
+    mirrorSkills(projectRoot, extraMirror, force, copied);
+  }
+
   console.log(`✅ ${toolId} adapter installed.`);
   return true;
 }

@@ -14,4 +14,4 @@ Route:
 - Coverage planning → load `skills/webapp-testing`
 - After implementation → load `skills/code-review` in a **separate** pass (git range, not this session’s history)
 
-Do not mention Copilot-only `@` syntax unless the user is in Copilot Chat. Same procedure works in Claude, Grok, Cursor, Codex, and Gemini.
+Do not mention Copilot-only `@` syntax unless the user is in Copilot Chat. The same procedure works in Claude, Grok, Cursor, Codex, Gemini, and OpenCode.

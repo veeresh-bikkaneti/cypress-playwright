@@ -1,5 +1,8 @@
 ---
-description: Heal a failing Playwright spec
+description: Heal a failing Playwright spec (traces, locators, no sleeps)
+argument-hint: "[path to Playwright spec]"
 ---
 
-Load `skills/playwright-testing/SKILL.md` and fix the failing Playwright spec the user named. Follow `AGENTS.md`. Re-run the spec. Then load `skills/code-review`.
+Load and follow `skills/playwright-testing/SKILL.md` (Heal section). Mirrored at `.claude/skills/playwright-testing/`.
+
+Also read root `AGENTS.md`. Arguments: $ARGUMENTS

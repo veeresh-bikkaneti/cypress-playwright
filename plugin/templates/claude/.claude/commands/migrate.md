@@ -1,5 +1,8 @@
 ---
-description: Migrate a Cypress spec to Playwright
+description: Migrate a Cypress spec or custom command to Playwright Test
+argument-hint: "[path to Cypress spec]"
 ---
 
-Load `skills/cypress-to-playwright-migration/SKILL.md` and convert the Cypress file the user named (default: the open file). Follow `AGENTS.md`. After tests pass, load `skills/code-review`.
+Load and follow `skills/cypress-to-playwright-migration/SKILL.md` (mirrored at `.claude/skills/cypress-to-playwright-migration/`).
+
+Also read root `AGENTS.md`. Arguments: $ARGUMENTS

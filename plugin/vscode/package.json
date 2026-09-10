@@ -1,7 +1,7 @@
 {
   "name": "cypress2playwright-using-ai",
   "displayName": "Cypress2Playwright Using AI",
-  "description": "Cypress-to-Playwright migration agents for GitHub Copilot, Claude Code, Cursor, Grok, OpenAI Codex, and Gemini.",
+  "description": "Cypress-to-Playwright migration agents for GitHub Copilot, Claude Code, Cursor, Grok, OpenAI Codex, Gemini, and OpenCode.",
   "version": "1.1.0",
   "publisher": "vbikkaneti",
   "license": "MIT",
@@ -88,7 +88,8 @@
               "cursor",
               "grok",
               "codex",
-              "gemini"
+              "gemini",
+              "opencode"
             ]
           },
           "default": [
@@ -96,7 +97,7 @@
             "claude",
             "cursor"
           ],
-          "description": "Vendor adapters to install. AGENTS.md + skills always install (covers Grok and Codex)."
+          "description": "Vendor adapters to install. AGENTS.md + skills always install (covers Grok, Codex, and OpenCode)."
         }
       }
     }

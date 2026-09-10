@@ -1,6 +1,6 @@
 # Gemini / Antigravity / Jules
 
-Read [AGENTS.md](./AGENTS.md) first. That file is the source of truth.
+Read [AGENTS.md](./AGENTS.md) first. That file is the source of truth. If this file conflicts with it, prefer not to — keep this file a pointer so Antigravity cannot silently override shared rules.
 
 Skills live in `skills/` and `.agents/skills/`. Use:
 

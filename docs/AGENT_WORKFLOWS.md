@@ -1,95 +1,71 @@
-# 🤖 AI Agent Workflows
+# AI agent workflows
 
-> **Goal**: Use the "Batteries Included" AI Agents to plan, build, heal, and migrate tests.
+Vendor syntax is optional. Every workflow below works as **natural language** against `AGENTS.md` + `skills/`. Copilot `@mentions` and Claude `/commands` are adapters.
 
----
+Full tool matrix: [ENTERPRISE_AGENTS.md](./ENTERPRISE_AGENTS.md).
 
-## 🏗️ The Agent Squad
+## Skills (canonical)
 
-| Agent         | File                                 | Specialty                              |
-| :------------ | :----------------------------------- | :------------------------------------- |
-| **Planner**   | `playwright-test-planner.agent.md`   | Strategy, Component vs E2E, Coverage   |
-| **Generator** | `playwright-test-generator.agent.md` | Writing code from User Stories         |
-| **Healer**    | `playwright-healer.md`               | Diagnosing failures & fixing selectors |
-| **Migrator**  | `cypress-to-playwright.agent.md`     | Converting Cypress to Playwright       |
+| Skill | Use when |
+| --- | --- |
+| `skills/cypress-to-playwright-migration` | Convert a Cypress spec or custom command |
+| `skills/playwright-testing` | Write or heal Playwright tests |
+| `skills/webapp-testing` | Plan coverage, not a single spec |
+| `skills/code-review` | Isolated review with a git range before merge |
 
----
+## Workflows
 
-## 🚀 How to Summon an Agent
+### 1. Migrate a Cypress spec
 
-### 1. The Migrator (Cypress -> Playwright)
+> Migrate `cypress/e2e/tests/login.test.ts` to Playwright using the Page Object Model.
 
-**Use when**: You have a legacy Cypress test file and want a Playwright version.
+Copilot: `@cypress-to-playwright-migration …` · Claude: `/migrate cypress/e2e/tests/login.test.ts`
 
-**Prompt**:
+1. Agent reads the Cypress spec and custom commands.
+2. Maps UI flows → Page Object, auth/session → fixture / `storageState`.
+3. Writes `playwright/pages/…` and `playwright/e2e/….spec.ts`.
+4. Runs `npx tsc --noEmit` and `npx playwright test --project=chromium` on the new file.
+5. Dispatches `skills/code-review` in a **separate** pass against the Cypress source.
 
-> "@cypress-to-playwright Migrate `cypress/e2e/login.cy.ts` to Playwright using the Page Object Model."
+### 2. Plan coverage for a feature
 
-**What happens**:
+> Plan Playwright coverage for the shopping cart. Do not write specs yet.
 
-1.  Agent reads the file.
-2.  Identifies custom commands (`cy.login`).
-3.  Creates a Page Object (`pages/LoginPage.ts`).
-4.  Creates the Test Spec (`e2e/login.spec.ts`).
-5.  Includes strict type safety and semantic locators.
+Copilot: `@playwright-test-planner …`
 
-### 2. The Planner (New Feature Strategy)
+Loads `skills/webapp-testing`. Output: flows, files, fixtures. Hand off writing to the generator / `playwright-testing`.
 
-**Use when**: You have a new feature request (e.g., "Add a Shopping Cart") but no code yet.
+### 3. Generate tests from a plan
 
-**Prompt**:
+> Generate Playwright tests for the shopping cart based on this plan.
 
-> "@playwright-test-planner Create a test plan for the new Shopping Cart feature. Use BDD style."
+Copilot: `@playwright-test-generator …`
 
-**What happens**:
+Loads `skills/playwright-testing`. Semantic locators first (`getByRole` / `getByLabel`).
 
-1.  Agent outlines scenarios (Happy Path, Edge Cases).
-2.  Recommends Directory Structure.
-3.  Identifies necessary Fixtures.
+### 4. Heal a failure
 
-### 3. The Generator (Writing Code)
+> Heal `playwright/e2e/cart.spec.ts`. Here are the logs / trace.
 
-**Use when**: You have a plan and want the actual test code.
+Copilot: `@playwright-healer …` · Claude: `/heal playwright/e2e/cart.spec.ts`
 
-**Prompt**:
+Read the error. Update the user-facing locator or wait on a condition. Never `waitForTimeout`. Re-run the spec.
 
-> "@playwright-test-generator Generate the tests for the Shopping Cart based on this plan."
+### 5. Review before merge
 
-**What happens**:
+> Review the last migration. Base is origin/main.
 
-1.  Agent writes `pages/CartPage.ts`.
-2.  Agent writes `e2e/cart.spec.ts`.
-3.  Agent ensures all selectors use `getByRole` (Accessibility first).
+Claude: `/review` · Copilot: new chat or GitHub code review (not the same session that wrote the code).
 
-### 4. The Healer (Fixing Failures)
+Loads `skills/code-review`. Reviewer gets a git range + requirements only.
 
-**Use when**: A CI build failed or a test is flaky.
+## Routing (when the user does not name a specialist)
 
-**Prompt**:
+`@qa-orchestrator` (Copilot) or any agent reading `AGENTS.md`:
 
-> "@playwright-healer Fix the failure in `e2e/cart.spec.ts`. Here are the logs..."
-
-**What happens**:
-
-1.  Agent analyzes the error (e.g., "Timeout waiting for selector").
-2.  Checks the Trace Viewer summary.
-3.  Suggests a fix (e.g., "Selector changed ID -> Class", or "Need to await API response").
-
----
-
-## 🛠️ Skills & Capabilities
-
-The agents are powered by specialized **Skills** defined in `.github/skills/`.
-
-- **`webapp-testing`**: Deep knowledge of DOM, Network, and Accessibility testing.
-- **`clean-code`**: Enforces DRY, SOLID, and readable code.
-- **`documentation-templates`**: Ensures docs are formatted correctly.
-
----
-
-## 🔄 Self-Maintenance
-
-These agents are **self-updating**. A script runs every 15 days to ensure they match the installed version of Playwright and Cypress.
-
-- **Check status**: `.github/workflows/update-agents.yml`
-- **Manual update**: `node scripts/update_agents.js`
+| Ask | Skill |
+| --- | --- |
+| Convert Cypress | `cypress-to-playwright-migration` |
+| New or broken Playwright | `playwright-testing` |
+| What should we automate? | `webapp-testing` |
+| Is this mergeable? | `code-review` (isolated) |

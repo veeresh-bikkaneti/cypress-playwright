@@ -2,7 +2,7 @@
  * Detects enterprise AI coding tools configured in a project.
  *
  * Portable core (AGENTS.md + skills/) is always installed and covers
- * Grok, OpenAI Codex, and any other AGENTS.md client.
+ * Grok, OpenAI Codex, OpenCode, and any other AGENTS.md client.
  */
 
 const fs = require("fs");
@@ -20,7 +20,7 @@ const TOOL_SIGNATURES = {
   },
   claude: {
     name: "Claude Code",
-    files: ["CLAUDE.md", ".claude", ".claude/commands"],
+    files: ["CLAUDE.md", ".claude", ".claude/commands", ".claude/skills"],
     configFiles: ["CLAUDE.md"],
   },
   cursor: {
@@ -43,7 +43,15 @@ const TOOL_SIGNATURES = {
     files: ["GEMINI.md", ".gemini"],
     configFiles: ["GEMINI.md"],
   },
+  opencode: {
+    name: "OpenCode",
+    files: [".opencode", "opencode.json", ".opencode/agents"],
+    configFiles: ["opencode.json"],
+  },
 };
+
+/** Tools that only need the portable core (no extra adapter directory). */
+const CORE_ONLY = new Set(["grok", "codex", "opencode"]);
 
 function exists(fullPath) {
   try {
@@ -76,9 +84,8 @@ function getAllToolIds() {
   return Object.keys(TOOL_SIGNATURES);
 }
 
-/** Tools that only need the portable core (no extra adapter directory). */
 function isCoreOnlyTool(toolId) {
-  return toolId === "grok" || toolId === "codex";
+  return CORE_ONLY.has(toolId);
 }
 
 module.exports = {

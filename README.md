@@ -1,11 +1,41 @@
 # Cypress ↔ Playwright Hybrid Testing Framework
 
-> A production-grade dual-framework test suite demonstrating Cypress-to-Playwright migration patterns, Page Object Models, and AI-assisted test automation.
+> Cypress-to-Playwright migration toolkit. Portable `AGENTS.md` + Agent Skills for **GitHub Copilot, Claude Code, Cursor, Grok, OpenAI Codex, Gemini, and OpenCode** — plus a dual-framework demo suite.
 
 [![Playwright](https://img.shields.io/badge/Playwright-v1.58+-45ba4b?style=flat-square&logo=playwright)](https://playwright.dev)
 [![Cypress](https://img.shields.io/badge/Cypress-v12+-17202C?style=flat-square&logo=cypress)](https://cypress.io)
 [![Node](https://img.shields.io/badge/Node.js-20+-339933?style=flat-square&logo=node.js)](https://nodejs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7+-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org)
+
+---
+
+## Enterprise AI agents
+
+The migration procedure is **agent-agnostic**. Every supported tool reads the same two artifacts:
+
+| Artifact | Role |
+| --- | --- |
+| [`AGENTS.md`](./AGENTS.md) | Always-on project contract (layout, locators, quality gates) |
+| [`skills/`](./skills/) | On-demand playbooks ([Agent Skills](https://agentskills.io/specification) spec) |
+
+Vendor files are thin adapters. They must not contradict `AGENTS.md`.
+
+| Tool | Adapter | How you invoke |
+| --- | --- | --- |
+| **Any** | `AGENTS.md` + `skills/` | `migrate cypress/e2e/tests/login.test.ts` |
+| **GitHub Copilot** | `.github/copilot-instructions.md`, `.github/agents/*.agent.md` | `@cypress-to-playwright-migration` |
+| **Claude Code** | `CLAUDE.md`, `.claude/commands/` | `/migrate`, `/heal`, `/review` |
+| **Cursor** | `.cursor/rules/*.mdc` | Auto on `playwright/**`, `cypress/**` |
+| **Grok / Codex / OpenCode** | (core only) | Natural language |
+| **Gemini** | `GEMINI.md` | Natural language |
+
+Not targeted: Aider, Cline, Continue, Windsurf.
+
+```bash
+npx cypress2playwright-setup setup --tools copilot,claude,cursor
+```
+
+Details: [docs/ENTERPRISE_AGENTS.md](./docs/ENTERPRISE_AGENTS.md) · [plugin/README.md](./plugin/README.md) · [docs/AGENT_WORKFLOWS.md](./docs/AGENT_WORKFLOWS.md)
 
 ---
 
@@ -180,38 +210,28 @@ npx playwright show-report
 
 ```
 cypress-playwright/
+├── AGENTS.md                    # Portable always-on agent contract
+├── skills/                      # Agent Skills (canonical playbooks)
+├── CLAUDE.md / GEMINI.md        # Thin vendor adapters
 ├── app-under-test/              # Express.js test application
 │   ├── server.js                #   API + static file server
 │   └── public/                  #   HTML pages (login, dashboard, forms, dialogs)
 │
 ├── playwright/                  # Playwright test suite (modern)
 │   ├── e2e/                     #   Test specifications
-│   │   ├── auth/                #     Authentication tests
-│   │   ├── forms/               #     Form interaction tests
-│   │   ├── api.spec.ts          #     API & network tests
-│   │   ├── smoke.spec.ts        #     Smoke tests
-│   │   └── *.spec.ts            #     Other test files
 │   ├── pages/                   #   Page Object Models
-│   │   ├── LoginPage.ts
-│   │   └── MyAccountPage.ts
 │   └── fixtures/                #   Test data & auth fixtures
-│       ├── auth.fixture.ts
-│       └── test-data.ts
 │
-├── cypress/                     # Cypress test suite (legacy)
-│   ├── e2e/tests/               #   15 test files (55 capabilities)
-│   ├── e2e/pages/               #   Page Objects
-│   ├── support/                 #   Custom commands
-│   └── fixtures/                #   Test data (JSON)
+├── cypress/                     # Cypress test suite (legacy source)
+│   ├── e2e/tests/
+│   ├── e2e/pages/
+│   └── support/
 │
-├── scripts/                     # Utility scripts
-│   ├── diagnose-cypress.js      #   Cypress failure diagnosis
-│   ├── update_agents.js         #   Agent version sync
-│   └── validate-migration.*     #   Migration quality gates
-│
-├── playwright.config.ts         # Playwright configuration
-├── cypress.config.ts            # Cypress configuration
-└── package.json                 # Dependencies & scripts
+├── plugin/                      # Installer: core + Copilot/Claude/Cursor/Gemini adapters
+├── docs/ENTERPRISE_AGENTS.md    # Tool matrix vs live vendor docs
+├── playwright.config.ts
+├── cypress.config.ts
+└── package.json
 ```
 
 ---

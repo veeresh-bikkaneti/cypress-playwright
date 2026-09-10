@@ -2,7 +2,7 @@
 
 Read [AGENTS.md](./AGENTS.md) first. That file is the source of truth for this repo.
 
-Load skills from `skills/` (also mirrored at `.agents/skills/`):
+Load skills from `skills/` (also mirrored at `.claude/skills/` and `.agents/skills/`):
 
 - `/migrate` → `skills/cypress-to-playwright-migration`
 - `/heal` → `skills/playwright-testing`

@@ -1,7 +1,7 @@
 {
   "name": "cypress2playwright-using-ai",
   "version": "1.1.0",
-  "description": "Cypress-to-Playwright migration toolkit. Portable AGENTS.md + skills for GitHub Copilot, Claude Code, Cursor, Grok, OpenAI Codex, and Gemini.",
+  "description": "Cypress-to-Playwright migration toolkit. Portable AGENTS.md + skills for GitHub Copilot, Claude Code, Cursor, Grok, OpenAI Codex, Gemini, and OpenCode.",
   "main": "lib/index.js",
   "bin": {
     "cypress2playwright-setup": "./bin/setup.js"
@@ -23,6 +23,7 @@
     "grok",
     "codex",
     "gemini",
+    "opencode",
     "agents.md",
     "testing",
     "e2e"

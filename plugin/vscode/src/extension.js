@@ -9,6 +9,7 @@ const ENTERPRISE_TOOLS = [
   "grok",
   "codex",
   "gemini",
+  "opencode",
 ];
 
 function activate(context) {
@@ -18,7 +19,7 @@ function activate(context) {
       const tools = await vscode.window.showQuickPick(ENTERPRISE_TOOLS, {
         canPickMany: true,
         placeHolder:
-          "Vendor adapters (empty = portable core only). Grok/Codex need no extra files.",
+          "Vendor adapters (empty = portable core only). Grok/Codex/OpenCode need no extra files.",
       });
 
       if (!tools) {
@@ -60,7 +61,7 @@ function activate(context) {
     "cypress2playwright.migrate",
     () => {
       vscode.window.showInformationMessage(
-        "Ask your coding agent to follow skills/cypress-to-playwright-migration (Copilot: @cypress-to-playwright-migration, Claude: /migrate, Grok: natural language + AGENTS.md).",
+        "Ask your coding agent to follow skills/cypress-to-playwright-migration (Copilot: @cypress-to-playwright-migration, Claude: /migrate, others: natural language + AGENTS.md).",
       );
     },
   );
@@ -69,7 +70,7 @@ function activate(context) {
     "cypress2playwright.heal",
     () => {
       vscode.window.showInformationMessage(
-        "Ask your coding agent to follow skills/playwright-testing (Copilot: @playwright-healer, Claude: /heal, Grok: natural language + AGENTS.md).",
+        "Ask your coding agent to follow skills/playwright-testing (Copilot: @playwright-healer, Claude: /heal, others: natural language + AGENTS.md).",
       );
     },
   );

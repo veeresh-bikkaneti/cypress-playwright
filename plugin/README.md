@@ -1,6 +1,6 @@
 # Cypress2Playwright Using AI
 
-Enterprise Cypress-to-Playwright migration toolkit. One portable core (`AGENTS.md` + Agent Skills) plus thin adapters for **GitHub Copilot, Claude Code, Cursor, Grok, OpenAI Codex, and Gemini**.
+Enterprise Cypress-to-Playwright migration toolkit. One portable core (`AGENTS.md` + [Agent Skills](https://agentskills.io/specification)) plus thin adapters for **GitHub Copilot, Claude Code, Cursor, Grok, OpenAI Codex, Gemini, and OpenCode**.
 
 [![Playwright](https://img.shields.io/badge/Playwright-v1.58+-45ba4b?style=flat-square&logo=playwright)](https://playwright.dev)
 [![Cypress](https://img.shields.io/badge/Cypress-v12+-17202C?style=flat-square&logo=cypress)](https://cypress.io)
@@ -12,28 +12,31 @@ This plugin makes **no network requests**. File copies only. `--no-fetch` strips
 ## How it works
 
 ```text
-AGENTS.md + skills/          ← every agent (Grok, Codex, Copilot, Claude, Cursor, Gemini)
+AGENTS.md + skills/          ← every agent (Grok, Codex, OpenCode, Copilot, Claude, Cursor, Gemini)
 .github/                     ← Copilot adapter
 CLAUDE.md + .claude/         ← Claude Code adapter
 .cursor/rules/               ← Cursor adapter
 GEMINI.md                    ← Gemini adapter
 ```
 
-Skills follow the [Agent Skills](https://agentskills.io/specification) spec. Copilot also reads `.github/skills/` and `.agents/skills/` (installer mirrors `skills/` there).
+Skills follow the [Agent Skills](https://agentskills.io/specification) spec. The installer mirrors `skills/` into the discovery paths each vendor actually scans.
 
 ### Supported tools
 
 | Tool | Extra files | Invocation |
 | --- | --- | --- |
 | **All** | `AGENTS.md`, `skills/` | Natural language |
-| **GitHub Copilot** | `.github/copilot-instructions.md`, `.github/agents/*.agent.md` | `@qa-orchestrator`, `@cypress-to-playwright-migration` |
-| **Claude Code** | `CLAUDE.md`, `.claude/commands/` | `/migrate`, `/heal`, `/review` |
-| **Cursor** | `.cursor/rules/*.mdc` | Auto on `playwright/**`, `cypress/**` |
+| **GitHub Copilot** | `.github/copilot-instructions.md`, `.github/agents/*.agent.md`, `.github/instructions/*.instructions.md` | `@qa-orchestrator`, `@cypress-to-playwright-migration` |
+| **Claude Code** | `CLAUDE.md`, `.claude/commands/`, `.claude/skills/` | `/migrate`, `/heal`, `/review` |
+| **Cursor** | `.cursor/rules/*.mdc`, `.cursor/skills/` | Auto on `playwright/**`, `cypress/**` |
 | **Grok** | (core only) | Reads `AGENTS.md` |
 | **OpenAI Codex** | (core only) | Reads `AGENTS.md` + `.agents/skills/` |
 | **Gemini** | `GEMINI.md` | Antigravity / Code Assist / Jules |
+| **OpenCode** | (core only) | Reads `AGENTS.md` |
 
 Not in the enterprise set: Aider, Cline, Continue, Windsurf.
+
+See [docs/ENTERPRISE_AGENTS.md](../docs/ENTERPRISE_AGENTS.md) for the live-doc matrix.
 
 ## Quick start
 
@@ -86,7 +89,7 @@ Copilot custom agents (optional): `qa-orchestrator`, `cypress-to-playwright-migr
 
 | Flag | Meaning |
 | --- | --- |
-| `--tools copilot,claude,cursor,grok,codex,gemini` | Vendor adapters |
+| `--tools copilot,claude,cursor,grok,codex,gemini,opencode` | Vendor adapters |
 | `--all` | All adapters (core is always installed) |
 | `--target <path>` | Project root |
 | `--force` | Overwrite |
@@ -97,4 +100,3 @@ After setup, **commit `AGENTS.md` and `skills/`** so every agent on the team see
 ```bash
 npm test   # from plugin/ — lists tools and installs into a temp dir
 ```
-

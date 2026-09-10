@@ -1,6 +1,6 @@
 # Cypress → Playwright
 
-Shared project facts for **every** coding agent (GitHub Copilot, Claude Code, Cursor, Grok, OpenAI Codex, Gemini, and anything that reads `AGENTS.md`).
+Shared project facts for **every** coding agent (GitHub Copilot, Claude Code, Cursor, Grok, OpenAI Codex, Gemini, OpenCode, and anything that reads `AGENTS.md`).
 
 Vendor-specific files (`CLAUDE.md`, `.github/copilot-instructions.md`, `.cursor/rules`, `GEMINI.md`) must not contradict this file. If they do, this file wins.
 
@@ -40,7 +40,7 @@ Read the matching `skills/<name>/SKILL.md` when the task matches:
 | `code-review` | Reviewing a completed migration or feature before merge |
 | `webapp-testing` | Planning E2E coverage, not writing a single spec |
 
-Discovery copies of the same skills also live at `.agents/skills/` and `.github/skills/` so Copilot, Codex, and Claude find them.
+Discovery copies of the same skills also live at `.agents/skills/`, `.github/skills/`, `.claude/skills/`, and `.cursor/skills/` so Copilot, Codex, Claude, and Cursor find them.
 
 ## Quality gates (before calling work done)
 
@@ -61,4 +61,4 @@ Do not assume `@mentions` or slash commands exist. Those are optional adapters:
 - Copilot Chat: `@cypress-to-playwright-migration`, `@playwright-healer`
 - Claude Code: `/migrate`, `/heal`, `/review`
 - Cursor: rules auto-apply on `playwright/**` and `cypress/**`
-- Grok / Codex / other `AGENTS.md` clients: this file + `skills/`
+- Grok / Codex / OpenCode / other `AGENTS.md` clients: this file + `skills/`

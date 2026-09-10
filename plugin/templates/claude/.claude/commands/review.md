@@ -1,5 +1,8 @@
 ---
-description: Isolated review of the current git range
+description: Isolated review of a completed migration or Playwright change
+argument-hint: "[optional git range or file]"
 ---
 
-Load `skills/code-review/SKILL.md` and the template `skills/code-review/code-reviewer.md`. Review `origin/main..HEAD` (or the range the user gives) as a read-only pass. Do not edit files in this command.
+Load and follow `skills/code-review/SKILL.md`. Dispatch as a **separate** pass with a git range — do not review in the same context that wrote the code.
+
+Also read root `AGENTS.md`. Arguments: $ARGUMENTS

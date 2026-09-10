@@ -23,15 +23,16 @@ const HELP = `
 Cypress2PlaywrightUsingAI — enterprise agent setup
 
 Always installs the portable core:
-  AGENTS.md + skills/   (Grok, Codex, Copilot, Claude, Cursor, Gemini, …)
+  AGENTS.md + skills/   (Grok, Codex, OpenCode, Copilot, Claude, Cursor, Gemini, …)
 
 Optional vendor adapters:
   copilot   GitHub Copilot  (.github/copilot-instructions.md, .github/agents/*.agent.md)
-  claude    Claude Code     (CLAUDE.md, .claude/commands/)
-  cursor    Cursor          (.cursor/rules/)
+  claude    Claude Code     (CLAUDE.md, .claude/commands/, .claude/skills/)
+  cursor    Cursor          (.cursor/rules/, .cursor/skills/)
   grok      Grok            (core only — AGENTS.md)
   codex     OpenAI Codex    (core only — AGENTS.md + .agents/skills)
   gemini    Gemini          (GEMINI.md)
+  opencode  OpenCode        (core only — AGENTS.md)
 
 Commands:
   setup     Install core + adapters (auto-detects vendor files, always installs core)
@@ -39,7 +40,7 @@ Commands:
   list      List supported tools
 
 Options:
-  --tools <list>   copilot,claude,cursor,grok,codex,gemini
+  --tools <list>   copilot,claude,cursor,grok,codex,gemini,opencode
   --all            All vendor adapters
   --target <path>  Project root (default: cwd)
   --force          Overwrite existing files
