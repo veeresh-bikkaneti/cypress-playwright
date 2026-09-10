@@ -1,6 +1,22 @@
 ---
-description: Behavioral guidelines to reduce common LLM coding mistakes. Use when writing, reviewing, or refactoring code to avoid overcomplication, make surgical changes, surface assumptions, and define verifiable success criteria.
+description: Copilot adapter. Follow root AGENTS.md; this file must not contradict it.
 alwaysApply: true
+---
+
+# Copilot adapter
+
+**Source of truth is [`AGENTS.md`](../AGENTS.md).** If anything below conflicts, `AGENTS.md` wins.
+
+Load skills from `skills/` (also at `.github/skills/` and `.agents/skills/`):
+
+- Cypress conversion → `cypress-to-playwright-migration`
+- Write/heal Playwright → `playwright-testing`
+- Review before merge → `code-review` (isolated pass, git range, not this session)
+
+Custom agents (optional `@mentions`): `qa-orchestrator`, `cypress-to-playwright-migration`, `playwright-healer`, `playwright-test-generator`, `playwright-test-planner`. Other agents under `.github/agents/` are legacy.
+
+The detailed Cypress ↔ Playwright map follows. Keep locator order from `AGENTS.md` (`getByRole` first).
+
 ---
 
 # Cypress → Playwright Migration (Repository Instructions)

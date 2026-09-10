@@ -1,14 +1,14 @@
 {
   "name": "cypress2playwright-using-ai",
-  "version": "1.0.0",
-  "description": "AI-powered Cypress to Playwright migration toolkit. Installable plugin for GitHub Copilot, Claude Code, Cursor, Cline, Windsurf, Aider, and Continue.",
+  "version": "1.1.0",
+  "description": "Cypress-to-Playwright migration toolkit. Portable AGENTS.md + skills for GitHub Copilot, Claude Code, Cursor, Grok, OpenAI Codex, and Gemini.",
   "main": "lib/index.js",
   "bin": {
     "cypress2playwright-setup": "./bin/setup.js"
   },
   "scripts": {
     "setup": "node bin/setup.js",
-    "test": "node bin/setup.js --help",
+    "test": "node bin/setup.js list && node scripts/smoke-setup.js",
     "audit:urls": "node scripts/audit-template-urls.js",
     "audit:urls:verbose": "node scripts/audit-template-urls.js --verbose"
   },
@@ -20,23 +20,22 @@
     "copilot",
     "claude",
     "cursor",
-    "cline",
-    "windsurf",
-    "aider",
-    "continue",
+    "grok",
+    "codex",
+    "gemini",
+    "agents.md",
     "testing",
-    "e2e",
-    "automation"
+    "e2e"
   ],
   "author": "Veeresh Bikkaneti",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vbikkaneti/cypress-playwright"
+    "url": "https://github.com/veeresh-bikkaneti/cypress-playwright"
   },
-  "homepage": "https://github.com/vbikkaneti/cypress-playwright#readme",
+  "homepage": "https://github.com/veeresh-bikkaneti/cypress-playwright#readme",
   "bugs": {
-    "url": "https://github.com/vbikkaneti/cypress-playwright/issues"
+    "url": "https://github.com/veeresh-bikkaneti/cypress-playwright/issues"
   },
   "files": [
     "bin/",

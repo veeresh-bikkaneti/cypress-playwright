@@ -1,33 +1,27 @@
 const vscode = require("vscode");
-const { execSync } = require("child_process");
+const { execFileSync } = require("child_process");
 const path = require("path");
 
-/**
- * Activates the Cypress2Playwright VS Code extension.
- * @param {vscode.ExtensionContext} context
- */
+const ENTERPRISE_TOOLS = [
+  "copilot",
+  "claude",
+  "cursor",
+  "grok",
+  "codex",
+  "gemini",
+];
+
 function activate(context) {
-  // Setup command - runs the setup CLI
   const setupCmd = vscode.commands.registerCommand(
     "cypress2playwright.setup",
     async () => {
-      const tools = await vscode.window.showQuickPick(
-        [
-          "copilot",
-          "claude",
-          "cursor",
-          "cline",
-          "windsurf",
-          "aider",
-          "continue",
-        ],
-        {
-          canPickMany: true,
-          placeHolder: "Select AI tools to configure",
-        },
-      );
+      const tools = await vscode.window.showQuickPick(ENTERPRISE_TOOLS, {
+        canPickMany: true,
+        placeHolder:
+          "Vendor adapters (empty = portable core only). Grok/Codex need no extra files.",
+      });
 
-      if (!tools || tools.length === 0) {
+      if (!tools) {
         return;
       }
 
@@ -39,13 +33,21 @@ function activate(context) {
 
       const target = workspaceFolder.uri.fsPath;
       const pluginPath = path.join(context.extensionPath, "..");
+      const setupJs = path.join(pluginPath, "bin", "setup.js");
+      const args = ["setup", "--target", target];
+      if (tools.length) args.push("--tools", tools.join(","));
 
       try {
-        const cmd = `node "${path.join(pluginPath, "bin", "setup.js")}" setup --tools ${tools.join(",")} --target "${target}"`;
-        const output = execSync(cmd, { encoding: "utf-8", cwd: pluginPath });
+        const output = execFileSync(process.execPath, [setupJs, ...args], {
+          encoding: "utf-8",
+          cwd: pluginPath,
+        });
         vscode.window.showInformationMessage(
-          `Cypress2Playwright: Setup complete for ${tools.join(", ")}`,
+          tools.length
+            ? `Cypress2Playwright: setup complete for ${tools.join(", ")}`
+            : "Cypress2Playwright: portable core (AGENTS.md + skills) installed.",
         );
+        console.log(output);
       } catch (err) {
         vscode.window.showErrorMessage(
           `Cypress2Playwright setup failed: ${err.message}`,
@@ -54,22 +56,20 @@ function activate(context) {
     },
   );
 
-  // Migrate command - placeholder for future implementation
   const migrateCmd = vscode.commands.registerCommand(
     "cypress2playwright.migrate",
     () => {
       vscode.window.showInformationMessage(
-        "Cypress2Playwright: Use @cypress-to-playwright agent in Copilot Chat to migrate tests.",
+        "Ask your coding agent to follow skills/cypress-to-playwright-migration (Copilot: @cypress-to-playwright-migration, Claude: /migrate, Grok: natural language + AGENTS.md).",
       );
     },
   );
 
-  // Heal command - placeholder for future implementation
   const healCmd = vscode.commands.registerCommand(
     "cypress2playwright.heal",
     () => {
       vscode.window.showInformationMessage(
-        "Cypress2Playwright: Use @playwright-healer agent in Copilot Chat to fix failing tests.",
+        "Ask your coding agent to follow skills/playwright-testing (Copilot: @playwright-healer, Claude: /heal, Grok: natural language + AGENTS.md).",
       );
     },
   );

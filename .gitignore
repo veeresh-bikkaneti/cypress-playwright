@@ -79,11 +79,6 @@ temp/
 .docker/
 docker-compose.override.yml
 
-# Package manager lock files (optional - uncomment if needed)
-# package-lock.json
-# yarn.lock
-# pnpm-lock.yaml
-
 # Misc
 .eslintcache
 .stylelintcache
@@ -91,14 +86,11 @@ docker-compose.override.yml
 *.seed
 *.pid.lock
 
-# AI tool artifacts
+# Local-only AI artifacts (adapters we ship are NOT ignored: AGENTS.md, CLAUDE.md,
+# GEMINI.md, .claude/, .cursor/rules, .agents/skills, .github/skills)
 .aider*
-.opencode/
-.cursor/
 .continue/
 .codeium/
-.claude/
-CLAUDE.md
 .nul
 
 # AI platform scripts — kept in ~/.ai-platform/scripts/

@@ -1,16 +1,13 @@
 #!/usr/bin/env node
 
 /**
- * Cypress2PlaywrightUsingAI Setup CLI
- *
- * Auto-detects installed AI coding tools and installs the appropriate
- * agent configurations for Cypress-to-Playwright migration.
+ * Install AGENTS.md + skills (portable), then optional enterprise adapters.
  *
  * Usage:
- *   npx cypress2playwright-using-ai setup
- *   npx cypress2playwright-using-ai setup --tools copilot,claude,cursor
- *   npx cypress2playwright-using-ai setup --all
- *   npx cypress2playwright-using-ai detect
+ *   npx cypress2playwright-setup setup
+ *   npx cypress2playwright-setup setup --tools copilot,claude,cursor
+ *   npx cypress2playwright-setup setup --all
+ *   npx cypress2playwright-setup detect
  */
 
 const fs = require("fs");
@@ -20,46 +17,39 @@ const {
   getDetectedToolIds,
   getAllToolIds,
 } = require("../lib/detectors");
-const {
-  installAll,
-  installTool,
-  stripFetchInstructions,
-} = require("../lib/installers");
+const { installAll, stripFetchInstructions } = require("../lib/installers");
 
 const HELP = `
-╔══════════════════════════════════════════════════════════════╗
-║     Cypress2PlaywrightUsingAI - AI Testing Agents Setup     ║
-╚══════════════════════════════════════════════════════════════╝
+Cypress2PlaywrightUsingAI — enterprise agent setup
 
-Install AI-powered Cypress→Playwright migration agents for your project.
+Always installs the portable core:
+  AGENTS.md + skills/   (Grok, Codex, Copilot, Claude, Cursor, Gemini, …)
 
-Supported tools:
-  copilot   GitHub Copilot (.github/agents/)
-  claude    Claude Code (CLAUDE.md + .claude/commands/)
-  cursor    Cursor (.cursor/rules/)
-  cline     Cline (.clinerules/)
-  windsurf  Windsurf (.windsurf/rules/)
-  aider     Aider (.aider.conf.yml + CONVENTIONS.md)
-  continue  Continue (.continue/rules/)
+Optional vendor adapters:
+  copilot   GitHub Copilot  (.github/copilot-instructions.md, .github/agents/*.agent.md)
+  claude    Claude Code     (CLAUDE.md, .claude/commands/)
+  cursor    Cursor          (.cursor/rules/)
+  grok      Grok            (core only — AGENTS.md)
+  codex     OpenAI Codex    (core only — AGENTS.md + .agents/skills)
+  gemini    Gemini          (GEMINI.md)
 
 Commands:
-  setup     Install agent configs (auto-detects tools)
-  detect    Show which AI tools are detected in this project
-  list      List all supported tools
+  setup     Install core + adapters (auto-detects vendor files, always installs core)
+  detect    Show which AI tools are detected
+  list      List supported tools
 
 Options:
-  --tools <list>   Comma-separated list of tools to install (e.g., "copilot,claude")
-  --all            Install templates for ALL supported tools
-  --target <path>  Target project directory (default: cwd)
-  --no-fetch       Strip version-check instructions for air-gapped environments
-  --help           Show this help message
+  --tools <list>   copilot,claude,cursor,grok,codex,gemini
+  --all            All vendor adapters
+  --target <path>  Project root (default: cwd)
+  --force          Overwrite existing files
+  --no-fetch       Strip version-check fetch sections from files this installer wrote
+  --help
 
 Examples:
-  npx cypress2playwright-using-ai setup
-  npx cypress2playwright-using-ai setup --tools copilot,cursor
-  npx cypress2playwright-using-ai setup --all --target /path/to/project
-  npx cypress2playwright-using-ai setup --all --no-fetch
-  npx cypress2playwright-using-ai detect
+  npx cypress2playwright-setup setup
+  npx cypress2playwright-setup setup --tools copilot,claude,cursor
+  npx cypress2playwright-setup setup --all --no-fetch
 `;
 
 function parseArgs(argv) {
@@ -74,19 +64,13 @@ function parseArgs(argv) {
   };
 
   const rawArgs = argv.slice(2);
-
   for (let i = 0; i < rawArgs.length; i++) {
     const arg = rawArgs[i];
-
-    if (arg === "--help" || arg === "-h") {
-      args.help = true;
-    } else if (arg === "--all") {
-      args.all = true;
-    } else if (arg === "--force" || arg === "-f") {
-      args.force = true;
-    } else if (arg === "--no-fetch") {
-      args.noFetch = true;
-    } else if (arg === "--tools") {
+    if (arg === "--help" || arg === "-h") args.help = true;
+    else if (arg === "--all") args.all = true;
+    else if (arg === "--force" || arg === "-f") args.force = true;
+    else if (arg === "--no-fetch") args.noFetch = true;
+    else if (arg === "--tools") {
       const next = rawArgs[i + 1];
       if (next && !next.startsWith("--")) {
         args.tools = next.split(",").map((t) => t.trim());
@@ -99,38 +83,29 @@ function parseArgs(argv) {
       args.command = arg;
     }
   }
-
   return args;
 }
 
 function printDetectionResults(projectRoot) {
   const results = detectTools(projectRoot);
-
-  console.log("\n🔍 Detected AI tools in project:\n");
-  console.log("  Tool            Status");
-  console.log("  ─────────────── ──────────");
-
+  console.log("\nDetected enterprise AI tools:\n");
+  console.log("  Tool              Status");
+  console.log("  ──────────────── ──────────");
   for (const [toolId, info] of Object.entries(results)) {
-    const status = info.detected ? "✅ Detected" : "❌ Not found";
-    const name = info.name.padEnd(15);
-    console.log(`  ${name} ${status}`);
+    const status = info.detected ? "detected" : "not found";
+    console.log(`  ${info.name.padEnd(16)} ${status}`);
   }
-
   const detected = getDetectedToolIds(projectRoot);
   console.log(
-    `\n  Found ${detected.length} tool(s): ${detected.length > 0 ? detected.join(", ") : "none"}\n`,
+    `\n  Found ${detected.length}: ${detected.length ? detected.join(", ") : "none"}\n`,
   );
-
   return detected;
 }
 
 function printToolList() {
-  const allTools = getAllToolIds();
-  console.log("\n📋 All supported AI coding tools:\n");
-  for (const toolId of allTools) {
-    console.log(`  • ${toolId}`);
-  }
-  console.log(`\n  Total: ${allTools.length} tool(s)\n`);
+  console.log("\nSupported tools:\n");
+  for (const toolId of getAllToolIds()) console.log(`  • ${toolId}`);
+  console.log("");
 }
 
 function main() {
@@ -141,107 +116,71 @@ function main() {
     process.exit(0);
   }
 
-  // Validate target directory exists
   if (!fs.existsSync(args.target)) {
-    console.error(`❌ Target directory does not exist: ${args.target}`);
+    console.error(`Target directory does not exist: ${args.target}`);
     process.exit(1);
   }
 
   switch (args.command) {
-    case "detect": {
+    case "detect":
       printDetectionResults(args.target);
       break;
-    }
-
-    case "list": {
+    case "list":
       printToolList();
       break;
-    }
-
     case "setup": {
-      console.log("\n🚀 Cypress2PlaywrightUsingAI Setup\n");
-      console.log(`  Target project: ${args.target}\n`);
+      console.log("\nCypress2PlaywrightUsingAI setup");
+      console.log(`  Target: ${args.target}\n`);
 
-      let toolsToInstall;
-
+      let toolsToInstall = [];
       if (args.all) {
         toolsToInstall = getAllToolIds();
-        console.log(
-          `  Mode: Installing ALL ${toolsToInstall.length} tool templates\n`,
-        );
       } else if (args.tools) {
         toolsToInstall = args.tools;
-        console.log(
-          `  Mode: Installing specified tools: ${toolsToInstall.join(", ")}\n`,
-        );
       } else {
-        console.log("  Mode: Auto-detecting installed tools\n");
         toolsToInstall = printDetectionResults(args.target);
-
         if (toolsToInstall.length === 0) {
           console.log(
-            "  ⚠️  No AI tools detected. Use --all to install for all tools,",
+            "  No vendor files detected. Installing portable core only.",
           );
           console.log(
-            "     or --tools <list> to specify which tools to install.\n",
+            "  Add --tools copilot,claude,cursor for vendor adapters.\n",
           );
-          process.exit(1);
         }
       }
 
-      // Validate tool IDs
       const allValid = getAllToolIds();
       const invalid = toolsToInstall.filter((t) => !allValid.includes(t));
       if (invalid.length > 0) {
-        console.error(`❌ Unknown tools: ${invalid.join(", ")}`);
-        console.error(`   Valid tools: ${allValid.join(", ")}`);
+        console.error(`Unknown tools: ${invalid.join(", ")}`);
+        console.error(`Valid: ${allValid.join(", ")}`);
         process.exit(1);
       }
 
-      console.log("─".repeat(50));
+      const options = { force: args.force };
+      const results = installAll(toolsToInstall, args.target, options);
 
-      const results = installAll(toolsToInstall, args.target, {
-        force: args.force,
-      });
-
-      // Strip version-fetch instructions in air-gapped mode
       if (args.noFetch) {
-        console.log(
-          "\n🔒 Air-gapped mode: Stripping version-fetch instructions...\n",
-        );
-        const stripped = stripFetchInstructions(args.target);
-        console.log(
-          `\n  ✂️  Stripped fetch instructions from ${stripped} file(s)`,
-        );
-        console.log(
-          "  ℹ️  Templates will use built-in API mappings only (no runtime doc fetching)\n",
-        );
+        console.log("\nAir-gapped: stripping fetch sections from written files…\n");
+        const n = stripFetchInstructions(options._copied || []);
+        console.log(`  Stripped ${n} file(s) (installer-written only)\n`);
       }
-
-      console.log("\n─".repeat(50));
-      console.log("\n✅ Setup complete!\n");
 
       const succeeded = Object.entries(results).filter(([, v]) => v);
       const failed = Object.entries(results).filter(([, v]) => !v);
-
-      if (succeeded.length > 0) {
+      console.log("\nSetup complete.");
+      if (succeeded.length)
         console.log(`  Installed: ${succeeded.map(([k]) => k).join(", ")}`);
-      }
-      if (failed.length > 0) {
+      if (failed.length)
         console.log(`  Failed:    ${failed.map(([k]) => k).join(", ")}`);
-      }
-
-      console.log("\n  Next steps:");
-      console.log("  1. Review the installed files in your project");
-      console.log("  2. Customize the agent configs for your team's workflow");
       console.log(
-        "  3. Start using @mentions or slash commands with your AI tool\n",
+        "\n  Next: commit AGENTS.md and skills/ so every agent on the team sees them.\n",
       );
+      if (failed.length) process.exit(1);
       break;
     }
-
     default:
-      console.error(`❌ Unknown command: ${args.command}`);
+      console.error(`Unknown command: ${args.command}`);
       console.log(HELP);
       process.exit(1);
   }

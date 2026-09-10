@@ -1,6 +1,8 @@
 /**
- * AI Tool Detector
- * Detects which AI coding tools are configured in the current project.
+ * Detects enterprise AI coding tools configured in a project.
+ *
+ * Portable core (AGENTS.md + skills/) is always installed and covers
+ * Grok, OpenAI Codex, and any other AGENTS.md client.
  */
 
 const fs = require("fs");
@@ -12,7 +14,7 @@ const TOOL_SIGNATURES = {
     files: [
       ".github/copilot-instructions.md",
       ".github/agents",
-      ".github/instructions",
+      ".github/skills",
     ],
     configFiles: [".github/copilot-instructions.md"],
   },
@@ -23,83 +25,66 @@ const TOOL_SIGNATURES = {
   },
   cursor: {
     name: "Cursor",
-    files: [".cursorrules", ".cursor/rules", ".cursor"],
-    configFiles: [".cursorrules"],
+    files: [".cursor/rules", ".cursor/skills", ".cursor"],
+    configFiles: [".cursor/rules"],
   },
-  cline: {
-    name: "Cline",
-    files: [".clinerules", ".clinerules/"],
-    configFiles: [".clinerules"],
+  grok: {
+    name: "Grok",
+    files: ["AGENTS.md"],
+    configFiles: ["AGENTS.md"],
   },
-  windsurf: {
-    name: "Windsurf",
-    files: [".windsurfrules", ".windsurf/rules", ".windsurf"],
-    configFiles: [".windsurfrules"],
+  codex: {
+    name: "OpenAI Codex",
+    files: ["AGENTS.md", ".agents", ".agents/skills", ".codex"],
+    configFiles: ["AGENTS.md"],
   },
-  aider: {
-    name: "Aider",
-    files: [".aider.conf.yml", ".aider"],
-    configFiles: [".aider.conf.yml"],
-  },
-  continue: {
-    name: "Continue",
-    files: [".continue", ".continue/config.yaml", ".continue/rules"],
-    configFiles: [".continue/config.yaml"],
+  gemini: {
+    name: "Gemini",
+    files: ["GEMINI.md", ".gemini"],
+    configFiles: ["GEMINI.md"],
   },
 };
 
-/**
- * Detect which AI tools are installed in the given directory.
- * @param {string} projectRoot - Path to the project root
- * @returns {Object} Detection results with tool names and their status
- */
+function exists(fullPath) {
+  try {
+    const stat = fs.statSync(fullPath);
+    return stat.isFile() || stat.isDirectory();
+  } catch {
+    return false;
+  }
+}
+
 function detectTools(projectRoot) {
   const results = {};
-
   for (const [toolId, tool] of Object.entries(TOOL_SIGNATURES)) {
-    const detected = tool.files.some((file) => {
-      const fullPath = path.join(projectRoot, file);
-      try {
-        const stat = fs.statSync(fullPath);
-        return stat.isFile() || stat.isDirectory();
-      } catch {
-        return false;
-      }
-    });
-
     results[toolId] = {
       name: tool.name,
-      detected,
+      detected: tool.files.some((file) => exists(path.join(projectRoot, file))),
       configFiles: tool.configFiles,
     };
   }
-
   return results;
 }
 
-/**
- * Get a list of detected tool names.
- * @param {string} projectRoot - Path to the project root
- * @returns {string[]} Array of detected tool IDs
- */
 function getDetectedToolIds(projectRoot) {
-  const results = detectTools(projectRoot);
-  return Object.entries(results)
+  return Object.entries(detectTools(projectRoot))
     .filter(([, info]) => info.detected)
     .map(([id]) => id);
 }
 
-/**
- * Get a list of all supported tool names.
- * @returns {string[]} Array of all supported tool IDs
- */
 function getAllToolIds() {
   return Object.keys(TOOL_SIGNATURES);
+}
+
+/** Tools that only need the portable core (no extra adapter directory). */
+function isCoreOnlyTool(toolId) {
+  return toolId === "grok" || toolId === "codex";
 }
 
 module.exports = {
   detectTools,
   getDetectedToolIds,
   getAllToolIds,
+  isCoreOnlyTool,
   TOOL_SIGNATURES,
 };

@@ -1,0 +1,9 @@
+---
+description: Cypress → Playwright migration and Playwright testing
+globs: playwright/**/*.ts,cypress/**/*.ts,app-under-test/**
+alwaysApply: false
+---
+
+Follow root `AGENTS.md`. Load `skills/cypress-to-playwright-migration` when editing Cypress specs or converting them. Load `skills/playwright-testing` when editing `playwright/**`. After a completed change, follow `skills/code-review` instead of self-reviewing the same diff.
+
+Locator order: getByRole > getByLabel > getByPlaceholder > getByText > getByTestId > locator(). Await every action. No waitForTimeout. No cy.* in playwright/.
