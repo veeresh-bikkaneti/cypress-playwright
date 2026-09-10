@@ -12,7 +12,7 @@ Follow root `AGENTS.md`.
 
 1. Prefer an existing Page Object in `playwright/pages/`. Create one if the page has 3+ interactions.
 2. Use `getByRole` / `getByLabel` first. `getByTestId` is a fallback, not the default. Prefer `page.getByTestId('x')` over `locator('[data-testid="x"]')`.
-3. Put shared setup in fixtures (`playwright/fixtures/`). Auth belongs in a setup project + `storageState`, not `beforeEach` UI login.
+3. Auth: setup project writes `playwright/.auth/user.json`; authenticated specs `test.use({ storageState: AUTH_STATE })`. Login specs use `{ cookies: [], origins: [] }`. Persist tokens in **localStorage or cookies** — Playwright does not restore `sessionStorage` (check Remember me if the app uses it).
 4. Structure tests AAA. One behavior per `test()`. Isolate state.
 5. Assert with web-first `expect(locator)`. Every click that changes the UI needs an assertion.
 

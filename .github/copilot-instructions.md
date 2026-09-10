@@ -21,7 +21,7 @@ This file is always-on for Copilot (IDE, CLI, coding agent). Keep it short. Proc
 - `@playwright-test-generator`
 - `@playwright-test-planner`
 
-Do not require `@` syntax. Natural language must work. Nested files under `.github/agents/cypress/`, `playwright/`, `qa-roles/` are legacy — ignore them unless the user names them.
+Do not require `@` syntax. Natural language must work.
 
 ## Non-negotiables (same as AGENTS.md)
 

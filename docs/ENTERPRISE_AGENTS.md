@@ -112,6 +112,6 @@ Written only for that adapter: Copilot `.github/**`, Claude `CLAUDE.md` + `.clau
 
 ## What we deliberately do not ship
 
-- Nested Copilot personas (`backend-specialist`, `qa-roles/*`, `cypress-healer`) — they are Copilot-only and duplicate skills.
+- Nested Copilot personas (`backend-specialist`, `qa-roles/*`, `cypress-healer`) — removed from this repo and not shipped by the plugin. Skills replace them.
 - Aider / Cline / Continue / Windsurf templates.
 - Live-doc fetch sections in always-on files (air-gapped orgs; `--no-fetch` strips leftovers).

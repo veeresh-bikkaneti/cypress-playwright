@@ -331,45 +331,37 @@ export class LoginPage {
 }
 ```
 
-### Auth Fixture (Playwright)
+### Auth via storageState (Playwright)
+
+Login once in the setup project (`playwright/e2e/auth.setup.ts`). Authenticated specs reuse that file:
 
 ```typescript
-// playwright/fixtures/auth.fixture.ts
-import { test as base, Page } from "@playwright/test";
-import { LoginPage } from "../pages/LoginPage";
+import { test, expect } from "@playwright/test";
+import { AUTH_STATE } from "../auth-state";
+import { MyAccountPage } from "../pages/MyAccountPage";
 
-type AuthFixtures = {
-  authenticatedPage: Page;
-  loginPage: LoginPage;
-};
+test.describe("My Account", () => {
+  test.use({ storageState: AUTH_STATE });
 
-export const test = base.extend<AuthFixtures>({
-  authenticatedPage: async ({ page }, use) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.login("test@example.com", "password123");
-    await use(page);
-  },
-  loginPage: async ({ page }, use) => {
-    await use(new LoginPage(page));
-  },
+  test("dashboard when authenticated", async ({ page }) => {
+    const account = new MyAccountPage(page);
+    await page.goto("/dashboard");
+    await account.validateSuccessfulLogin();
+  });
 });
-
-export { expect } from "@playwright/test";
 ```
 
-### Using Fixtures in Tests
+Login specs stay logged out:
 
 ```typescript
-// playwright/e2e/auth/login.spec.ts
-import { test, expect } from "../../fixtures/auth.fixture";
-
-test("login with valid credentials", async ({ loginPage, myAccountPage }) => {
-  await loginPage.login("test@example.com", "password123");
-  await myAccountPage.validateSuccessfulLogin();
-  await myAccountPage.logout();
-  await myAccountPage.validateSuccessfulLogout();
-});
+test.use({ storageState: { cookies: [], origins: [] } });
 ```
+
+Do not UI-login in `beforeEach`. Do not keep an unused `authenticatedPage` fixture.
+
+### Login fixtures (optional)
+
+`playwright/fixtures/auth.fixture.ts` only wraps Page Objects used by login specs (`loginPage`, `myAccountPage`).
 
 ---
 
