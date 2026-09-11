@@ -116,3 +116,48 @@ Isolated review + E2E gate:
 
 ---
 
+
+---
+
+### Session: 2026-09-11 17:36 UTC
+
+**User Request**: Merge branch 'feat/cypress-capability-coverage'
+
+Kitchen-sink Cypress source of truth with 1:1 Playwright twins for
+tests, pages, fixtures, custom methods, and custom commands. Isolated
+review Important items closed before merge.
+
+**Agent(s) Used**: Manual
+
+**Files Modified**:
+- playwright/e2e/a11y.spec.ts
+- playwright/e2e/actions.spec.ts
+- playwright/e2e/api.spec.ts
+- playwright/e2e/auth/login.spec.ts
+- playwright/e2e/browser.spec.ts
+- playwright/e2e/clock.spec.ts
+- playwright/e2e/custom-commands.spec.ts
+- playwright/e2e/debug.spec.ts
+- playwright/e2e/dialogs.spec.ts
+- playwright/e2e/forms.spec.ts
+- playwright/e2e/forms/form-interactions.spec.ts
+- playwright/e2e/graphql.spec.ts
+- playwright/e2e/login.spec.ts
+- playwright/e2e/myAccount.spec.ts
+- playwright/e2e/origin.spec.ts
+- playwright/e2e/security.spec.ts
+- playwright/e2e/session.spec.ts
+- playwright/e2e/smoke.spec.ts
+- playwright/e2e/storage.spec.ts
+- playwright/e2e/system.spec.ts
+- playwright/e2e/traversal.spec.ts
+- playwright/e2e/upload.spec.ts
+- playwright/e2e/utilities.spec.ts
+- 
+
+**Commit**: `134ec658730ea83d7e1cd5352f823ebd41c2940c`
+
+**Triggered By**: push
+
+---
+
