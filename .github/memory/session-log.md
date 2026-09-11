@@ -60,3 +60,28 @@ legacy agent files that nothing invoked.
 
 ---
 
+
+---
+
+### Session: 2026-09-11 14:31 UTC
+
+**User Request**: fix: isolated-review findings for healer, installer, and CI lint
+
+Address Important items from the PR #49 review: parse Playwright JSON
+for auto-heal, stop detecting Copilot from skill mirrors, mirror only
+canonical skills, drop authenticatedPage snippet, use LoginPage locators
+in smoke, and pin Prettier so quality-check matches GitHub CI.
+
+**Agent(s) Used**: Manual
+
+**Files Modified**:
+- playwright/e2e/api.spec.ts
+- playwright/e2e/smoke.spec.ts
+- 
+
+**Commit**: `c95041ee274999c4240d7ec21d32975a18fadae5`
+
+**Triggered By**: push
+
+---
+
