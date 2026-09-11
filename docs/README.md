@@ -13,6 +13,7 @@ How to set up, migrate, and operate this toolkit. Interactive map: [architecture
 | Picking an AI tool | [ENTERPRISE_AGENTS.md](./ENTERPRISE_AGENTS.md) |
 | Running the dual demo | [SETUP.md](./SETUP.md#demo-this-repository-optional) |
 | Cypress command coverage | [CAPABILITIES.md](./CAPABILITIES.md) |
+| Cypress vs Playwright case parity | [PARITY.md](./PARITY.md) |
 | Writing / healing tests | [../AGENTS.md](../AGENTS.md) + `skills/` |
 | Security of the installer | [SECURITY.md](./SECURITY.md) |
 

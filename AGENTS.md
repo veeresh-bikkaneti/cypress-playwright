@@ -32,7 +32,7 @@ The **application under test** is exercised by the **Cypress suite**. Playwright
 7. TypeScript strict. No placeholders (`// ... rest of code`).
 8. Every Playwright spec is a migration of a Cypress spec. New AUT coverage is added in `cypress/e2e/tests/` first, then migrated.
 
-Capability matrix: `docs/CAPABILITIES.md`.
+Capability matrix: `docs/CAPABILITIES.md`. Case-level Cypress vs Playwright pairing: `docs/PARITY.md`.
 
 ## Skills (load on demand)
 

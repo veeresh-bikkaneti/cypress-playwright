@@ -13,6 +13,9 @@
  * 7. playwright/e2e must not contain tautological assertions
  * 8. test.skip( / it.skip( require "Cypress-only" nearby
  *
+ * Case-level pairing (combined twins, Cypress-only helpers) lives in
+ * docs/PARITY.md — this script is file/method/tautology only.
+ *
  * Run from repo root: node plugin/scripts/assert-migration-parity.js
  */
 

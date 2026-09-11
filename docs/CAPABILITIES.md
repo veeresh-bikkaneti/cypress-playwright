@@ -4,6 +4,8 @@ Source of truth: [Why Cypress](https://docs.cypress.io/app/get-started/why-cypre
 
 The AUT (`app-under-test/`) exists so the **Cypress** suite can demonstrate those commands against a real app. Playwright files are 1:1 migrations of those Cypress specs — not a second, independently written suite.
 
+**Case-level pairing** (which `it()` has a twin, which cases are combined, which stay Cypress-only): [PARITY.md](./PARITY.md). This file is the **command** matrix.
+
 ## Why Cypress solutions vs this repo
 
 | Why Cypress claim                                                                  | How this repo demos it                                                | Spec                                              |
@@ -33,7 +35,8 @@ The AUT (`app-under-test/`) exists so the **Cypress** suite can demonstrate thos
 | `.trigger()` (HTML5 drag-and-drop, range)                                                              | `actions.test.ts`                                                 | `actions.spec.ts`                       |
 | `.selectFile()` + drag-drop file                                                                       | `upload.test.ts`                                                  | `upload.spec.ts`                        |
 | `.scrollTo()` / `.scrollIntoView()`                                                                    | `browser.test.ts`                                                 | `browser.spec.ts`                       |
-| `.viewport()` (dimensions, mobile, presets, landscape)                                                 | `browser.test.ts` (asserts `#viewport-flag`)                      | `browser.spec.ts`                       |
+| `.viewport()` (dimensions, mobile, tablet, landscape)                                                  | `browser.test.ts` (asserts `#viewport-flag`)                      | `browser.spec.ts`                       |
+| `.viewport()` **presets / breakpoint loop / `{ duration }` / `reload(true)`**                          | `browser.test.ts`                                                 | **Cypress-only** — [PARITY.md](./PARITY.md#browser) |
 | `.visit()` / `.go()` / `.reload()`                                                                     | `browser.test.ts`                                                 | `browser.spec.ts`                       |
 | `.get()` / `.contains()` / `.find()`                                                                   | `traversal.test.ts`                                               | `traversal.spec.ts`                     |
 | `.first()` / `.last()` / `.eq()` / `.filter()` / `.not()`                                              | `traversal.test.ts`                                               | `traversal.spec.ts`                     |
@@ -54,9 +57,9 @@ The AUT (`app-under-test/`) exists so the **Cypress** suite can demonstrate thos
 | `.clock()` / `.tick()`                                                                                 | `clock.test.ts`                                                   | `clock.spec.ts`                         |
 | cookies / `getAllCookies` / `clearAllCookies`                                                          | `storage.test.ts`                                                 | `storage.spec.ts`                       |
 | `getAllLocalStorage` / `getAllSessionStorage` / `clearAllLocalStorage`                                 | `storage.test.ts`                                                 | `storage.spec.ts`                       |
-| alerts / confirm / prompt / stub / spy                                                                 | `dialogs.test.ts`                                                 | `dialogs.spec.ts`                       |
-| `.exec()` / `.task()` / `.readFile()` / `.writeFile()` / `.fixture()`                                  | `system.test.ts`                                                  | `system.spec.ts`                        |
-| `.screenshot()` / `Cypress.*` runtime helpers                                                          | `utilities.test.ts`                                               | `utilities.spec.ts` (AUT-visible twins) |
+| alerts / confirm / prompt / stub / spy                                                                 | `dialogs.test.ts`                                                 | `dialogs.spec.ts` (2 sinon-only cases stay Cypress-only — [PARITY.md](./PARITY.md#dialogs)) |
+| `.exec()` / `.task()` / `.readFile()` / `.writeFile()` / `.fixture()`                                  | `system.test.ts`                                                  | `system.spec.ts` (AUT grid only; Node I/O is Cypress-only) |
+| `.screenshot()` / `Cypress.*` runtime helpers                                                          | `utilities.test.ts`                                               | `utilities.spec.ts` (screenshot + `document.readyState`; rest Cypress-only) |
 | `Cypress.Cookies.debug` / `Keyboard.defaults` / `Screenshot.defaults` / `currentTest` / `currentRetry` | `utilities.test.ts`                                               | n/a (Cypress runtime)                   |
 | `.debug()` / `.log()`                                                                                  | `debug.test.ts`, `utilities.test.ts`                              | `debug.spec.ts`                         |
 | custom commands (`login`, `logout`, `getByTestId`, `interceptAndWait`, `typeAndClear`, `shouldHaveData`, `highlight`, `setAuthCookie`, `fruit`, `api`, overwrite `visit`) | `custom-commands.test.ts` (+ `support/commands.ts`) | `custom-commands.spec.ts` + `playwright/helpers/commands.ts` — see [COMMAND_MAP.md](COMMAND_MAP.md) |

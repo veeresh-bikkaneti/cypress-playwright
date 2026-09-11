@@ -35,7 +35,7 @@ cypress-playwright/
 | `skills/skill-creator` | Maintainers of *this* repo | Draft / eval new skills |
 | `playwright/` + `cypress/` | Learners / CI | Cypress source + migrated Playwright twins |
 | `app-under-test/` | Learners / CI | Pages the example tests hit |
-| `docs/` | Humans | Setup, diagrams, video |
+| `docs/` | Humans | Setup, diagrams, video, [PARITY.md](./PARITY.md) |
 
 ## What npm publishes vs what you clone
 
