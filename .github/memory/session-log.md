@@ -161,3 +161,27 @@ review Important items closed before merge.
 
 ---
 
+
+---
+
+### Session: 2026-09-11 18:23 UTC
+
+**User Request**: fix: prettier/eslint so Hybrid CI quality-check can run
+
+quality-check died on four prettier errors and an unused
+eslint-disable before Cypress or Playwright started. merge-reports
+now skips unless both E2E jobs succeed, instead of failing on
+missing artifacts.
+
+**Agent(s) Used**: Manual
+
+**Files Modified**:
+- playwright/e2e/upload.spec.ts
+- 
+
+**Commit**: `88e9dd5c56191313b8e64b891174bfd4f689f986`
+
+**Triggered By**: push
+
+---
+
