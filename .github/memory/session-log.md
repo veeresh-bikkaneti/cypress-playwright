@@ -85,3 +85,34 @@ in smoke, and pin Prettier so quality-check matches GitHub CI.
 
 ---
 
+
+---
+
+### Session: 2026-09-11 14:47 UTC
+
+**User Request**: feat: enterprise-agent-agnostic Cypress→Playwright toolkit (#49)
+
+Merge PR #49 with a merge commit (do not squash).
+
+Isolated review + E2E gate:
+- Playwright chromium 140 passed, 2 skipped (local)
+- GitHub Hybrid CI: quality-check, playwright-run, cypress-run, merge-reports green
+- plugin npm test and tsc green
+
+**Agent(s) Used**: Manual
+
+**Files Modified**:
+- playwright/e2e/api.spec.ts
+- playwright/e2e/auth/login.spec.ts
+- playwright/e2e/login.spec.ts
+- playwright/e2e/myAccount.spec.ts
+- playwright/e2e/session.spec.ts
+- playwright/e2e/smoke.spec.ts
+- 
+
+**Commit**: `ed9ab2ceaabfa9e83ca720177dfbb93851f9ca8f`
+
+**Triggered By**: push
+
+---
+
