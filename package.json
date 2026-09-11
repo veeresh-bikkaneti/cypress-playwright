@@ -6,7 +6,7 @@
   "dependencies": {
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
-    "express": "^4.18.2",
+    "express": "^5.2.1",
     "multer": "^2.0.2"
   },
   "scripts": {
@@ -61,7 +61,7 @@
     "@typescript-eslint/eslint-plugin": "^8.54.0",
     "@typescript-eslint/parser": "^8.54.0",
     "allure-commandline": "^2.36.0",
-    "cypress": "^12.17.4",
+    "cypress": "^16.0.0",
     "cypress-fail-fast": "^7.1.1",
     "cypress-failed-log": "^2.10.0",
     "cypress-mochawesome-reporter": "^4.0.2",
