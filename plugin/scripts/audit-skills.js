@@ -14,7 +14,13 @@ const path = require("path");
 
 const ROOT = path.join(__dirname, "..", "..");
 const REPO_SKILLS = path.join(ROOT, "skills");
-const TEMPLATE_SKILLS = path.join(__dirname, "..", "templates", "_shared", "skills");
+const TEMPLATE_SKILLS = path.join(
+  __dirname,
+  "..",
+  "templates",
+  "_shared",
+  "skills",
+);
 
 const NAME_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
@@ -110,9 +116,7 @@ function auditTree(dir, { allowRepoOnly }) {
   } else {
     for (const extra of REPO_ONLY) {
       if (entries.includes(extra)) {
-        errors.push(
-          `${dir}: installer must not ship repo-only skill ${extra}`,
-        );
+        errors.push(`${dir}: installer must not ship repo-only skill ${extra}`);
       }
     }
   }

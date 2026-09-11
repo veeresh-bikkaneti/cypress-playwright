@@ -17,7 +17,8 @@ const pwVersion =
   pkg.devDependencies["@playwright/test"] ||
   pkg.dependencies["@playwright/test"] ||
   "";
-const cyVersion = pkg.devDependencies["cypress"] || pkg.dependencies["cypress"] || "";
+const cyVersion =
+  pkg.devDependencies["cypress"] || pkg.dependencies["cypress"] || "";
 
 console.log(`package.json: Playwright ${pwVersion}, Cypress ${cyVersion}`);
 

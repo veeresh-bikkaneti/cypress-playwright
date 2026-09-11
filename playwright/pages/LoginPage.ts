@@ -22,8 +22,10 @@ export class LoginPage {
     this.signinBtn = page.getByRole("button", { name: "Sign In" });
     this.rememberCheckbox = page.getByRole("checkbox", { name: "Remember me" });
     this.loginAlert = page.getByRole("alert");
-    this.emailError = page.getByTestId("email-error");
-    this.passwordError = page.getByTestId("password-error");
+    this.emailError = page.getByText("Please enter a valid email address");
+    this.passwordError = page.getByText(
+      "Password must be at least 6 characters",
+    );
     this.forgotPasswordLink = page.getByRole("link", {
       name: "Forgot Password?",
     });
@@ -39,10 +41,13 @@ export class LoginPage {
     await this.page.goto("/login");
   }
 
-  async login(emailId: string, password: string) {
+  async login(emailId: string, password: string, rememberMe = false) {
     await this.navigateToLogin();
     await this.emailAddressTxt.fill(emailId);
     await this.passwordTxt.fill(password);
+    if (rememberMe) {
+      await this.rememberCheckbox.check();
+    }
     await this.signinBtn.click();
   }
 

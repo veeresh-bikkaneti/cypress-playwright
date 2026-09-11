@@ -96,6 +96,17 @@ assert(
   "legacy persona shipped",
 );
 
+for (const leaked of [
+  "skills/architecture-diagram",
+  "skills/skill-creator",
+  ".github/skills/architecture-diagram",
+  ".github/skills/skill-creator",
+  ".agents/skills/architecture-diagram",
+  ".agents/skills/skill-creator",
+]) {
+  assert(!exists(tmp, leaked), `repo-only skill leaked: ${leaked}`);
+}
+
 const keep = fs.readFileSync(path.join(tmp, "KEEP.md"), "utf-8");
 assert(
   keep.includes("Version Check Required"),
@@ -137,6 +148,22 @@ for (const name of [
 ]) {
   assert(detect.includes(name), `detect missing ${name}`);
 }
+
+const coreOnly = fs.mkdtempSync(path.join(os.tmpdir(), "c2p-core-"));
+run(["setup", "--tools", "grok", "--target", coreOnly]);
+assert(
+  !exists(coreOnly, ".github/copilot-instructions.md"),
+  "core-only setup installed Copilot",
+);
+assert(
+  !exists(coreOnly, "skills/architecture-diagram"),
+  "core-only setup shipped architecture-diagram",
+);
+run(["setup", "--target", coreOnly]);
+assert(
+  !exists(coreOnly, ".github/copilot-instructions.md"),
+  "second setup auto-installed Copilot from skill mirrors",
+);
 
 console.log("smoke-setup: ok");
 console.log(`  target: ${tmp}`);

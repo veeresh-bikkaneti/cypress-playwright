@@ -16,9 +16,7 @@ test.describe("API Testing - Network Capabilities", () => {
       // Verify real products load from API
       // Verify real products load from API
       // Wait for at least one product to appear
-      await expect(
-        page.getByTestId("product-card").first(),
-      ).toBeVisible();
+      await expect(page.getByTestId("product-card").first()).toBeVisible();
 
       const count = await page.getByTestId("product-card").count();
       expect(count).toBeGreaterThan(0);
@@ -43,9 +41,7 @@ test.describe("API Testing - Network Capabilities", () => {
       await page.goto("/");
 
       // Wait for products to render before counting
-      await expect(
-        page.getByTestId("product-card").first(),
-      ).toBeVisible();
+      await expect(page.getByTestId("product-card").first()).toBeVisible();
 
       // Verify multiple products are displayed
       const count = await page.getByTestId("product-card").count();
@@ -82,9 +78,9 @@ test.describe("API Testing - Network Capabilities", () => {
     test("should load products quickly", async ({ page }) => {
       const start = Date.now();
       await page.goto("/");
-      await expect(
-        page.getByTestId("product-card").first(),
-      ).toBeVisible({ timeout: 3000 });
+      await expect(page.getByTestId("product-card").first()).toBeVisible({
+        timeout: 3000,
+      });
       const duration = Date.now() - start;
       expect(duration).toBeLessThan(5000); // Relaxed timeout for Playwright execution
     });

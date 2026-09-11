@@ -162,7 +162,9 @@ function main() {
       const results = installAll(toolsToInstall, args.target, options);
 
       if (args.noFetch) {
-        console.log("\nAir-gapped: stripping fetch sections from written files…\n");
+        console.log(
+          "\nAir-gapped: stripping fetch sections from written files…\n",
+        );
         const n = stripFetchInstructions(options._copied || []);
         console.log(`  Stripped ${n} file(s) (installer-written only)\n`);
       }

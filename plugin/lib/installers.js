@@ -9,6 +9,7 @@ const { isCoreOnlyTool } = require("./detectors");
 
 const TEMPLATES_DIR = path.join(__dirname, "..", "templates");
 const SHARED_DIR = path.join(TEMPLATES_DIR, "_shared");
+const SHARED_SKILLS = path.join(SHARED_DIR, "skills");
 
 const IGNORED_DIRS = new Set([
   "node_modules",
@@ -52,11 +53,13 @@ function copyDirSync(src, dest, force, copied) {
 }
 
 function mirrorSkills(projectRoot, destRel, force, copied) {
-  const src = path.join(projectRoot, "skills");
-  if (!fs.existsSync(src)) return;
+  // Always mirror the four canonical playbooks from the installer template,
+  // never the consumer/repo skills/ tree (this repo also holds
+  // architecture-diagram and skill-creator).
+  if (!fs.existsSync(SHARED_SKILLS)) return;
   const dest = path.join(projectRoot, destRel);
-  console.log(`\n📦 Mirroring skills/ → ${destRel}`);
-  copyDirSync(src, dest, force, copied);
+  console.log(`\n📦 Mirroring templates/_shared/skills → ${destRel}`);
+  copyDirSync(SHARED_SKILLS, dest, force, copied);
 }
 
 function installShared(projectRoot, force, copied) {

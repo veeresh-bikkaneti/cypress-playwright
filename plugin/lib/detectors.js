@@ -11,11 +11,9 @@ const path = require("path");
 const TOOL_SIGNATURES = {
   copilot: {
     name: "GitHub Copilot",
-    files: [
-      ".github/copilot-instructions.md",
-      ".github/agents",
-      ".github/skills",
-    ],
+    // Do not treat .github/skills as Copilot — the portable core mirrors
+    // skills there for every AGENTS.md client.
+    files: [".github/copilot-instructions.md"],
     configFiles: [".github/copilot-instructions.md"],
   },
   claude: {
@@ -62,12 +60,28 @@ function exists(fullPath) {
   }
 }
 
+function hasCopilotAgents(projectRoot) {
+  const dir = path.join(projectRoot, ".github", "agents");
+  if (!exists(dir)) return false;
+  try {
+    return fs.readdirSync(dir).some((name) => name.endsWith(".agent.md"));
+  } catch {
+    return false;
+  }
+}
+
 function detectTools(projectRoot) {
   const results = {};
   for (const [toolId, tool] of Object.entries(TOOL_SIGNATURES)) {
+    let detected = tool.files.some((file) =>
+      exists(path.join(projectRoot, file)),
+    );
+    if (toolId === "copilot" && !detected) {
+      detected = hasCopilotAgents(projectRoot);
+    }
     results[toolId] = {
       name: tool.name,
-      detected: tool.files.some((file) => exists(path.join(projectRoot, file))),
+      detected,
       configFiles: tool.configFiles,
     };
   }
