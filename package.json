@@ -1,7 +1,7 @@
 {
   "name": "cypress-capabilities-demo",
   "version": "1.0.0",
-  "description": "Automation Testing framework using Cypress and TypeScript with Allure reports",
+  "description": "Cypress-to-Playwright migration toolkit with a dual-framework demo suite. Portable AGENTS.md + Agent Skills for GitHub Copilot, Claude Code, Cursor, Grok, OpenAI Codex, Gemini, and OpenCode.",
   "main": "index.js",
   "dependencies": {
     "cookie-parser": "^1.4.6",
@@ -35,23 +35,26 @@
   },
   "keywords": [
     "cypress",
+    "playwright",
+    "migration",
     "typescript",
-    "allure",
     "e2e",
     "testing",
-    "automation",
-    "docker"
+    "agents.md",
+    "copilot",
+    "claude",
+    "grok"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/vbikkaneti/cypress-playwright"
+    "url": "https://github.com/veeresh-bikkaneti/cypress-playwright"
   },
   "author": "Veeresh Bikkaneti",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/vbikkaneti/cypress-playwright/issues"
+    "url": "https://github.com/veeresh-bikkaneti/cypress-playwright/issues"
   },
-  "homepage": "https://github.com/vbikkaneti/cypress-playwright#readme",
+  "homepage": "https://github.com/veeresh-bikkaneti/cypress-playwright#readme",
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",
     "@eslint/js": "^9.39.2",

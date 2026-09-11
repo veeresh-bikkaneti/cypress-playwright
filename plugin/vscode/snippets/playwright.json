@@ -36,27 +36,21 @@
     ],
     "description": "Playwright Page Object class"
   },
-  "Auth Fixture": {
+  "Auth storageState": {
     "prefix": "pw-auth-fixture",
     "body": [
-      "import { test as base, Page } from '@playwright/test';",
-      "import { LoginPage } from '../pages/LoginPage';",
+      "import { test, expect } from '@playwright/test';",
+      "import { AUTH_STATE } from '../auth-state';",
       "",
-      "type AuthFixtures = {",
-      "\tauthenticatedPage: Page;",
-      "};",
+      "// Requires playwright/e2e/auth.setup.ts to write AUTH_STATE.",
+      "// Do not UI-login in every test — Playwright restores cookies + localStorage.",
+      "test.use({ storageState: AUTH_STATE });",
       "",
-      "export const test = base.extend<AuthFixtures>({",
-      "\tauthenticatedPage: async ({ page }, use) => {",
-      "\t\tconst loginPage = new LoginPage(page);",
-      "\t\tawait loginPage.login('${1:user@example.com}', '${2:password123}');",
-      "\t\tawait use(page);",
-      "\t},",
-      "});",
-      "",
-      "export { expect } from '@playwright/test';"
+      "test('${1:authenticated behavior}', async ({ page }) => {",
+      "\t${2:// already logged in via storageState}",
+      "});"
     ],
-    "description": "Playwright authentication fixture"
+    "description": "Playwright storageState auth (setup project), not UI-login per test"
   },
   "API Mock Route": {
     "prefix": "pw-mock-api",

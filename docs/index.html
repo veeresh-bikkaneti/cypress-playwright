@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cypress2Playwright · Setup and use</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #0a0d12;
+      --panel: #121821;
+      --border: #1f2937;
+      --text: #e6edf7;
+      --muted: #8492a8;
+      --mint: #46f9b8;
+      --sky: #6aa9ff;
+      --amber: #ffc14d;
+      --mag: #ff6b8a;
+      --violet: #b388ff;
+      --orange: #ff9457;
+      --sans: "Space Grotesk", system-ui, sans-serif;
+      --mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: var(--sans); }
+    body {
+      background-image:
+        radial-gradient(1200px 600px at 15% -10%, rgba(106,169,255,.08), transparent 60%),
+        radial-gradient(1000px 500px at 100% 0%, rgba(162,1,255,.06), transparent 60%);
+    }
+    a { color: var(--sky); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    header {
+      max-width: 1080px; margin: 0 auto; padding: 40px 24px 12px;
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--mono); font-size: 12px; color: var(--muted);
+      letter-spacing: .04em; text-transform: uppercase;
+    }
+    .eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 12px var(--mint); }
+    h1 { font-size: 42px; letter-spacing: -0.03em; margin: 12px 0 8px; font-weight: 700; }
+    h1 span { color: var(--mint); }
+    .sub { color: var(--muted); max-width: 720px; font-size: 17px; line-height: 1.5; }
+    nav {
+      display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px;
+    }
+    nav a {
+      border: 1px solid var(--border); background: var(--panel);
+      color: var(--text); padding: 8px 12px; border-radius: 10px; font-size: 13px;
+    }
+    nav a:hover { border-color: var(--sky); text-decoration: none; }
+    main { max-width: 1080px; margin: 0 auto; padding: 12px 24px 80px; }
+    section { margin: 48px 0; }
+    h2 { font-size: 22px; margin: 0 0 14px; }
+    h2 .num {
+      font-family: var(--mono); color: var(--mint); font-size: 13px; margin-right: 8px;
+    }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+    .card {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px;
+    }
+    .card h3 { margin: 0 0 6px; font-size: 15px; }
+    .card p, .card li { color: var(--muted); font-size: 14px; line-height: 1.45; }
+    .card ul { margin: 8px 0 0; padding-left: 18px; }
+    pre, code { font-family: var(--mono); }
+    pre {
+      background: #0c1118; border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px 16px; overflow: auto; font-size: 13px; line-height: 1.5; color: #d7e3f4;
+    }
+    .warn {
+      border-color: var(--orange);
+      background: linear-gradient(180deg, rgba(255,148,87,.08), transparent);
+    }
+    .warn h3 { color: var(--orange); }
+    .mermaid { background: #0c1118; border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { border-bottom: 1px solid var(--border); text-align: left; padding: 8px 10px; vertical-align: top; }
+    th { color: var(--muted); font-weight: 500; }
+    .steps { counter-reset: step; display: grid; gap: 10px; }
+    .step {
+      display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px;
+    }
+    .step::before {
+      counter-increment: step; content: counter(step);
+      width: 36px; height: 36px; border-radius: 10px; background: #182030; color: var(--mint);
+      font-family: var(--mono); display: flex; align-items: center; justify-content: center;
+    }
+    .step h3 { margin: 0 0 4px; font-size: 15px; }
+    .step p { margin: 0; color: var(--muted); font-size: 14px; }
+    footer { color: var(--muted); font-size: 13px; }
+    .cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--mint); color: #052014; font-weight: 600;
+      padding: 10px 14px; border-radius: 12px;
+    }
+    .cta:hover { text-decoration: none; filter: brightness(1.08); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="eyebrow"><span class="dot"></span> veeresh-bikkaneti / cypress-playwright</div>
+    <h1>Setup and use <span>without mixing the two products</span></h1>
+    <p class="sub">
+      This GitHub repo is a Cypress→Playwright migration toolkit for enterprise coding agents
+      <strong>and</strong> a dual-framework demo. Install the toolkit into <em>your</em> Cypress app;
+      clone this repo only if you want the worked example.
+    </p>
+    <nav>
+      <a href="architecture.html">Interactive architecture</a>
+      <a href="SETUP.md">SETUP.md</a>
+      <a href="WORKFLOW.md">Workflow diagrams</a>
+      <a href="INVENTORY.md">What is in it</a>
+      <a href="../CONTRIBUTING.md">Why not squash</a>
+      <a href="demo/setup-and-use.mp4">Demo video</a>
+    </nav>
+  </header>
+  <main>
+    <section id="inventory">
+      <h2><span class="num">01</span>What is in it</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Toolkit (npm)</h3>
+          <p><code>plugin/</code> publishes <code>cypress2playwright-using-ai</code>.</p>
+          <ul>
+            <li>CLI copies markdown — no network, no AST</li>
+            <li><code>AGENTS.md</code> + 4 skills</li>
+            <li>Thin Copilot / Claude / Cursor / Gemini adapters</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Demo (this clone)</h3>
+          <p>Not what npm publishes.</p>
+          <ul>
+            <li><code>cypress/</code> source suite</li>
+            <li><code>playwright/</code> target suite</li>
+            <li><code>app-under-test/</code> Express :3000</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Repo-only skills</h3>
+          <p>Maintainers of this repo, not consumer apps.</p>
+          <ul>
+            <li><code>architecture-diagram</code> — this HTML map</li>
+            <li><code>skill-creator</code> — mint / eval new skills</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Docs</h3>
+          <ul>
+            <li><a href="SETUP.md">Setup and migrate</a></li>
+            <li><a href="WORKFLOW.md">10 Mermaid workflows</a></li>
+            <li><a href="architecture.html">Click-through architecture</a></li>
+            <li><a href="demo/setup-and-use.mp4">Screen recording</a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="noshake">
+      <h2><span class="num">02</span>Why not squash</h2>
+      <div class="card warn">
+        <h3>Create a merge commit on feat PRs</h3>
+        <p>
+          Squash flattens the SDD ledger: portable <code>AGENTS.md</code>, vendor adapters,
+          isolated review, and the Remember-me / <code>storageState</code> fix become one blob.
+          <code>git blame</code> then cannot explain why Playwright must tick Remember me
+          (it does not restore <code>sessionStorage</code>).
+          Dependabot CVE bumps may still squash. Details in <a href="../CONTRIBUTING.md">CONTRIBUTING.md</a>.
+        </p>
+      </div>
+    </section>
+
+    <section id="setup">
+      <h2><span class="num">03</span>Setup in your Cypress repo</h2>
+      <div class="steps">
+        <div class="step">
+          <div>
+            <h3>Install the toolkit, not this demo</h3>
+            <p>Until npm publish, run the CLI from a clone of this repo against <em>your</em> app.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div>
+            <h3>Copy AGENTS.md + skills</h3>
+            <p>Optional <code>--tools copilot,claude,cursor</code>. Grok / Codex / OpenCode need no extra files.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div>
+            <h3>Add Playwright beside Cypress</h3>
+            <p><code>npm init playwright@latest</code> — do not delete Cypress yet.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div>
+            <h3>Prompt any agent, one spec at a time</h3>
+            <p><em>Migrate cypress/e2e/login.cy.ts using skills/cypress-to-playwright-migration.</em></p>
+          </div>
+        </div>
+      </div>
+      <pre id="setup-cmd">git clone https://github.com/veeresh-bikkaneti/cypress-playwright.git
+cd your-cypress-app
+node ../cypress-playwright/plugin/bin/setup.js setup --tools copilot,claude,cursor
+npm init playwright@latest
+# then, in Copilot / Claude / Grok:
+# Migrate cypress/e2e/login.cy.ts using the migration skill</pre>
+    </section>
+
+    <section id="flow">
+      <h2><span class="num">04</span>Migration workflow</h2>
+      <div class="mermaid">
+flowchart LR
+  A[npx setup] --> B[AGENTS.md + skills]
+  B --> C[Migrate auth + POM]
+  C --> D[storageState setup project]
+  D --> E[One spec per session]
+  E --> F[tsc + chromium]
+  F --> G[Isolated code-review]
+  G --> H[Delete Cypress spec]
+      </div>
+    </section>
+
+    <section id="skills">
+      <h2><span class="num">05</span>Skills</h2>
+      <table>
+        <thead>
+          <tr><th>Skill</th><th>Ships to consumers?</th><th>Use when</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>cypress-to-playwright-migration</td><td>yes</td><td>Convert a spec / command</td></tr>
+          <tr><td>playwright-testing</td><td>yes</td><td>Write or heal Playwright</td></tr>
+          <tr><td>code-review</td><td>yes</td><td>New session, git range</td></tr>
+          <tr><td>webapp-testing</td><td>yes</td><td>Plan coverage</td></tr>
+          <tr><td>architecture-diagram</td><td>this repo only</td><td>Click-through HTML maps</td></tr>
+          <tr><td>skill-creator</td><td>this repo only</td><td>Author and eval new skills</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="arch">
+      <h2><span class="num">06</span>Interactive architecture</h2>
+      <p class="sub" style="margin-bottom:16px">Five flows: Setup, Migrate, Auth → storageState, Isolated review, Hybrid CI. Toggle Consumer vs Demo repo.</p>
+      <a class="cta" href="architecture.html">Open architecture.html →</a>
+    </section>
+
+    <footer>
+      MIT plugin · architecture-diagram MIT (Konrad Dzbik) · skill-creator Apache-2.0 (Anthropic).
+      See <a href="../skills/THIRD_PARTY.md">skills/THIRD_PARTY.md</a>.
+    </footer>
+  </main>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "dark",
+      flowchart: { curve: "basis", htmlLabels: true },
+      themeVariables: {
+        darkMode: true,
+        background: "#0c1118",
+        primaryColor: "#182030",
+        primaryTextColor: "#e6edf7",
+        primaryBorderColor: "#2a3650",
+        lineColor: "#6aa9ff",
+        secondaryColor: "#121821",
+        tertiaryColor: "#0a0d12",
+        fontFamily: "Space Grotesk, sans-serif"
+      }
+    });
+  </script>
+</body>
+</html>

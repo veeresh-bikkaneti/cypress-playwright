@@ -13,6 +13,8 @@ const users = JSON.parse(
 );
 
 test.describe("Login Functionality", () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   let loginPage: LoginPage;
   let myAccountPage: MyAccountPage;
 

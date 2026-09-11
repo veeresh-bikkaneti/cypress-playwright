@@ -1,0 +1,16 @@
+---
+description: Cypress-to-Playwright migration and Playwright Test conventions. Apply when editing Cypress or Playwright files.
+globs:
+  - playwright/**/*
+  - cypress/**/*
+alwaysApply: false
+---
+
+Follow root `AGENTS.md`. Do not contradict it.
+
+- Convert Cypress → `skills/cypress-to-playwright-migration/SKILL.md`
+- Write or heal Playwright → `skills/playwright-testing/SKILL.md`
+- After a completed change → isolated `skills/code-review` with a git range (new chat / subagent)
+
+Locators: `getByRole` > `getByLabel` > `getByPlaceholder` > `getByText` > `getByTestId` > `locator()`.
+No `cy.*` in `playwright/`. No `page.waitForTimeout`. Auth via `storageState` or fixtures.

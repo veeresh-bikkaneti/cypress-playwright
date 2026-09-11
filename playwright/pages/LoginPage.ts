@@ -16,19 +16,21 @@ export class LoginPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.loginContainer = page.locator('[data-testid="login-container"]');
-    this.emailAddressTxt = page.locator('[data-testid="email-input"]');
-    this.passwordTxt = page.locator('[data-testid="password-input"]');
-    this.signinBtn = page.locator('[data-testid="submit-btn"]');
-    this.rememberCheckbox = page.locator('[data-testid="remember-checkbox"]');
-    this.loginAlert = page.locator('[data-testid="login-alert"]');
-    this.emailError = page.locator('[data-testid="email-error"]');
-    this.passwordError = page.locator('[data-testid="password-error"]');
-    this.forgotPasswordLink = page.locator(
-      '[data-testid="forgot-password-link"]',
+    this.loginContainer = page.getByTestId("login-container");
+    this.emailAddressTxt = page.getByLabel("Email Address");
+    this.passwordTxt = page.getByLabel("Password");
+    this.signinBtn = page.getByRole("button", { name: "Sign In" });
+    this.rememberCheckbox = page.getByRole("checkbox", { name: "Remember me" });
+    this.loginAlert = page.getByRole("alert");
+    this.emailError = page.getByText("Please enter a valid email address");
+    this.passwordError = page.getByText(
+      "Password must be at least 6 characters",
     );
-    this.backToHomeLink = page.locator('[data-testid="back-to-home-link"]');
-    this.navLoginLink = page.locator('[data-testid="nav-login"]');
+    this.forgotPasswordLink = page.getByRole("link", {
+      name: "Forgot Password?",
+    });
+    this.backToHomeLink = page.getByRole("link", { name: "Back to Home" });
+    this.navLoginLink = page.getByRole("link", { name: "Login" });
   }
 
   async launchApplication() {
@@ -39,10 +41,13 @@ export class LoginPage {
     await this.page.goto("/login");
   }
 
-  async login(emailId: string, password: string) {
+  async login(emailId: string, password: string, rememberMe = false) {
     await this.navigateToLogin();
     await this.emailAddressTxt.fill(emailId);
     await this.passwordTxt.fill(password);
+    if (rememberMe) {
+      await this.rememberCheckbox.check();
+    }
     await this.signinBtn.click();
   }
 

@@ -25,7 +25,9 @@ export default [
             "**/test-output/**",
             "**/playwright-report/**",
             "**/coverage/**",
-            "**/*.min.js"
+            "**/*.min.js",
+            "skills/architecture-diagram/**",
+            "skills/skill-creator/**",
         ],
     },
     // 2. Base Configuration (JS/TS)

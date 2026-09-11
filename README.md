@@ -1,11 +1,47 @@
 # Cypress ↔ Playwright Hybrid Testing Framework
 
-> A production-grade dual-framework test suite demonstrating Cypress-to-Playwright migration patterns, Page Object Models, and AI-assisted test automation.
+> Cypress-to-Playwright migration toolkit. Portable `AGENTS.md` + Agent Skills for **GitHub Copilot, Claude Code, Cursor, Grok, OpenAI Codex, Gemini, and OpenCode** — plus a dual-framework demo suite.
 
 [![Playwright](https://img.shields.io/badge/Playwright-v1.58+-45ba4b?style=flat-square&logo=playwright)](https://playwright.dev)
 [![Cypress](https://img.shields.io/badge/Cypress-v12+-17202C?style=flat-square&logo=cypress)](https://cypress.io)
 [![Node](https://img.shields.io/badge/Node.js-20+-339933?style=flat-square&logo=node.js)](https://nodejs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7+-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org)
+
+**Docs:** [docs/README.md](./docs/README.md) · **Setup:** [docs/SETUP.md](./docs/SETUP.md) · **Inventory:** [docs/INVENTORY.md](./docs/INVENTORY.md) · **Workflows:** [docs/WORKFLOW.md](./docs/WORKFLOW.md) · **Interactive architecture:** [docs/architecture.html](./docs/architecture.html) · **Demo video:** [docs/demo/setup-and-use.mp4](./docs/demo/setup-and-use.mp4)
+
+[![Setup and use — screen recording](./docs/demo/poster.png)](./docs/demo/setup-and-use.mp4)
+
+Merge feature PRs with a **merge commit**. Do not squash the enterprise-agent history — [why](./CONTRIBUTING.md).
+
+---
+
+## Enterprise AI agents
+
+The migration procedure is **agent-agnostic**. Every supported tool reads the same two artifacts:
+
+| Artifact | Role |
+| --- | --- |
+| [`AGENTS.md`](./AGENTS.md) | Always-on project contract (layout, locators, quality gates) |
+| [`skills/`](./skills/) | On-demand playbooks ([Agent Skills](https://agentskills.io/specification) spec) |
+
+Vendor files are thin adapters. They must not contradict `AGENTS.md`.
+
+| Tool | Adapter | How you invoke |
+| --- | --- | --- |
+| **Any** | `AGENTS.md` + `skills/` | `migrate cypress/e2e/tests/login.test.ts` |
+| **GitHub Copilot** | `.github/copilot-instructions.md`, `.github/agents/*.agent.md` | `@cypress-to-playwright-migration` |
+| **Claude Code** | `CLAUDE.md`, `.claude/commands/` | `/migrate`, `/heal`, `/review` |
+| **Cursor** | `.cursor/rules/*.mdc` | Auto on `playwright/**`, `cypress/**` |
+| **Grok / Codex / OpenCode** | (core only) | Natural language |
+| **Gemini** | `GEMINI.md` | Natural language |
+
+Not targeted: Aider, Cline, Continue, Windsurf.
+
+```bash
+npx cypress2playwright-setup setup --tools copilot,claude,cursor
+```
+
+Details: [docs/ENTERPRISE_AGENTS.md](./docs/ENTERPRISE_AGENTS.md) · [plugin/README.md](./plugin/README.md) · [docs/AGENT_WORKFLOWS.md](./docs/AGENT_WORKFLOWS.md)
 
 ---
 
@@ -160,7 +196,7 @@ graph LR
 
 ```bash
 # 1. Clone and install
-git clone https://github.com/vbikkaneti/cypress-playwright.git
+git clone https://github.com/veeresh-bikkaneti/cypress-playwright.git
 cd cypress-playwright
 npm install
 
@@ -180,38 +216,30 @@ npx playwright show-report
 
 ```
 cypress-playwright/
+├── AGENTS.md                    # Portable always-on agent contract
+├── skills/                      # Agent Skills (4 consumer + architecture-diagram + skill-creator)
+├── CLAUDE.md / GEMINI.md        # Thin vendor adapters
+├── CONTRIBUTING.md              # Merge-commit policy (do not squash feat PRs)
 ├── app-under-test/              # Express.js test application
 │   ├── server.js                #   API + static file server
 │   └── public/                  #   HTML pages (login, dashboard, forms, dialogs)
 │
 ├── playwright/                  # Playwright test suite (modern)
 │   ├── e2e/                     #   Test specifications
-│   │   ├── auth/                #     Authentication tests
-│   │   ├── forms/               #     Form interaction tests
-│   │   ├── api.spec.ts          #     API & network tests
-│   │   ├── smoke.spec.ts        #     Smoke tests
-│   │   └── *.spec.ts            #     Other test files
 │   ├── pages/                   #   Page Object Models
-│   │   ├── LoginPage.ts
-│   │   └── MyAccountPage.ts
 │   └── fixtures/                #   Test data & auth fixtures
-│       ├── auth.fixture.ts
-│       └── test-data.ts
 │
-├── cypress/                     # Cypress test suite (legacy)
-│   ├── e2e/tests/               #   15 test files (55 capabilities)
-│   ├── e2e/pages/               #   Page Objects
-│   ├── support/                 #   Custom commands
-│   └── fixtures/                #   Test data (JSON)
+├── cypress/                     # Cypress test suite (legacy source)
+│   ├── e2e/tests/
+│   ├── e2e/pages/
+│   └── support/
 │
-├── scripts/                     # Utility scripts
-│   ├── diagnose-cypress.js      #   Cypress failure diagnosis
-│   ├── update_agents.js         #   Agent version sync
-│   └── validate-migration.*     #   Migration quality gates
-│
-├── playwright.config.ts         # Playwright configuration
-├── cypress.config.ts            # Cypress configuration
-└── package.json                 # Dependencies & scripts
+├── plugin/                      # Installer: core + Copilot/Claude/Cursor/Gemini adapters
+├── docs/                        # Setup, inventory, workflow diagrams, architecture.html, demo video
+├── docs/ENTERPRISE_AGENTS.md    # Tool matrix vs live vendor docs
+├── playwright.config.ts
+├── cypress.config.ts
+└── package.json
 ```
 
 ---
@@ -293,9 +321,9 @@ export class LoginPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.emailAddressTxt = page.locator('[data-testid="email-input"]');
-    this.passwordTxt = page.locator('[data-testid="password-input"]');
-    this.signinBtn = page.locator('[data-testid="submit-btn"]');
+    this.emailAddressTxt = page.getByLabel("Email Address");
+    this.passwordTxt = page.getByLabel("Password");
+    this.signinBtn = page.getByRole("button", { name: "Sign In" });
   }
 
   async login(email: string, password: string) {
@@ -311,45 +339,37 @@ export class LoginPage {
 }
 ```
 
-### Auth Fixture (Playwright)
+### Auth via storageState (Playwright)
+
+Login once in the setup project (`playwright/e2e/auth.setup.ts`). Authenticated specs reuse that file:
 
 ```typescript
-// playwright/fixtures/auth.fixture.ts
-import { test as base, Page } from "@playwright/test";
-import { LoginPage } from "../pages/LoginPage";
+import { test, expect } from "@playwright/test";
+import { AUTH_STATE } from "../auth-state";
+import { MyAccountPage } from "../pages/MyAccountPage";
 
-type AuthFixtures = {
-  authenticatedPage: Page;
-  loginPage: LoginPage;
-};
+test.describe("My Account", () => {
+  test.use({ storageState: AUTH_STATE });
 
-export const test = base.extend<AuthFixtures>({
-  authenticatedPage: async ({ page }, use) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.login("test@example.com", "password123");
-    await use(page);
-  },
-  loginPage: async ({ page }, use) => {
-    await use(new LoginPage(page));
-  },
+  test("dashboard when authenticated", async ({ page }) => {
+    const account = new MyAccountPage(page);
+    await page.goto("/dashboard");
+    await account.validateSuccessfulLogin();
+  });
 });
-
-export { expect } from "@playwright/test";
 ```
 
-### Using Fixtures in Tests
+Login specs stay logged out:
 
 ```typescript
-// playwright/e2e/auth/login.spec.ts
-import { test, expect } from "../../fixtures/auth.fixture";
-
-test("login with valid credentials", async ({ loginPage, myAccountPage }) => {
-  await loginPage.login("test@example.com", "password123");
-  await myAccountPage.validateSuccessfulLogin();
-  await myAccountPage.logout();
-  await myAccountPage.validateSuccessfulLogout();
-});
+test.use({ storageState: { cookies: [], origins: [] } });
 ```
+
+Do not UI-login in `beforeEach`. Do not keep an unused `authenticatedPage` fixture.
+
+### Login fixtures (optional)
+
+`playwright/fixtures/auth.fixture.ts` only wraps Page Objects used by login specs (`loginPage`, `myAccountPage`).
 
 ---
 
@@ -450,54 +470,35 @@ Runs both Cypress and Playwright in parallel on push/PR:
 
 ---
 
-## AI Agents
+## AI agents (enterprise-agnostic)
 
-The `.github/agents/` directory contains specialized AI agents for test automation:
+Source of truth is root [`AGENTS.md`](./AGENTS.md) plus portable skills in [`skills/`](./skills/). GitHub Copilot, Claude Code, Cursor, Grok, OpenAI Codex, and Gemini all read that layer. Vendor files are thin adapters, not a second set of rules.
 
-| Agent                       | Purpose                                                                |
-| --------------------------- | ---------------------------------------------------------------------- |
-| `qa-orchestrator`           | Central coordinator for test creation, debugging, and orchestration    |
-| `playwright-test-generator` | Generate Playwright tests from requirements                            |
-| `playwright-test-planner`   | Plan test strategies and coverage                                      |
-| `playwright-healer`         | Diagnose and fix broken Playwright tests                               |
-| `cypress-to-playwright`     | Migrate Cypress tests to Playwright                                    |
-| `cypress-healer`            | Diagnose and fix broken Cypress tests                                  |
-| `qa-architect`              | Design test frameworks, CI/CD integration, and infrastructure          |
-| `qa-engineer`               | Write and maintain test suites                                         |
-| `automation-engineer`       | Build and maintain automation frameworks                               |
-| `sdet`                      | Advanced test frameworks, custom tooling, performance/security testing |
-| `manual-tester`             | Manual test case design and exploratory testing                        |
-| `test-engineer`             | General test engineering and quality assurance                         |
-| `qa-automation-engineer`    | QA-specific automation patterns and workflows                          |
-| `backend-specialist`        | Backend API and server-side testing                                    |
-| `frontend-specialist`       | Frontend UI testing and visual validation                              |
-| `database-architect`        | Database schema testing and data integrity                             |
-| `devops-engineer`           | CI/CD pipeline and infrastructure testing                              |
-| `debugger`                  | Test failure diagnosis and root cause analysis                         |
-| `documentation-writer`      | Test documentation and reporting                                       |
+| Skill | Use when |
+| --- | --- |
+| [`cypress-to-playwright-migration`](./skills/cypress-to-playwright-migration/SKILL.md) | Convert a Cypress spec |
+| [`playwright-testing`](./skills/playwright-testing/SKILL.md) | Write or heal Playwright tests |
+| [`code-review`](./skills/code-review/SKILL.md) | Isolated review before merge |
+| [`webapp-testing`](./skills/webapp-testing/SKILL.md) | Plan coverage |
 
-### AI Prompts & Skills
+| Tool | Adapter |
+| --- | --- |
+| **Grok** | `AGENTS.md` + `skills/` |
+| **OpenAI Codex** | `AGENTS.md` + `.agents/skills/` |
+| **GitHub Copilot** | `.github/copilot-instructions.md`, `.github/agents/*.agent.md`, `.github/skills/` |
+| **Claude Code** | `CLAUDE.md`, `.claude/commands/` (`/migrate`, `/heal`, `/review`) |
+| **Cursor** | `.cursor/rules/cypress-playwright.mdc` |
+| **Gemini** | `GEMINI.md` |
 
-| Directory                          | Contents                                     |
-| ---------------------------------- | -------------------------------------------- |
-| `.github/prompts/cypress/`         | Cypress test creation and healing prompts    |
-| `.github/prompts/playwright/`      | Playwright test creation and healing prompts |
-| `.github/prompts/migration/`       | Cypress → Playwright migration prompts       |
-| `.github/skills/clean-code/`       | Code quality and style guidelines            |
-| `.github/skills/testing-patterns/` | Testing best practices and patterns          |
-| `.github/skills/webapp-testing/`   | Web application testing strategies           |
-
-**Usage (with GitHub Copilot):**
+Optional Copilot `@mentions` (same skills underneath): `@qa-orchestrator`, `@cypress-to-playwright-migration`, `@playwright-healer`, `@playwright-test-generator`, `@playwright-test-planner`.
 
 ```
-@qa-orchestrator create tests for checkout flow
-@cypress-to-playwright migrate cypress/e2e/tests/login.test.ts
-@playwright-healer fix playwright/e2e/smoke.spec.ts
-@sdet build performance testing framework
-@devops-engineer set up CI/CD pipeline
+migrate cypress/e2e/tests/login.test.ts
+heal playwright/e2e/smoke.spec.ts
+review the last migration against AGENTS.md
 ```
 
----
+Installer: `npx cypress2playwright-setup setup --tools copilot,claude,cursor` (see [`plugin/README.md`](./plugin/README.md)).
 
 ## Troubleshooting
 
@@ -507,7 +508,7 @@ The `.github/agents/` directory contains specialized AI agents for test automati
 | Playwright browsers missing | `npx playwright install`                             |
 | TypeScript errors           | `npx tsc --noEmit` to see details                    |
 | Tests timeout               | Check if server starts: `curl http://localhost:3000` |
-| Cypress can't find element  | Verify `data-testid` attributes in HTML              |
+| Fragile locators            | Prefer `getByRole` / `getByLabel`; `data-testid` is a fallback |
 
 ---
 
@@ -520,7 +521,8 @@ The `.github/agents/` directory contains specialized AI agents for test automati
 | [TypeScript Guide](./docs/TYPESCRIPT_FOR_CYPRESS.md)      | TypeScript basics for test automation       |
 | [Docker Guide](./docs/DOCKER_HELPER.md)                   | Running tests in containers                 |
 | [Security Policy](./docs/SECURITY.md)                     | Security reporting and best practices       |
-| [Copilot Instructions](./.github/copilot-instructions.md) | AI agent migration rules                    |
+| [AGENTS.md](./AGENTS.md)                                  | Portable rules every coding agent must follow       |
+| [Copilot Instructions](./.github/copilot-instructions.md) | Copilot adapter (defers to AGENTS.md)               |
 
 ---
 

@@ -1,32 +1,24 @@
 # Cypress Test Healing
 
-**Slash Command**: `/cypress-heal`
+Point this at `skills/cypress-to-playwright-migration` (or migrate the spec to Playwright and heal with `skills/playwright-testing`). There is no `@cypress-healer` agent.
 
 ## Description
 
-Diagnose and fix broken Cypress tests by analyzing error logs, screenshots, videos, and stack traces. Automatically applies self-healing selector strategies.
+Diagnose and fix broken Cypress tests by analyzing error logs, screenshots, videos, and stack traces. Prefer migrating the spec to Playwright when the suite is mid-migration.
 
 ## Usage
 
 ```
-/cypress-heal [test file or description of failure]
-```
-
-### Examples
-
-```
-/cypress-heal cypress/e2e/login.cy.ts
-/cypress-heal "checkout test failing on payment step"
-/cypress-heal tests timing out on CI
+heal cypress/e2e/tests/login.test.ts using skills/cypress-to-playwright-migration
 ```
 
 ## What This Prompt Does
 
 1. **Analyzes Failure**: Reads error messages, screenshots, videos
 2. **Identifies Root Cause**: Selector changes, timing issues, API failures
-3. **Proposes Fix**: Updates selectors, adds proper waits, fixes assertions
-4. **Verifies Fix**: Runs test to confirm resolution
-5. **Prevents Flakiness**: Implements robust waiting strategies
+3. **Proposes Fix**: Updates selectors, adds proper waits, fixes assertions — or converts to Playwright
+4. **Verifies Fix**: Runs the spec to confirm resolution
+5. **Prevents Flakiness**: Implements robust waiting strategies (no `waitForTimeout`)
 
 ## Common Issues Fixed
 
@@ -39,7 +31,7 @@ Diagnose and fix broken Cypress tests by analyzing error logs, screenshots, vide
 
 ## Self-Healing Selectors
 
-Auto-upgrades fragile selectors to resilient ones:
+Auto-upgrades fragile selectors to resilient ones.
 
 **Before** (Fragile):
 
@@ -47,19 +39,23 @@ Auto-upgrades fragile selectors to resilient ones:
 cy.get(".btn-primary").click();
 ```
 
-**After** (Resilient):
+**After** (Cypress, still in the Cypress tree):
 
 ```typescript
-cy.getByRole("button", { name: "Submit" });
-// or
-cy.get('[data-testid="submit-btn"]').click();
+cy.contains("button", "Submit").click();
+```
+
+**After** (Playwright — preferred):
+
+```typescript
+await page.getByRole("button", { name: "Submit" }).click();
 ```
 
 ## Invocation Methods
 
-1. **Slash Command**: `/cypress-heal login.cy.ts`
-2. **Agent Mention**: `@cypress-healer fix the broken checkout test`
-3. **Natural Language**: "The Cypress test file auth.cy.ts is failing"
+1. Natural language: "heal `cypress/e2e/tests/login.test.ts` using `skills/cypress-to-playwright-migration`"
+2. After migration: "heal `playwright/e2e/login.spec.ts` using `skills/playwright-testing`"
+3. Copilot-optional for Playwright only: `@playwright-healer`
 
 ## Required Artifacts
 
@@ -68,10 +64,3 @@ The healer looks for:
 - Test failure logs
 - `test-output/cypress-output/screenshots/`
 - `test-output/cypress-output/videos/`
-- Error stack traces
-
-## Output
-
-- Fixed test file with explanatory comments
-- Summary of changes made
-- Verification results

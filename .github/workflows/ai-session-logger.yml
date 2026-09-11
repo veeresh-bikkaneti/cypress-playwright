@@ -3,29 +3,26 @@ name: AI Session Logger
 on:
   push:
     paths:
-      - 'playwright/**/*.spec.ts'
-      - 'cypress/**/*.cy.ts'
-      - 'playwright/pages/**/*.ts'
+      - "playwright/**/*.spec.ts"
+      - "cypress/**/*.cy.ts"
+      - "playwright/pages/**/*.ts"
   workflow_dispatch:
     inputs:
       session_description:
-        description: 'Description of AI session'
+        description: "Description of AI session"
         required: true
         type: string
       agent_used:
-        description: 'Which agent was used'
+        description: "Which agent was used"
         required: true
         type: choice
         options:
-          - '@qa-orchestrator'
-          - '@qa-engineer'
-          - '@qa-architect'
-          - '@automation-engineer'
-          - '@sdet'
-          - '@cypress-healer'
-          - '@playwright-healer'
-          - '@playwright-test-generator'
-          - 'Other'
+          - "skills/playwright-testing"
+          - "skills/cypress-to-playwright-migration"
+          - "skills/code-review"
+          - "@playwright-healer"
+          - "Manual"
+          - "Other"
 
 permissions:
   contents: write
@@ -33,12 +30,12 @@ permissions:
 jobs:
   log-session:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2  # Fetch last 2 commits to compare changes
+          fetch-depth: 2 # Fetch last 2 commits to compare changes
 
       - name: Detect changed test files
         id: changes
@@ -62,20 +59,17 @@ jobs:
         run: |
           COMMIT_MSG="${{ steps.commit.outputs.message }}"
           AGENT="Manual"
-          
-          # Check for agent mentions in commit message
-          if [[ "$COMMIT_MSG" =~ @qa-orchestrator ]]; then AGENT="@qa-orchestrator"
-          elif [[ "$COMMIT_MSG" =~ @cypress-healer ]]; then AGENT="@cypress-healer"
-          elif [[ "$COMMIT_MSG" =~ @playwright-healer ]]; then AGENT="@playwright-healer"
-          elif [[ "$COMMIT_MSG" =~ @playwright-test-generator ]]; then AGENT="@playwright-test-generator"
-          elif [[ "$COMMIT_MSG" =~ @automation-engineer ]]; then AGENT="@automation-engineer"
+
+          if [[ "$COMMIT_MSG" =~ @playwright-healer ]]; then AGENT="@playwright-healer"
+          elif [[ "$COMMIT_MSG" =~ playwright-testing ]]; then AGENT="skills/playwright-testing"
+          elif [[ "$COMMIT_MSG" =~ cypress-to-playwright-migration ]]; then AGENT="skills/cypress-to-playwright-migration"
+          elif [[ "$COMMIT_MSG" =~ code-review ]]; then AGENT="skills/code-review"
           fi
-          
-          # Use workflow input if provided
+
           if [[ "${{ github.event.inputs.agent_used }}" != "" ]]; then
             AGENT="${{ github.event.inputs.agent_used }}"
           fi
-          
+
           echo "name=$AGENT" >> $GITHUB_OUTPUT
 
       - name: Append to session log
@@ -86,26 +80,25 @@ jobs:
           COMMIT_MSG="${{ steps.commit.outputs.message }}"
 
           mkdir -p .github/memory
-          # Create session entry
           cat >> .github/memory/session-log.md << EOF
-          
+
           ---
-          
+
           ### Session: $SESSION_DATE
-          
+
           **User Request**: $COMMIT_MSG
-          
+
           **Agent(s) Used**: $AGENT
-          
+
           **Files Modified**:
           $(echo "$FILES" | tr ',' '\n' | sed 's/^/- /')
-          
+
           **Commit**: \`${{ github.sha }}\`
-          
+
           **Triggered By**: ${{ github.event_name }}
-          
+
           ---
-          
+
           EOF
 
       - name: Commit session log

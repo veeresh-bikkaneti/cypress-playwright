@@ -1,261 +1,102 @@
 # Cypress2Playwright Using AI
 
-> AI-powered Cypress-to-Playwright migration toolkit. Installable agent configurations for **7 major AI coding tools**.
+Enterprise Cypress-to-Playwright migration toolkit. One portable core (`AGENTS.md` + [Agent Skills](https://agentskills.io/specification)) plus thin adapters for **GitHub Copilot, Claude Code, Cursor, Grok, OpenAI Codex, Gemini, and OpenCode**.
 
-[![npm](https://img.shields.io/badge/npm-cypress-playwright-red?style=flat-square&logo=npm)](https://www.npmjs.com/package/cypress2playwright-using-ai)
-[![VS Code](https://img.shields.io/badge/VS%20Code-Extension-blue?style=flat-square&logo=visual-studio-code)](https://marketplace.visualstudio.com/)
-[![Playwright](https://img.shields.io/badge/Playwright-v1.38+-45ba4b?style=flat-square&logo=playwright)](https://playwright.dev)
+[![Playwright](https://img.shields.io/badge/Playwright-v1.58+-45ba4b?style=flat-square&logo=playwright)](https://playwright.dev)
+[![Cypress](https://img.shields.io/badge/Cypress-v12+-17202C?style=flat-square&logo=cypress)](https://cypress.io)
 
----
+## Security
 
-## 🛡️ Security: Air-Gapped by Design
+This plugin makes **no network requests**. File copies only. `--no-fetch` strips version-check sections from **files this installer wrote**, not the rest of the consumer repo. Agent configs use `model: inherit`. See [SECURITY.md](./SECURITY.md).
 
-**This plugin makes ZERO network requests. No data leaves your machine.**
+## How it works
 
-| Security Guarantee           | Details                                                 |
-| ---------------------------- | ------------------------------------------------------- |
-| **Zero Outbound Traffic**    | No `fetch()`, `http`, `https`, or socket calls          |
-| **No Telemetry**             | No analytics, tracking, or usage reporting              |
-| **No API Keys Required**     | No credentials needed or stored                         |
-| **No External Dependencies** | No runtime npm packages that make network calls         |
-| **Local-Only Operations**    | All file operations are local filesystem only           |
-| **Enterprise-Ready**         | Designed for air-gapped and outbound-gated environments |
-
-**AI Model Configuration:** All agent configs use `model: inherit` — no cloud models are hardcoded. The plugin respects your AI tool's local/self-hosted model configuration.
-
-**Runtime Documentation:** Agent configs instruct AI tools to fetch official Playwright/Cypress documentation at runtime for version compatibility. These fetches are performed by your AI tool, not by this plugin. You can disable them or redirect to a local docs mirror. See [SECURITY.md](./SECURITY.md) for full details.
-
----
-
-## What Is This?
-
-A **single package** that installs AI agent configurations, migration guides, testing standards, and quality rules into your project — pre-configured for whichever AI coding tool you use.
-
-### Supported Tools
-
-| Tool               | Config Files                                                   | How It Works                                         |
-| ------------------ | -------------------------------------------------------------- | ---------------------------------------------------- |
-| **GitHub Copilot** | `.github/copilot-instructions.md`, `.github/agents/*.agent.md` | Agents invoked via `@mentions`                       |
-| **Claude Code**    | `CLAUDE.md`, `.claude/commands/*.md`                           | Instructions + `/slash` commands                     |
-| **Cursor**         | `.cursor/rules/*.mdc`                                          | Rules triggered by globs, always-on, or `@mentions`  |
-| **Cline**          | `.clinerules/*.md`                                             | Rules toggled per-task in the UI                     |
-| **Windsurf**       | `.windsurf/rules/*.md`                                         | Rules with `trigger` modes (always_on, glob, manual) |
-| **Aider**          | `.aider.conf.yml`, `CONVENTIONS.md`                            | Read-only context loaded automatically               |
-| **Continue**       | `.continue/rules/*.md`                                         | Rules injected into chat context                     |
-
----
-
-## Quick Start
-
-### Option 1: npx (Recommended)
-
-```bash
-# Auto-detect installed tools and configure them
-npx cypress2playwright-using-ai setup
-
-# Install for specific tools
-npx cypress2playwright-using-ai setup --tools copilot,cursor
-
-# Install for ALL tools
-npx cypress2playwright-using-ai setup --all
+```text
+AGENTS.md + skills/          ← every agent (Grok, Codex, OpenCode, Copilot, Claude, Cursor, Gemini)
+.github/                     ← Copilot adapter
+CLAUDE.md + .claude/         ← Claude Code adapter
+.cursor/rules/               ← Cursor adapter
+GEMINI.md                    ← Gemini adapter
 ```
 
-### Option 2: npm Install
+Skills follow the [Agent Skills](https://agentskills.io/specification) spec. The installer mirrors `skills/` into the discovery paths each vendor actually scans.
+
+### Supported tools
+
+| Tool | Extra files | Invocation |
+| --- | --- | --- |
+| **All** | `AGENTS.md`, `skills/` | Natural language |
+| **GitHub Copilot** | `.github/copilot-instructions.md`, `.github/agents/*.agent.md`, `.github/instructions/*.instructions.md` | `@qa-orchestrator`, `@cypress-to-playwright-migration` |
+| **Claude Code** | `CLAUDE.md`, `.claude/commands/`, `.claude/skills/` | `/migrate`, `/heal`, `/review` |
+| **Cursor** | `.cursor/rules/*.mdc`, `.cursor/skills/` | Auto on `playwright/**`, `cypress/**` |
+| **Grok** | (core only) | Reads `AGENTS.md` |
+| **OpenAI Codex** | (core only) | Reads `AGENTS.md` + `.agents/skills/` |
+| **Gemini** | `GEMINI.md` | Antigravity / Code Assist / Jules |
+| **OpenCode** | (core only) | Reads `AGENTS.md` |
+
+Not in the enterprise set: Aider, Cline, Continue, Windsurf.
+
+See [docs/ENTERPRISE_AGENTS.md](../docs/ENTERPRISE_AGENTS.md) for the live-doc matrix.
+
+## Quick start
+
+```bash
+# Portable core always. Adapters if those tools are already in the repo,
+# or pass --tools / --all.
+npx cypress2playwright-setup setup
+npx cypress2playwright-setup setup --tools copilot,claude,cursor
+npx cypress2playwright-setup setup --all
+npx cypress2playwright-setup detect
+```
 
 ```bash
 npm install cypress2playwright-using-ai --save-dev
-npx cypress2playwright-setup
+npx cypress2playwright-setup setup --tools copilot,claude
 ```
 
-### Option 3: VS Code Extension
+Manual: copy `plugin/templates/_shared/` then `plugin/templates/<tool>/` from [veeresh-bikkaneti/cypress-playwright](https://github.com/veeresh-bikkaneti/cypress-playwright).
 
-1. Open VS Code
-2. Install "Cypress2Playwright Using AI" from the Extensions marketplace
-3. Run command: `Cypress2Playwright: Setup AI Agents`
+## What gets installed
 
-### Option 4: Manual Copy
+| Skill | When to load |
+| --- | --- |
+| `cypress-to-playwright-migration` | Convert a Cypress spec or custom command |
+| `playwright-testing` | Write or heal Playwright tests |
+| `code-review` | Isolated review with a git range before merge |
+| `webapp-testing` | Plan coverage, not a single spec |
 
-Clone the repo and copy the relevant template directory into your project:
+Copilot custom agents (optional): `qa-orchestrator`, `cypress-to-playwright-migration`, `playwright-healer`, `playwright-test-generator`, `playwright-test-planner`.
+
+## Standards (from AGENTS.md)
+
+- Locators: `getByRole` > `getByLabel` > `getByPlaceholder` > `getByText` > `getByTestId` > `locator()`
+- Await every action/assertion
+- No `waitForTimeout`
+- Page objects for pages with 3+ interactions
+- Auth via `storageState` / fixtures
+- TypeScript strict
+
+| Cypress | Playwright |
+| --- | --- |
+| `cy.visit(url)` | `await page.goto(url)` |
+| `cy.get('button').click()` | `await page.getByRole('button', { name }).click()` |
+| `cy.contains(text)` | `page.getByText(text)` |
+| `cy.get('input').type(text)` | `await page.getByLabel(label).fill(text)` |
+| `cy.intercept(method, url)` | `await page.route(pattern, handler)` |
+| `cy.session` | `storageState` + setup project |
+
+## CLI
+
+| Flag | Meaning |
+| --- | --- |
+| `--tools copilot,claude,cursor,grok,codex,gemini,opencode` | Vendor adapters |
+| `--all` | All adapters (core is always installed) |
+| `--target <path>` | Project root |
+| `--force` | Overwrite |
+| `--no-fetch` | Strip fetch sections from **written** files only |
+
+After setup, **commit `AGENTS.md` and `skills/`** so every agent on the team sees the same rules.
 
 ```bash
-git clone https://github.com/vbikkaneti/cypress-playwright.git
-# Then copy the templates for your tool:
-#   templates/copilot/    → for GitHub Copilot
-#   templates/claude/     → for Claude Code
-#   templates/cursor/     → for Cursor
-#   templates/cline/      → for Cline
-#   templates/windsurf/   → for Windsurf
-#   templates/aider/      → for Aider
-#   templates/continue/   → for Continue
+npm test   # from plugin/ — lists tools and installs into a temp dir
 ```
-
----
-
-## CLI Commands
-
-| Command  | Description                                      |
-| -------- | ------------------------------------------------ |
-| `setup`  | Install agent configs (auto-detects tools)       |
-| `detect` | Show which AI tools are detected in this project |
-| `list`   | List all supported tools                         |
-
-### Options
-
-| Flag              | Description                                                   |
-| ----------------- | ------------------------------------------------------------- |
-| `--tools <list>`  | Comma-separated list of tools (e.g., `copilot,claude,cursor`) |
-| `--all`           | Install templates for ALL supported tools                     |
-| `--target <path>` | Target project directory (default: cwd)                       |
-| `--help`          | Show help message                                             |
-
----
-
-## What You Get
-
-### Migration Agents
-
-| Agent                         | What It Does                                                  |
-| ----------------------------- | ------------------------------------------------------------- |
-| **qa-orchestrator**           | Central coordinator — routes tasks to the right specialist    |
-| **playwright-test-generator** | Generates Playwright tests from natural language requirements |
-| **playwright-test-planner**   | Plans test strategies and coverage maps                       |
-| **playwright-healer**         | Diagnoses and fixes broken Playwright tests                   |
-| **cypress-healer**            | Diagnoses and fixes broken Cypress tests                      |
-| **cypress-to-playwright**     | Migrates Cypress tests to Playwright                          |
-| **backend-specialist**        | Backend API and server-side testing                           |
-| **frontend-specialist**       | Frontend UI testing and visual validation                     |
-| **database-architect**        | Database schema testing and data integrity                    |
-| **devops-engineer**           | CI/CD pipeline and infrastructure testing                     |
-| **debugger**                  | Test failure diagnosis and root cause analysis                |
-| **documentation-writer**      | Test documentation and reporting                              |
-| **test-engineer**             | General test engineering and quality assurance                |
-| **qa-automation-engineer**    | QA-specific automation patterns and workflows                 |
-
-### Coding Standards
-
-- Locator priority: `getByRole` > `getByLabel` > `getByText` > `getByTestId` > CSS
-- All actions must be `await`ed
-- No `waitForTimeout` — explicit waits only
-- Page Object Model for pages with 3+ interactions
-- Test isolation — no shared state
-- TypeScript strict mode
-
-### Migration Cheat Sheet
-
-| Cypress                              | Playwright                                      |
-| ------------------------------------ | ----------------------------------------------- |
-| `cy.visit(url)`                      | `await page.goto(url)`                          |
-| `cy.get(sel)`                        | `page.locator(sel)`                             |
-| `cy.contains(text)`                  | `page.getByText(text)`                          |
-| `cy.get(sel).click()`                | `await page.locator(sel).click()`               |
-| `cy.get(sel).type(text)`             | `await page.locator(sel).fill(text)`            |
-| `cy.intercept(method, url)`          | `await page.route(pattern, route => ...)`       |
-| `cy.wait('@alias')`                  | `await page.waitForResponse(pattern)`           |
-| `cy.get(sel).should('be.visible')`   | `await expect(page.locator(sel)).toBeVisible()` |
-| `cy.url().should('include', path)`   | `await expect(page).toHaveURL(/path/)`          |
-| `cy.get(sel).should('have.text', x)` | `await expect(page.locator(sel)).toHaveText(x)` |
-
----
-
-## Tool-Specific Setup
-
-### GitHub Copilot
-
-**Files installed:**
-
-- `.github/copilot-instructions.md` — Always-on project rules
-- `.github/agents/*.agent.md` — Invokable agents
-
-**Usage:**
-
-```
-@qa-orchestrator create tests for login flow
-@cypress-to-playwright migrate cypress/e2e/tests/login.test.ts
-@playwright-healer fix playwright/e2e/smoke.spec.ts
-```
-
-### Claude Code
-
-**Files installed:**
-
-- `CLAUDE.md` — Project instructions (auto-loaded)
-- `.claude/commands/*.md` — Slash commands
-
-**Usage:**
-
-```
-/create-test login form validation
-/heal-test playwright/e2e/smoke.spec.ts
-/migrate cypress/e2e/tests/checkout.test.ts
-```
-
-### Cursor
-
-**Files installed:**
-
-- `.cursor/rules/*.mdc` — Context-aware rules
-
-**Usage:** Rules auto-apply based on file globs, or invoke manually:
-
-```
-@playwright-testing
-@cypress-migration
-```
-
-### Cline
-
-**Files installed:**
-
-- `.clinerules/*.md` — Toggleable rules
-
-**Usage:** Toggle rules on/off in the Cline rules panel.
-
-### Windsurf
-
-**Files installed:**
-
-- `.windsurf/rules/*.md` — Trigger-mode rules
-
-**Usage:** Rules activate via `trigger: always_on`, `glob`, or `@mention`.
-
-### Aider
-
-**Files installed:**
-
-- `.aider.conf.yml` — Auto-loads conventions
-- `CONVENTIONS.md` — Coding standards
-
-**Usage:** Aider auto-reads CONVENTIONS.md via the `read:` config.
-
-### Continue
-
-**Files installed:**
-
-- `.continue/rules/*.md` — Chat context rules
-
-**Usage:** Rules inject into chat based on `alwaysApply` or `globs`.
-
----
-
-## Customization
-
-After installation, customize the agent configs for your team:
-
-1. **Edit rules** — Open the tool-specific config files and adjust to your conventions
-2. **Add agents** — Create new `.agent.md`, `.mdc`, or `.md` files following the existing patterns
-3. **Remove tools** — Delete config files for tools you don't use
-4. **Share** — Commit the configs to your repo so your whole team benefits
-
----
-
-## Requirements
-
-- **Node.js**: v20+
-- **Playwright**: v1.38+ (for test execution)
-- **Cypress**: v10.x – 15.x (for migration source reference)
-
----
-
-## License
-
-MIT

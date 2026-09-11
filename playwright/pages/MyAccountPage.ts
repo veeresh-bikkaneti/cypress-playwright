@@ -31,31 +31,37 @@ export class MyAccountPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.pageTitle = page.locator('[data-testid="page-title"]');
-    this.userInfo = page.locator('[data-testid="user-info"]');
-    this.userName = page.locator('[data-testid="user-name"]');
-    this.userEmail = page.locator('[data-testid="user-email"]');
-    this.userAvatar = page.locator('[data-testid="user-avatar"]');
-    this.sidebar = page.locator('[data-testid="sidebar"]');
-    this.sidebarNav = page.locator('[data-testid="sidebar-nav"]');
-    this.navOverview = page.locator('[data-testid="nav-overview"]');
-    this.navOrders = page.locator('[data-testid="nav-orders"]');
-    this.navProducts = page.locator('[data-testid="nav-products"]');
-    this.navSettings = page.locator('[data-testid="nav-settings"]');
-    this.logoutLink = page.locator('[data-testid="logout-link"]');
-    this.dashboardHeader = page.locator('[data-testid="dashboard-header"]');
-    this.mainContent = page.locator('[data-testid="main-content"]');
-    this.statsGrid = page.locator('[data-testid="stats-grid"]');
-    this.ordersSection = page.locator('[data-testid="orders-section"]');
-    this.ordersTable = page.locator('[data-testid="orders-table"]');
-    this.createOrderBtn = page.locator('[data-testid="create-order-btn"]');
-    this.storageSection = page.locator('[data-testid="storage-section"]');
-    this.setCookieBtn = page.locator('[data-testid="set-cookie-btn"]');
-    this.getCookieBtn = page.locator('[data-testid="get-cookie-btn"]');
-    this.clearCookiesBtn = page.locator('[data-testid="clear-cookies-btn"]');
-    this.setStorageBtn = page.locator('[data-testid="set-storage-btn"]');
-    this.clearStorageBtn = page.locator('[data-testid="clear-storage-btn"]');
-    this.storageResult = page.locator('[data-testid="storage-result"]');
+    this.pageTitle = page.getByRole("heading", {
+      name: "Welcome to Dashboard",
+    });
+    this.userInfo = page.getByTestId("user-info");
+    this.userName = page.getByTestId("user-name");
+    this.userEmail = page.getByTestId("user-email");
+    this.userAvatar = page.getByTestId("user-avatar");
+    this.sidebar = page.getByTestId("sidebar");
+    this.sidebarNav = page.getByTestId("sidebar-nav");
+    this.navOverview = page.getByRole("link", { name: /Overview/ });
+    this.navOrders = page.getByRole("link", { name: /Orders/ });
+    this.navProducts = page.getByRole("link", { name: /Products/ });
+    this.navSettings = page.getByRole("link", { name: /Settings/ });
+    this.logoutLink = page.getByRole("link", { name: /Logout/ });
+    this.dashboardHeader = page.getByTestId("dashboard-header");
+    this.mainContent = page.getByTestId("main-content");
+    this.statsGrid = page.getByTestId("stats-grid");
+    this.ordersSection = page.getByTestId("orders-section");
+    this.ordersTable = page.getByTestId("orders-table");
+    this.createOrderBtn = page.getByRole("button", {
+      name: /Create Test Order/,
+    });
+    this.storageSection = page.getByTestId("storage-section");
+    this.setCookieBtn = page.getByRole("button", { name: "Set Test Cookie" });
+    this.getCookieBtn = page.getByRole("button", { name: "Get Cookies" });
+    this.clearCookiesBtn = page.getByRole("button", { name: /Clear Cookies/ });
+    this.setStorageBtn = page.getByRole("button", { name: "Set localStorage" });
+    this.clearStorageBtn = page.getByRole("button", {
+      name: "Clear localStorage",
+    });
+    this.storageResult = page.getByTestId("storage-result");
   }
 
   async validateSuccessfulLogin() {

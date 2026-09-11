@@ -1,58 +1,32 @@
 import { test, expect } from "@playwright/test";
-import { LoginPage } from "../pages/LoginPage";
 import { MyAccountPage } from "../pages/MyAccountPage";
-import fs from "fs";
-import path from "path";
-
-const users = JSON.parse(
-  fs.readFileSync(
-    path.join(__dirname, "../../cypress/fixtures/users.json"),
-    "utf-8",
-  ),
-);
+import { AUTH_STATE } from "../auth-state";
 
 test.describe("My Account Functionality", () => {
-  let loginPage: LoginPage;
+  test.use({ storageState: AUTH_STATE });
+
   let myAccountPage: MyAccountPage;
 
   test.beforeEach(async ({ page }) => {
-    loginPage = new LoginPage(page);
     myAccountPage = new MyAccountPage(page);
+    await page.goto("/dashboard");
   });
 
-  test("should display dashboard after login", async ({ page }) => {
-    await loginPage.login(
-      users.valid_credentials.emailId,
-      users.valid_credentials.password,
-    );
+  test("should display dashboard when authenticated", async () => {
     await myAccountPage.validateSuccessfulLogin();
   });
 
-  test("should display user information on dashboard", async ({ page }) => {
-    await loginPage.login(
-      users.valid_credentials.emailId,
-      users.valid_credentials.password,
-    );
-
+  test("should display user information on dashboard", async () => {
     await expect(myAccountPage.userName).toBeVisible();
     await expect(myAccountPage.userEmail).toBeVisible();
   });
 
-  test("should navigate to orders section", async ({ page }) => {
-    await loginPage.login(
-      users.valid_credentials.emailId,
-      users.valid_credentials.password,
-    );
+  test("should navigate to orders section", async () => {
     await myAccountPage.navigateToOrders();
     await expect(myAccountPage.ordersSection).toBeVisible();
   });
 
-  test("should handle storage operations", async ({ page }) => {
-    await loginPage.login(
-      users.valid_credentials.emailId,
-      users.valid_credentials.password,
-    );
-
+  test("should handle storage operations", async () => {
     await myAccountPage.setStorageBtn.click();
     await expect(myAccountPage.storageResult).toContainText("localStorage");
 
@@ -60,11 +34,7 @@ test.describe("My Account Functionality", () => {
     await expect(myAccountPage.storageResult).toContainText("cleared");
   });
 
-  test("should logout and redirect to login", async ({ page }) => {
-    await loginPage.login(
-      users.valid_credentials.emailId,
-      users.valid_credentials.password,
-    );
+  test("should logout and redirect to login", async () => {
     await myAccountPage.logout();
     await myAccountPage.validateSuccessfulLogout();
   });

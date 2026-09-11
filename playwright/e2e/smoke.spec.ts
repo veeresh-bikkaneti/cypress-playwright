@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { LoginPage } from "../pages/LoginPage";
 
 // ============================================================================
 // SMOKE TEST - Verify Basic Connectivity + Test App Integration
@@ -22,11 +23,11 @@ test.describe("Smoke Test - Basic Verification", () => {
   });
 
   test("should navigate to login page", async ({ page }) => {
-    await page.goto("/login");
-    await expect(page.getByTestId("login-form")).toBeVisible();
-    await expect(page.getByTestId("email-input")).toBeVisible();
-    await expect(page.getByTestId("password-input")).toBeVisible();
-    await expect(page.getByTestId("submit-btn")).toBeVisible();
+    const loginPage = new LoginPage(page);
+    await loginPage.navigateToLogin();
+    await expect(loginPage.emailAddressTxt).toBeVisible();
+    await expect(loginPage.passwordTxt).toBeVisible();
+    await expect(loginPage.signinBtn).toBeVisible();
   });
 
   test("should make a direct API request", async ({ request }) => {
@@ -38,12 +39,8 @@ test.describe("Smoke Test - Basic Verification", () => {
   });
 
   test("should login successfully via UI", async ({ page }) => {
-    await page.goto("/login");
-    await page.getByTestId("email-input").fill("test@example.com");
-    await page.getByTestId("password-input").fill("password123");
-    await page.getByTestId("submit-btn").click();
-
-    // Wait for redirect to dashboard
+    const loginPage = new LoginPage(page);
+    await loginPage.login("test@example.com", "password123");
     await expect(page).toHaveURL(/.*\/dashboard/, { timeout: 10000 });
   });
 

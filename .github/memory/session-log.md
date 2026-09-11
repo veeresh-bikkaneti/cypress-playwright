@@ -35,3 +35,53 @@ feat: cleanup AI testing plugin – resolve merge conflicts, fix port c…
 
 ---
 
+
+---
+
+### Session: 2026-09-11 13:31 UTC
+
+**User Request**: fix: consume storageState and delete unused Copilot personas
+
+Wire authenticated specs to the setup-project auth file, drop the
+unused authenticatedPage fixture, and persist Remember-me localStorage
+because Playwright does not restore sessionStorage. Remove nested
+legacy agent files that nothing invoked.
+
+**Agent(s) Used**: Manual
+
+**Files Modified**:
+- playwright/e2e/myAccount.spec.ts
+- playwright/e2e/session.spec.ts
+- 
+
+**Commit**: `210aec55f7bcfc19b1baed0b8241cd66d052518c`
+
+**Triggered By**: push
+
+---
+
+
+---
+
+### Session: 2026-09-11 14:31 UTC
+
+**User Request**: fix: isolated-review findings for healer, installer, and CI lint
+
+Address Important items from the PR #49 review: parse Playwright JSON
+for auto-heal, stop detecting Copilot from skill mirrors, mirror only
+canonical skills, drop authenticatedPage snippet, use LoginPage locators
+in smoke, and pin Prettier so quality-check matches GitHub CI.
+
+**Agent(s) Used**: Manual
+
+**Files Modified**:
+- playwright/e2e/api.spec.ts
+- playwright/e2e/smoke.spec.ts
+- 
+
+**Commit**: `c95041ee274999c4240d7ec21d32975a18fadae5`
+
+**Triggered By**: push
+
+---
+

@@ -1,58 +1,34 @@
 import { test, expect } from "@playwright/test";
-
-// ============================================================================
-// SESSION TESTING - Caching Authentication State
-// ============================================================================
+import { AUTH_STATE } from "../auth-state";
 
 test.describe("Session Testing - Caching / Restore", () => {
-  const testUser = {
-    email: "test@example.com",
-    password: "password123",
-  };
+  test.use({ storageState: AUTH_STATE });
 
-  /**
-   * Simple login helper for Playwright
-   */
-  async function login(page: any) {
-    await page.goto("/login");
-    await page.getByTestId("email-input").fill(testUser.email);
-    await page.getByTestId("password-input").fill(testUser.password);
-    await page.getByTestId("submit-btn").click();
-    await expect(page).toHaveURL(/.*\/dashboard/);
-  }
-
-  test("should log in for Test 1", async ({ page }) => {
-    await login(page);
-    await page.goto("/dashboard");
-    await expect(page.locator("h1")).toContainText("Dashboard");
-  });
-
-  test("should demonstrate session restore concept (Playwright uses storageState)", async ({
+  test("restores dashboard from storageState without UI login", async ({
     page,
   }) => {
-    // In Playwright, you typically save storage state to a file and reuse it.
-    // For this migration parity, we will just login again, but in a real PW suite,
-    // you would use test.use({ storageState: 'auth.json' }).
-    await login(page);
     await page.goto("/dashboard");
-    await expect(page.getByTestId("page-title")).toContainText("Dashboard");
+    await expect(
+      page.getByRole("heading", { name: "Welcome to Dashboard" }),
+    ).toBeVisible();
     await expect(page.getByTestId("sidebar")).toBeVisible();
   });
 
-  test("should allow navigation with session", async ({ page }) => {
-    await login(page);
+  test("should allow navigation with restored session", async ({ page }) => {
     await page.goto("/dashboard");
-    await page.getByTestId("nav-orders").click();
+    await page.getByRole("link", { name: /Orders/ }).click();
     await expect(page.getByTestId("orders-section")).toBeVisible();
   });
 
   test("should handle session clearing", async ({ page }) => {
-    await login(page);
+    await page.goto("/dashboard");
+    await expect(page).toHaveURL(/.*\/dashboard/);
 
-    // Clear context (cookies/storage)
     await page.context().clearCookies();
-    await page.evaluate(() => localStorage.clear());
-    await page.evaluate(() => sessionStorage.clear());
+    await page.evaluate(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+    });
 
     await page.goto("/dashboard");
     await expect(page).toHaveURL(/.*\/login/);

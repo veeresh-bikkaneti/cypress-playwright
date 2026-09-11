@@ -1,6 +1,8 @@
 /**
- * AI Tool Detector
- * Detects which AI coding tools are configured in the current project.
+ * Detects enterprise AI coding tools configured in a project.
+ *
+ * Portable core (AGENTS.md + skills/) is always installed and covers
+ * Grok, OpenAI Codex, OpenCode, and any other AGENTS.md client.
  */
 
 const fs = require("fs");
@@ -9,97 +11,101 @@ const path = require("path");
 const TOOL_SIGNATURES = {
   copilot: {
     name: "GitHub Copilot",
-    files: [
-      ".github/copilot-instructions.md",
-      ".github/agents",
-      ".github/instructions",
-    ],
+    // Do not treat .github/skills as Copilot — the portable core mirrors
+    // skills there for every AGENTS.md client.
+    files: [".github/copilot-instructions.md"],
     configFiles: [".github/copilot-instructions.md"],
   },
   claude: {
     name: "Claude Code",
-    files: ["CLAUDE.md", ".claude", ".claude/commands"],
+    files: ["CLAUDE.md", ".claude", ".claude/commands", ".claude/skills"],
     configFiles: ["CLAUDE.md"],
   },
   cursor: {
     name: "Cursor",
-    files: [".cursorrules", ".cursor/rules", ".cursor"],
-    configFiles: [".cursorrules"],
+    files: [".cursor/rules", ".cursor/skills", ".cursor"],
+    configFiles: [".cursor/rules"],
   },
-  cline: {
-    name: "Cline",
-    files: [".clinerules", ".clinerules/"],
-    configFiles: [".clinerules"],
+  grok: {
+    name: "Grok",
+    files: ["AGENTS.md"],
+    configFiles: ["AGENTS.md"],
   },
-  windsurf: {
-    name: "Windsurf",
-    files: [".windsurfrules", ".windsurf/rules", ".windsurf"],
-    configFiles: [".windsurfrules"],
+  codex: {
+    name: "OpenAI Codex",
+    files: ["AGENTS.md", ".agents", ".agents/skills", ".codex"],
+    configFiles: ["AGENTS.md"],
   },
-  aider: {
-    name: "Aider",
-    files: [".aider.conf.yml", ".aider"],
-    configFiles: [".aider.conf.yml"],
+  gemini: {
+    name: "Gemini",
+    files: ["GEMINI.md", ".gemini"],
+    configFiles: ["GEMINI.md"],
   },
-  continue: {
-    name: "Continue",
-    files: [".continue", ".continue/config.yaml", ".continue/rules"],
-    configFiles: [".continue/config.yaml"],
+  opencode: {
+    name: "OpenCode",
+    files: [".opencode", "opencode.json", ".opencode/agents"],
+    configFiles: ["opencode.json"],
   },
 };
 
-/**
- * Detect which AI tools are installed in the given directory.
- * @param {string} projectRoot - Path to the project root
- * @returns {Object} Detection results with tool names and their status
- */
+/** Tools that only need the portable core (no extra adapter directory). */
+const CORE_ONLY = new Set(["grok", "codex", "opencode"]);
+
+function exists(fullPath) {
+  try {
+    const stat = fs.statSync(fullPath);
+    return stat.isFile() || stat.isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+function hasCopilotAgents(projectRoot) {
+  const dir = path.join(projectRoot, ".github", "agents");
+  if (!exists(dir)) return false;
+  try {
+    return fs.readdirSync(dir).some((name) => name.endsWith(".agent.md"));
+  } catch {
+    return false;
+  }
+}
+
 function detectTools(projectRoot) {
   const results = {};
-
   for (const [toolId, tool] of Object.entries(TOOL_SIGNATURES)) {
-    const detected = tool.files.some((file) => {
-      const fullPath = path.join(projectRoot, file);
-      try {
-        const stat = fs.statSync(fullPath);
-        return stat.isFile() || stat.isDirectory();
-      } catch {
-        return false;
-      }
-    });
-
+    let detected = tool.files.some((file) =>
+      exists(path.join(projectRoot, file)),
+    );
+    if (toolId === "copilot" && !detected) {
+      detected = hasCopilotAgents(projectRoot);
+    }
     results[toolId] = {
       name: tool.name,
       detected,
       configFiles: tool.configFiles,
     };
   }
-
   return results;
 }
 
-/**
- * Get a list of detected tool names.
- * @param {string} projectRoot - Path to the project root
- * @returns {string[]} Array of detected tool IDs
- */
 function getDetectedToolIds(projectRoot) {
-  const results = detectTools(projectRoot);
-  return Object.entries(results)
+  return Object.entries(detectTools(projectRoot))
     .filter(([, info]) => info.detected)
     .map(([id]) => id);
 }
 
-/**
- * Get a list of all supported tool names.
- * @returns {string[]} Array of all supported tool IDs
- */
 function getAllToolIds() {
   return Object.keys(TOOL_SIGNATURES);
+}
+
+function isCoreOnlyTool(toolId) {
+  return CORE_ONLY.has(toolId);
 }
 
 module.exports = {
   detectTools,
   getDetectedToolIds,
   getAllToolIds,
+  isCoreOnlyTool,
   TOOL_SIGNATURES,
 };

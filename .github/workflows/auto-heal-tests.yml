@@ -2,119 +2,223 @@ name: Auto-Heal Failing Tests
 
 on:
   workflow_run:
-    workflows: ["Hybrid CI"]  # Trigger after CI workflow
+    # Must match hybrid-ci.yml `name:`
+    workflows: ["Hybrid Test Execution"]
     types:
       - completed
   workflow_dispatch:
     inputs:
       test_file:
-        description: 'Specific test file to heal (optional)'
+        description: "Specific test file to heal (optional)"
         required: false
         type: string
       framework:
-        description: 'Framework'
+        description: "Framework"
         required: true
         type: choice
         options:
-          - 'playwright'
-          - 'cypress'
+          - "playwright"
+          - "cypress"
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
 
 jobs:
   detect-failures:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'failure' || github.event_name == 'workflow_dispatch' }}
-    
+
     outputs:
       failed_tests: ${{ steps.parse.outputs.tests }}
-      framework: ${{ steps.detect.outputs.framework }}
-    
+      framework: ${{ steps.parse.outputs.framework }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Detect framework
-        id: detect
-        run: |
-          FRAMEWORK="${{ github.event.inputs.framework }}"
-          if [[ "$FRAMEWORK" == "" ]]; then
-            # Auto-detect from workflow artifacts or repo structure
-            if [[ -d "playwright" ]]; then FRAMEWORK="playwright"; fi
-            if [[ -d "cypress" ]]; then FRAMEWORK="cypress"; fi
-          fi
-          echo "framework=$FRAMEWORK" >> $GITHUB_OUTPUT
-
-      - name: Download test results
+      - name: Download Playwright results
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
-          name: test-results
-          path: ./test-results
+          name: playwright-results
+          path: ./test-results/playwright
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Download Cypress results
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: cypress-results
+          path: ./test-results/cypress
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
 
       - name: Parse failed tests
         id: parse
+        env:
+          INPUT_FRAMEWORK: ${{ github.event.inputs.framework }}
+          INPUT_TEST_FILE: ${{ github.event.inputs.test_file }}
         run: |
-          # Parse Playwright or Cypress output to extract failed test files
-          if [[ "${{ steps.detect.outputs.framework }}" == "playwright" ]]; then
-            FAILED=$(grep -r "FAILED" ./test-results | awk '{print $2}' | sort -u)
-          else
-            FAILED=$(grep -r "failing" ./test-results | awk '{print $3}' | sort -u)
-          fi
-          
-          echo "tests=$FAILED" >> $GITHUB_OUTPUT
-          echo "## Failed Tests Detected" >> $GITHUB_STEP_SUMMARY
-          echo "$FAILED" >> $GITHUB_STEP_SUMMARY
+          node <<'NODE'
+          const fs = require("fs");
+          const path = require("path");
+
+          function walkPw(suite, acc, seen) {
+            for (const spec of suite.specs || []) {
+              for (const t of spec.tests || []) {
+                const overall = t.status;
+                const last = (t.results || []).at(-1);
+                const failed =
+                  overall === "unexpected" ||
+                  (!overall &&
+                    last &&
+                    (last.status === "failed" || last.status === "timedOut"));
+                if (!failed) continue;
+                const line = `${spec.file || ""}: ${spec.title || t.title}`;
+                if (seen.has(line)) continue;
+                seen.add(line);
+                acc.push(line);
+              }
+            }
+            for (const child of suite.suites || []) walkPw(child, acc, seen);
+          }
+
+          const pwFailed = [];
+          const pwJson = path.join("test-results", "playwright", "results.json");
+          if (fs.existsSync(pwJson)) {
+            try {
+              const data = JSON.parse(fs.readFileSync(pwJson, "utf8"));
+              const seen = new Set();
+              for (const s of data.suites || []) walkPw(s, pwFailed, seen);
+            } catch (err) {
+              pwFailed.push(`(could not parse Playwright JSON: ${err.message})`);
+            }
+          }
+
+          const cyFailed = [];
+          const cyDir = path.join("test-results", "cypress");
+          function walkCy(dir) {
+            if (!fs.existsSync(dir)) return;
+            for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+              const p = path.join(dir, ent.name);
+              if (ent.isDirectory()) {
+                if (ent.name === "screenshots") {
+                  const shots = fs.readdirSync(p);
+                  if (shots.length) {
+                    cyFailed.push(`cypress screenshots (${shots.length})`);
+                  }
+                }
+                walkCy(p);
+                continue;
+              }
+              if (!ent.name.endsWith(".json")) continue;
+              try {
+                const data = JSON.parse(fs.readFileSync(p, "utf8"));
+                const stats = data.stats || {};
+                const failures = Number(stats.failures ?? stats.failed ?? 0);
+                if (failures > 0) {
+                  cyFailed.push(`${ent.name}: ${failures} failure(s)`);
+                }
+              } catch {
+                /* not a mocha/allure stats file */
+              }
+            }
+          }
+          try {
+            walkCy(cyDir);
+          } catch {
+            /* empty or unreadable */
+          }
+
+          const inputFw = process.env.INPUT_FRAMEWORK || "";
+          let framework = inputFw;
+          if (!framework) {
+            if (pwFailed.length) framework = "playwright";
+            else if (cyFailed.length) framework = "cypress";
+            else framework = "playwright";
+          }
+
+          const inputFile = process.env.INPUT_TEST_FILE || "";
+          const lines = [];
+          if (inputFile) lines.push(inputFile);
+          if (pwFailed.length) {
+            lines.push("Playwright:", ...pwFailed);
+          }
+          if (cyFailed.length) {
+            lines.push("Cypress:", ...cyFailed);
+          }
+          const tests = lines.filter(Boolean).join("\n") || "(see artifacts)";
+
+          const out = process.env.GITHUB_OUTPUT;
+          fs.appendFileSync(out, `framework=${framework}\n`);
+          fs.appendFileSync(out, `tests<<__HEAL_EOF__\n${tests}\n__HEAL_EOF__\n`);
+
+          const summary = process.env.GITHUB_STEP_SUMMARY;
+          fs.appendFileSync(
+            summary,
+            `## Failed Tests Detected\n\n**Framework**: ${framework}\n\n\`\`\`\n${tests}\n\`\`\`\n`,
+          );
+          NODE
 
   create-healing-issue:
     runs-on: ubuntu-latest
     needs: detect-failures
     if: ${{ needs.detect-failures.outputs.failed_tests != '' }}
-    
+
     steps:
       - name: Create GitHub Issue for Healing
         uses: actions/github-script@v7
+        env:
+          FAILED_TESTS: ${{ needs.detect-failures.outputs.failed_tests }}
+          FRAMEWORK: ${{ needs.detect-failures.outputs.framework }}
+          SOURCE_RUN_ID: ${{ github.event.workflow_run.id || github.run_id }}
         with:
           script: |
-            const failedTests = `${{ needs.detect-failures.outputs.failed_tests }}`;
-            const framework = `${{ needs.detect-failures.outputs.framework }}`;
-            const agent = framework === 'playwright' ? '@playwright-healer' : '@cypress-healer';
-            
+            const failedTests = process.env.FAILED_TESTS || "(see artifacts)";
+            const framework = process.env.FRAMEWORK || "playwright";
+            const sourceRunId = process.env.SOURCE_RUN_ID || context.runId;
+            const skill = framework === "cypress"
+              ? "skills/cypress-to-playwright-migration"
+              : "skills/playwright-testing (Heal section)";
+            const firstLine = failedTests.split("\n").find((l) => l && l !== "Playwright:" && l !== "Cypress:") || "test failure";
+
             const issue = await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `🔧 Auto-Heal: ${failedTests.split('\n')[0]}`,
+              title: `Auto-Heal: ${firstLine}`.slice(0, 200),
               body: `## Test Healing Request
-              
-              **Framework**: ${framework}
-              **Agent**: ${agent}
-              **Failed Tests**:
-              \`\`\`
-              ${failedTests}
-              \`\`\`
-              
-              **Instructions for Developer**:
-              1. Open GitHub Copilot Chat in VS Code
-              2. Use: \`${agent} fix the test ${failedTests.split('\n')[0]}\`
-              3. Review the proposed fix
-              4. Apply changes and close this issue
-              
-              **Automated Analysis**:
-              - Test results: [View artifacts](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
-              - Trace/Screenshots: Check test-output directory
-              
-              **Quick Commands**:
-              \`\`\`
-              # Playwright
-              ${agent} analyze trace at test-output/playwright-output/trace.zip
-              
-              # Cypress
-              ${agent} check screenshots in test-output/cypress-output/screenshots
-              \`\`\`
-              `,
-              labels: ['test-failure', 'ai-healing', framework]
+
+            **Framework**: ${framework}
+            **Skill**: \`${skill}\`
+            **Failed Tests**:
+            \`\`\`
+            ${failedTests}
+            \`\`\`
+
+            **Instructions** (any enterprise coding agent):
+            1. Open the repo in Copilot / Claude Code / Cursor / Grok / Codex / Gemini / OpenCode
+            2. Ask: \`heal ${firstLine} using ${skill}\`
+            3. Copilot-optional: \`@playwright-healer\` for Playwright only
+            4. Review the proposed fix, apply, close this issue
+
+            **Artifacts**:
+            - [Workflow run](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${sourceRunId})
+            `,
+              labels: ["test-failure", "ai-healing", framework],
             });
-            
+
             console.log(`Created issue #${issue.data.number}`);
 
-      - name: Post to Slack/Teams (Optional)
+      - name: Post summary
+        env:
+          FRAMEWORK: ${{ needs.detect-failures.outputs.framework }}
         run: |
-          echo "🔧 Test failures detected. Healing issue created." >> $GITHUB_STEP_SUMMARY
-          echo "Developer should use ${{ needs.detect-failures.outputs.framework == 'playwright' && '@playwright-healer' || '@cypress-healer' }}" >> $GITHUB_STEP_SUMMARY
+          echo "Test failures detected. Healing issue created." >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$FRAMEWORK" == "cypress" ]]; then
+            echo "Heal with natural language + \`skills/cypress-to-playwright-migration\`." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Heal with natural language + \`skills/playwright-testing\` (optional Copilot: \`@playwright-healer\`)." >> "$GITHUB_STEP_SUMMARY"
+          fi

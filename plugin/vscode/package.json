@@ -1,13 +1,13 @@
 {
   "name": "cypress2playwright-using-ai",
   "displayName": "Cypress2Playwright Using AI",
-  "description": "AI-powered Cypress to Playwright migration toolkit with agents for Copilot, Claude Code, Cursor, Cline, Windsurf, Aider, and Continue.",
-  "version": "1.0.0",
+  "description": "Cypress-to-Playwright migration agents for GitHub Copilot, Claude Code, Cursor, Grok, OpenAI Codex, Gemini, and OpenCode.",
+  "version": "1.1.0",
   "publisher": "vbikkaneti",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vbikkaneti/Cypress2PlaywrightUsingAI"
+    "url": "https://github.com/veeresh-bikkaneti/cypress-playwright"
   },
   "engines": {
     "vscode": "^1.85.0"
@@ -25,7 +25,9 @@
     "testing",
     "e2e",
     "ai",
-    "copilot"
+    "copilot",
+    "claude",
+    "grok"
   ],
   "activationEvents": [
     "onLanguage:typescript",
@@ -73,7 +75,7 @@
       "properties": {
         "cypress2playwright.autoSetup": {
           "type": "boolean",
-          "default": true,
+          "default": false,
           "description": "Automatically setup AI agents when opening a Cypress-to-Playwright project."
         },
         "cypress2playwright.enabledTools": {
@@ -84,16 +86,18 @@
               "copilot",
               "claude",
               "cursor",
-              "cline",
-              "windsurf",
-              "aider",
-              "continue"
+              "grok",
+              "codex",
+              "gemini",
+              "opencode"
             ]
           },
           "default": [
-            "copilot"
+            "copilot",
+            "claude",
+            "cursor"
           ],
-          "description": "Which AI tools to configure when running setup."
+          "description": "Vendor adapters to install. AGENTS.md + skills always install (covers Grok, Codex, and OpenCode)."
         }
       }
     }

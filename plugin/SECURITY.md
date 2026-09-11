@@ -27,30 +27,20 @@
 
 The plugin and all installed templates have been audited for:
 
-- ✅ Zero `fetch()`, `axios`, `http`, `https` calls in plugin code
-- ✅ Zero outbound network requests in Python scripts
-- ✅ No hardcoded API keys or credentials
-- ✅ No telemetry or analytics code
-- ✅ No phone-home or tracking mechanisms
+- Zero `fetch()`, `axios`, `http`, `https` calls in plugin code
+- No hardcoded API keys or credentials
+- No telemetry or analytics code
+- No phone-home or tracking mechanisms
 
-### Runtime Documentation Fetching
+### Version pinning (no runtime doc fetch)
 
-The agent configurations instruct AI tools to fetch official documentation at runtime to ensure version compatibility:
+Installed `AGENTS.md` and skills tell agents to **pin Cypress and Playwright APIs to the versions in the consumer `package.json`**. They do not instruct the agent to fetch `playwright.dev` or `docs.cypress.io` at runtime.
 
-| Source          | URLs                    | Purpose                                         |
-| --------------- | ----------------------- | ----------------------------------------------- |
-| Playwright docs | `playwright.dev/docs/*` | Ensure API compatibility with installed version |
-| Cypress docs    | `docs.cypress.io/*`     | Ensure API compatibility with installed version |
-
-**Important:** These fetches are performed by the user's AI coding tool (e.g., Copilot, Claude, Cursor) at the user's discretion, not by this plugin. The plugin only installs instructions that tell the AI tool to check documentation. Enterprise users can:
-
-- **Disable outbound fetches** by removing the version-agnostic instructions from the installed templates
-- **Configure a local docs mirror** by modifying the URLs in the templates to point to an internal documentation server
-- **Block all outbound traffic** at the network level — the plugin will still function with its built-in mappings, just without runtime version checking
+`--no-fetch` is a safety net: it strips leftover “version check / fetch docs” sections from **files this installer just wrote**. It does **not** walk the rest of the consumer repository.
 
 ### Agent Tool Permissions
 
-The agent configurations declare allowed tools (Read, Write, Edit, Grep, Bash). These permissions are enforced by the user's AI coding tool, not by this plugin. Enterprise users can restrict agent tool access through their AI tool's settings.
+Vendor adapters declare a small tool set (typically read / search / edit) and `model: inherit`. Permissions are enforced by the user's AI coding tool, not by this plugin. Enterprise users can restrict agent tool access through their AI tool's settings.
 
 ### AI Model Configuration
 
@@ -82,7 +72,7 @@ Note: The plugin itself does not handle PII or regulated data — it installs co
 ### Reporting Security Issues
 
 If you discover a security concern, please open an issue at:
-https://github.com/vbikkaneti/cypress-playwright/issues
+https://github.com/veeresh-bikkaneti/cypress-playwright/issues
 
 ### Security Checklist for Enterprise Deployment
 
