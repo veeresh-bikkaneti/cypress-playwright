@@ -74,6 +74,13 @@ These pairs match case-for-case. Playwright uses its own APIs (`fill` / `press` 
 | traversal | Query/traversal/`*Until`, wrap/spread from AUT fruit, shadow root, same-origin iframe |
 | upload | In-memory file, fixture file, multi, drop, POST upload, download |
 
+### Cross-browser twins (same AUT assertion, different event)
+
+Playwright runs Chromium + Firefox + WebKit. Cypress on CI is Chrome only. Two twins have to map a Chrome-shaped event onto a browser that does not fire it:
+
+- **actions / slider** — Cypress `trigger(mousedown/mousemove, { clientX })`. Playwright real-mouse with `{ steps: 16 }`. Firefox often swallows a 1-step `mouse.move` teleport; if the AUT value is still ≤50 the twin dispatches the same MouseEvents Cypress sent.
+- **upload / download** — Cypress `click` + `readFile(downloadsFolder)`. Playwright `waitForEvent('download')`. WebKit on Linux often navigates a `text/plain` attachment instead of emitting that event; the AUT link has `download="sample.txt"` and the twin then asserts the sample bytes on `body`.
+
 ## Combined and Cypress-only (the −41)
 
 ### browser

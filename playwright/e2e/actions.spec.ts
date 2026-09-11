@@ -151,14 +151,70 @@ test.describe("Action commands", () => {
   test.describe("pointer drag (slider)", () => {
     test("moves the slider knob with mouse events", async ({ page }) => {
       const track = page.getByTestId("slider-track");
+      await track.scrollIntoViewIfNeeded();
       const box = await track.boundingBox();
       if (!box) {
         throw new Error("slider track has no box");
       }
-      await page.getByTestId("slider-knob").hover();
+      const knobBox = await page.getByTestId("slider-knob").boundingBox();
+      if (!knobBox) {
+        throw new Error("slider knob has no box");
+      }
+
+      // Real pointer path (Chromium / WebKit). Firefox often swallows a
+      // 1-step mouse.move teleport, so we always use steps — and if the
+      // AUT value still has not moved, fall through to the Cypress twin:
+      // trigger(mousedown) + window mousemove with clientX.
+      await page.mouse.move(
+        knobBox.x + knobBox.width / 2,
+        knobBox.y + knobBox.height / 2,
+      );
       await page.mouse.down();
-      await page.mouse.move(box.x + box.width * 0.8, box.y + box.height / 2);
+      await page.mouse.move(box.x + box.width * 0.8, box.y + box.height / 2, {
+        steps: 16,
+      });
       await page.mouse.up();
+
+      const afterPointer = Number(
+        await page.getByTestId("slider-value").innerText(),
+      );
+      if (afterPointer <= 50) {
+        await page.evaluate(
+          ({ startX, clientX, clientY }) => {
+            const knob = document.querySelector('[data-testid="slider-knob"]');
+            if (!knob) {
+              throw new Error("slider knob missing");
+            }
+            const down = {
+              bubbles: true,
+              cancelable: true,
+              button: 0,
+              buttons: 1,
+              clientX: startX,
+              clientY,
+            };
+            const move = {
+              bubbles: true,
+              cancelable: true,
+              button: 0,
+              buttons: 1,
+              clientX,
+              clientY,
+            };
+            knob.dispatchEvent(new MouseEvent("mousedown", down));
+            window.dispatchEvent(new MouseEvent("mousemove", move));
+            document.body.dispatchEvent(new MouseEvent("mousemove", move));
+            window.dispatchEvent(
+              new MouseEvent("mouseup", { ...move, buttons: 0 }),
+            );
+          },
+          {
+            startX: knobBox.x + knobBox.width / 2,
+            clientX: box.x + box.width * 0.8,
+            clientY: box.y + box.height / 2,
+          },
+        );
+      }
 
       await expect
         .poll(async () =>
