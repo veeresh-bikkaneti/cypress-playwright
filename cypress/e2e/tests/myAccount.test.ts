@@ -21,7 +21,10 @@ describe("My Account Functionality", () => {
       this.data.valid_credentials.emailId,
       this.data.valid_credentials.password,
     );
-    myAccountPage.validateUserInfo("Test User", "test@example.com");
+    myAccountPage.validateUserInfo(
+      "Test User",
+      this.data.valid_credentials.emailId,
+    );
   });
 
   it("should navigate to orders section", function () {

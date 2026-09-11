@@ -63,10 +63,15 @@ describe("Storage Testing - Cookies & Local Storage", () => {
     });
 
     it("should verify cookie set by server", () => {
-      cy.request({
-        method: "POST",
-        url: "/api/auth/login",
-        body: { email: "test@example.com", password: "password123" },
+      cy.fixture("users.json").then((data) => {
+        cy.request({
+          method: "POST",
+          url: "/api/auth/login",
+          body: {
+            email: data.valid_credentials.emailId,
+            password: data.valid_credentials.password,
+          },
+        });
       });
       cy.getCookie("authToken").should((cookie) => {
         expect(cookie).to.exist;
@@ -106,15 +111,17 @@ describe("Storage Testing - Cookies & Local Storage", () => {
 
   describe("localStorage Management", () => {
     beforeEach(() => {
-      cy.request("POST", "/api/auth/login", {
-        email: "test@example.com",
-        password: "password123",
-      }).then((res) => {
-        cy.visit("/dashboard", {
-          onBeforeLoad(win) {
-            win.localStorage.setItem("authToken", res.body.token);
-            win.localStorage.setItem("user", JSON.stringify(res.body.user));
-          },
+      cy.fixture("users.json").then((data) => {
+        cy.request("POST", "/api/auth/login", {
+          email: data.valid_credentials.emailId,
+          password: data.valid_credentials.password,
+        }).then((res) => {
+          cy.visit("/dashboard", {
+            onBeforeLoad(win) {
+              win.localStorage.setItem("authToken", res.body.token);
+              win.localStorage.setItem("user", JSON.stringify(res.body.user));
+            },
+          });
         });
       });
       cy.getByTestId("page-title").should("contain", "Dashboard");
@@ -190,7 +197,12 @@ describe("Storage Testing - Cookies & Local Storage", () => {
     });
 
     it("should clear authentication on logout", () => {
-      cy.getByTestId("user-email").should("contain", "test@example.com");
+      cy.fixture("users.json").then((data) => {
+        cy.getByTestId("user-email").should(
+          "contain",
+          data.valid_credentials.emailId,
+        );
+      });
       cy.getByTestId("logout-link").click();
       cy.url().should("include", "/login");
       cy.window().then((win) => {

@@ -47,7 +47,7 @@ test.describe("Form Testing - Input Interactions", () => {
 
       // Select all using keyboard shortcut logic setup for test
       await page.getByTestId("fullname-input").click();
-      await page.keyboard.press("Control+A");
+      await page.keyboard.press("ControlOrMeta+A");
       await page.keyboard.type("Jane Doe");
       await expect(page.getByTestId("fullname-input")).toHaveValue("Jane Doe");
     });
@@ -63,7 +63,7 @@ test.describe("Form Testing - Input Interactions", () => {
 
     test("should simulate keyboard shortcuts", async ({ page }) => {
       await page.getByTestId("fullname-input").fill("Select All");
-      await page.getByTestId("fullname-input").press("Control+A");
+      await page.getByTestId("fullname-input").press("ControlOrMeta+A");
       await page.getByTestId("fullname-input").press("Delete");
       await expect(page.getByTestId("fullname-input")).toHaveValue("");
     });
@@ -89,6 +89,7 @@ test.describe("Form Testing - Input Interactions", () => {
     });
 
     test("should use clear button to clear input", async ({ page }) => {
+      await expect(page.getByTestId("editable-input")).not.toHaveValue("");
       await page.getByTestId("clear-btn").click();
       await expect(page.getByTestId("editable-input")).toHaveValue("");
     });

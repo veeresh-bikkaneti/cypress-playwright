@@ -177,12 +177,14 @@ describe("Browser Testing - Viewport, Scroll & Navigation", () => {
      * Scroll within element
      */
     it("should scroll within a container element", () => {
-      cy.getByTestId("products-grid").then(($el) => {
+      cy.getByTestId("scroll-container").then(($el) => {
         const before = $el[0].scrollLeft;
-        cy.wrap($el).scrollTo("right", { ensureScrollable: false });
+        cy.wrap($el).scrollTo("right");
         cy.wrap($el).should(($after) => {
-          expect($after[0].scrollWidth).to.be.greaterThan(0);
-          expect($after[0].scrollLeft).to.be.at.least(before);
+          expect($after[0].scrollWidth).to.be.greaterThan(
+            $after[0].clientWidth,
+          );
+          expect($after[0].scrollLeft).to.be.greaterThan(before);
         });
       });
     });

@@ -34,6 +34,11 @@
  */
 
 describe("API Testing - Network Capabilities", () => {
+  const validLogin = () =>
+    cy.fixture("users.json").then((data) => ({
+      email: data.valid_credentials.emailId as string,
+      password: data.valid_credentials.password as string,
+    }));
   // ==========================================================================
   // cy.intercept() - Response Stubbing
   // ==========================================================================
@@ -112,16 +117,18 @@ describe("API Testing - Network Capabilities", () => {
     });
 
     it("cy.intercept() asserts the outgoing login request body", () => {
-      cy.intercept("POST", "/api/auth/login").as("login");
-      cy.visit("/login");
-      cy.get('[data-testid="email-input"]').type("test@example.com");
-      cy.get('[data-testid="password-input"]').type("password123");
-      cy.get('[data-testid="submit-btn"]').click();
-      cy.wait("@login").its("request.body").should("deep.include", {
-        email: "test@example.com",
-        password: "password123",
+      validLogin().then((creds) => {
+        cy.intercept("POST", "/api/auth/login").as("login");
+        cy.visit("/login");
+        cy.get('[data-testid="email-input"]').type(creds.email);
+        cy.get('[data-testid="password-input"]').type(creds.password);
+        cy.get('[data-testid="submit-btn"]').click();
+        cy.wait("@login").its("request.body").should("deep.include", {
+          email: creds.email,
+          password: creds.password,
+        });
+        cy.url().should("include", "/dashboard");
       });
-      cy.url().should("include", "/dashboard");
     });
 
     it("cy.interceptAndWait visits home and waits for products", () => {
@@ -157,20 +164,19 @@ describe("API Testing - Network Capabilities", () => {
      * POST request with body
      */
     it("should make POST request with JSON body", () => {
-      cy.request({
-        method: "POST",
-        url: "/api/auth/login",
-        body: {
-          email: "test@example.com",
-          password: "password123",
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }).then((response) => {
-        expect(response.status).to.eq(200);
-        expect(response.body).to.have.property("token");
-        expect(response.body).to.have.property("user");
+      validLogin().then((creds) => {
+        cy.request({
+          method: "POST",
+          url: "/api/auth/login",
+          body: creds,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }).then((response) => {
+          expect(response.status).to.eq(200);
+          expect(response.body).to.have.property("token");
+          expect(response.body).to.have.property("user");
+        });
       });
     });
 
@@ -196,19 +202,16 @@ describe("API Testing - Network Capabilities", () => {
      * Chain API requests
      */
     it("should chain multiple API requests", () => {
-      // First: Login to get token
-      cy.request({
-        method: "POST",
-        url: "/api/auth/login",
-        body: {
-          email: "test@example.com",
-          password: "password123",
-        },
-      })
+      validLogin()
+        .then((creds) => {
+          return cy.request({
+            method: "POST",
+            url: "/api/auth/login",
+            body: creds,
+          });
+        })
         .then((loginResponse) => {
           const token = loginResponse.body.token;
-
-          // Second: Create order with token
           return cy.request({
             method: "POST",
             url: "/api/orders",
@@ -221,7 +224,6 @@ describe("API Testing - Network Capabilities", () => {
           });
         })
         .then((orderResponse) => {
-          // Verify order creation (201 created or 200 ok)
           expect(orderResponse.status).to.be.oneOf([200, 201]);
           expect(orderResponse.body).to.have.property("order");
         });
@@ -249,25 +251,24 @@ describe("API Testing - Network Capabilities", () => {
      * Use cy.request() for test setup
      */
     it("should use API for test setup (bypass UI)", () => {
-      cy.request({
-        method: "POST",
-        url: "/api/auth/login",
-        body: {
-          email: "test@example.com",
-          password: "password123",
-        },
-      }).then((response) => {
-        cy.visit("/dashboard", {
-          onBeforeLoad(win) {
-            win.localStorage.setItem("authToken", response.body.token);
-            win.localStorage.setItem(
-              "user",
-              JSON.stringify(response.body.user),
-            );
-          },
+      validLogin().then((creds) => {
+        cy.request({
+          method: "POST",
+          url: "/api/auth/login",
+          body: creds,
+        }).then((response) => {
+          cy.visit("/dashboard", {
+            onBeforeLoad(win) {
+              win.localStorage.setItem("authToken", response.body.token);
+              win.localStorage.setItem(
+                "user",
+                JSON.stringify(response.body.user),
+              );
+            },
+          });
+          cy.getByTestId("user-email").should("contain", creds.email);
         });
       });
-      cy.getByTestId("user-email").should("contain", "test@example.com");
     });
 
     /**

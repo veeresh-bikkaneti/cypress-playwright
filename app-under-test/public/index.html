@@ -307,6 +307,11 @@
         <div class="card" id="scroll-target" style="margin-top: 100vh;" data-testid="scroll-section">
             <h2>Scroll Target</h2>
             <p>This section is placed far down the page to test scrolling capabilities.</p>
+            <div data-testid="scroll-container" style="overflow-x: auto; width: 240px; border: 1px solid #ddd;">
+                <div data-testid="scroll-container-inner" style="width: 800px; height: 40px; background: linear-gradient(90deg, #667eea, #764ba2); color: #fff; line-height: 40px; padding: 0 12px;">
+                    Horizontal overflow
+                </div>
+            </div>
             <button id="scroll-to-top-btn" class="btn btn-secondary" data-testid="scroll-to-top-btn">
                 Scroll to Top
             </button>

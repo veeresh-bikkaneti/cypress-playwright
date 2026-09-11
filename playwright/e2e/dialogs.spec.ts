@@ -6,6 +6,11 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Dialog Testing - Alerts, Confirms, Prompts", () => {
   test.beforeEach(async ({ page }) => {
+    page.on("pageerror", (err) => {
+      if (!err.message.includes("Test error")) {
+        throw err;
+      }
+    });
     await page.goto("/dialogs");
   });
 

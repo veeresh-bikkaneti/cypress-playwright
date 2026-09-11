@@ -12,6 +12,7 @@ import { test, expect } from "@playwright/test";
 import fs from "fs";
 import path from "path";
 import { testData } from "../fixtures/test-data";
+import { LoginPage } from "../pages/LoginPage";
 
 const productsFixture = JSON.parse(
   fs.readFileSync(
@@ -100,14 +101,11 @@ test.describe("API Testing - Network Capabilities", () => {
 
     test("asserts the outgoing login request body", async ({ page }) => {
       const requestPromise = page.waitForRequest("**/api/auth/login");
-      await page.goto("/login");
-      await page
-        .getByTestId("email-input")
-        .fill(testData.validCredentials.emailId);
-      await page
-        .getByTestId("password-input")
-        .fill(testData.validCredentials.password);
-      await page.getByTestId("submit-btn").click();
+      const loginPage = new LoginPage(page);
+      await loginPage.login(
+        testData.validCredentials.emailId,
+        testData.validCredentials.password,
+      );
       const req = await requestPromise;
       expect(req.postDataJSON()).toMatchObject({
         email: testData.validCredentials.emailId,

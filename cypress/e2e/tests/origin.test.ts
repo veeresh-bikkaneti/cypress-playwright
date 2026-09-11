@@ -10,14 +10,21 @@ describe("Cross-Origin Testing", () => {
   });
 
   it("secondary origin login form accepts the fixture email", () => {
-    cy.visit("http://127.0.0.1:3002/login");
-    cy.origin("http://127.0.0.1:3002", () => {
-      cy.get("[data-testid=email-input]").type("test@example.com");
-      cy.get("[data-testid=email-input]").should(
-        "have.value",
-        "test@example.com",
+    cy.fixture("users.json").then((users) => {
+      const email = users.valid_credentials.emailId as string;
+      cy.visit("http://127.0.0.1:3002/login");
+      cy.origin(
+        "http://127.0.0.1:3002",
+        { args: { email } },
+        ({ email: fixtureEmail }) => {
+          cy.get("[data-testid=email-input]").type(fixtureEmail);
+          cy.get("[data-testid=email-input]").should(
+            "have.value",
+            fixtureEmail,
+          );
+          cy.get("[data-testid=login-container]").should("be.visible");
+        },
       );
-      cy.get("[data-testid=login-container]").should("be.visible");
     });
   });
 });

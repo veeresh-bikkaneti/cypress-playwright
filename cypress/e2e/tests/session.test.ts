@@ -16,16 +16,17 @@
  */
 
 describe("Session Testing - Caching / Restore", () => {
-  const testUser = {
-    email: "test@example.com",
-    password: "password123",
-  };
+  const loadUser = () =>
+    cy.fixture("users.json").then((data) => ({
+      email: data.valid_credentials.emailId as string,
+      password: data.valid_credentials.password as string,
+    }));
 
   /**
    * Define the login session
    * This function will run once per session id, then restore from cache
    */
-  const login = (user: typeof testUser) => {
+  const login = (user: { email: string; password: string }) => {
     cy.session(
       [user.email],
       () => {
@@ -47,41 +48,44 @@ describe("Session Testing - Caching / Restore", () => {
    * Test 1: First test uses the session
    */
   it("should log in via session for Test 1", () => {
-    login(testUser);
-    cy.visit("/dashboard");
-    cy.get("h1").should("contain", "Dashboard");
+    loadUser().then((user) => {
+      login(user);
+      cy.visit("/dashboard");
+      cy.get("h1").should("contain", "Dashboard");
+    });
   });
 
   it("cy.login() custom command lands on dashboard", () => {
-    cy.login(testUser.email, testUser.password);
-    cy.get('[data-testid="page-title"]').should("contain", "Dashboard");
+    loadUser().then((user) => {
+      cy.login(user.email, user.password);
+      cy.get('[data-testid="page-title"]').should("contain", "Dashboard");
+    });
   });
 
   /**
    * Test 2: Second test restores the session (much faster)
    */
   it("should restore session for Test 2 behavior", () => {
-    login(testUser);
-
-    // Visit the dashboard again - session should be restored
-    cy.visit("/dashboard");
-
-    // Verify access without relogging
-    cy.get('[data-testid="page-title"]').should("contain", "Dashboard");
-    cy.get('[data-testid="sidebar"]').should("be.visible");
+    loadUser().then((user) => {
+      login(user);
+      cy.visit("/dashboard");
+      cy.get('[data-testid="page-title"]').should("contain", "Dashboard");
+      cy.get('[data-testid="sidebar"]').should("be.visible");
+    });
   });
 
   /**
    * Test 3: Navigate using sidebar after session restore
    */
   it("should allow navigation with restored session", () => {
-    login(testUser);
-
-    cy.visit("/dashboard");
-    cy.get('[data-testid="orders-section"]').should("not.be.visible");
-    cy.get('[data-testid="nav-orders"]').click();
-    cy.get('[data-testid="orders-section"]').should("be.visible");
-    cy.get('[data-testid="stats-grid"]').should("not.be.visible");
+    loadUser().then((user) => {
+      login(user);
+      cy.visit("/dashboard");
+      cy.get('[data-testid="orders-section"]').should("not.be.visible");
+      cy.get('[data-testid="nav-orders"]').click();
+      cy.get('[data-testid="orders-section"]').should("be.visible");
+      cy.get('[data-testid="stats-grid"]').should("not.be.visible");
+    });
   });
 
   /**

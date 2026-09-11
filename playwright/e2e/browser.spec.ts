@@ -76,17 +76,18 @@ test.describe("Browser Testing - Viewport, Scroll & Navigation", () => {
     });
 
     test("should scroll within a container element", async ({ page }) => {
-      const grid = page.getByTestId("products-grid");
-      const before = await grid.evaluate((el) => el.scrollLeft);
-      await grid.evaluate((el) => {
+      const scroller = page.getByTestId("scroll-container");
+      const before = await scroller.evaluate((el) => el.scrollLeft);
+      await scroller.evaluate((el) => {
         el.scrollLeft = el.scrollWidth;
       });
-      const after = await grid.evaluate((el) => ({
+      const after = await scroller.evaluate((el) => ({
         scrollLeft: el.scrollLeft,
         scrollWidth: el.scrollWidth,
+        clientWidth: el.clientWidth,
       }));
-      expect(after.scrollWidth).toBeGreaterThan(0);
-      expect(after.scrollLeft).toBeGreaterThanOrEqual(before);
+      expect(after.scrollWidth).toBeGreaterThan(after.clientWidth);
+      expect(after.scrollLeft).toBeGreaterThan(before);
     });
 
     test("should use scroll to top button", async ({ page }) => {

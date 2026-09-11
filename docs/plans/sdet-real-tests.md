@@ -29,3 +29,5 @@ Cypress remains the source of truth. Playwright files are 1:1 twins. The plugin 
 - Ruling: Forms keyboard/clear-retype/Germany/focus-blur/arrow and browser scroll-to-top/location/container-scroll are AUT interactions — drop them and the twin is a fake subset.
 - Ruling: Dialog `error-btn` throws `"Test error"` after 100ms. Cypress must `cy.on("uncaught:exception")` in the spec; Playwright must swallow only that `pageerror`. A global ignore is too wide.
 - Ruling: Demo credentials in Playwright specs come from `test-data.ts` → `users.json`. Literal `test@example.com` in a twin is a second source of truth.
+- Ruling: Cypress specs that log in must also read `users.json` (`cy.fixture`). A JSDoc example on `cy.login` may keep a sample email.
+- Ruling: Horizontal container-scroll must use an overflow scroller whose `scrollLeft` increases. `ensureScrollable: false` plus `>= before` is a tautology when the element does not scroll.

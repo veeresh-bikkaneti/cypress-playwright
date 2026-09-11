@@ -49,7 +49,12 @@ describe("OWASP Security Checks", () => {
   context("A04:2021 - Insecure Design (Cookie Flags)", () => {
     it("sets HttpOnly on the auth cookie after UI login", () => {
       // Secure is N/A on http://127.0.0.1 — HttpOnly is testable.
-      cy.login("test@example.com", "password123");
+      cy.fixture("users.json").then((data) => {
+        cy.login(
+          data.valid_credentials.emailId,
+          data.valid_credentials.password,
+        );
+      });
       cy.getCookie("authToken").should((cookie) => {
         expect(cookie, "authToken cookie").to.exist;
         expect(cookie.httpOnly).to.eq(true);
