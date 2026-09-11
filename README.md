@@ -7,6 +7,12 @@
 [![Node](https://img.shields.io/badge/Node.js-20+-339933?style=flat-square&logo=node.js)](https://nodejs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7+-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org)
 
+**Docs:** [docs/README.md](./docs/README.md) · **Setup:** [docs/SETUP.md](./docs/SETUP.md) · **Inventory:** [docs/INVENTORY.md](./docs/INVENTORY.md) · **Workflows:** [docs/WORKFLOW.md](./docs/WORKFLOW.md) · **Interactive architecture:** [docs/architecture.html](./docs/architecture.html) · **Demo video:** [docs/demo/setup-and-use.mp4](./docs/demo/setup-and-use.mp4)
+
+[![Setup and use — screen recording](./docs/demo/poster.png)](./docs/demo/setup-and-use.mp4)
+
+Merge feature PRs with a **merge commit**. Do not squash the enterprise-agent history — [why](./CONTRIBUTING.md).
+
 ---
 
 ## Enterprise AI agents
@@ -211,8 +217,9 @@ npx playwright show-report
 ```
 cypress-playwright/
 ├── AGENTS.md                    # Portable always-on agent contract
-├── skills/                      # Agent Skills (canonical playbooks)
+├── skills/                      # Agent Skills (4 consumer + architecture-diagram + skill-creator)
 ├── CLAUDE.md / GEMINI.md        # Thin vendor adapters
+├── CONTRIBUTING.md              # Merge-commit policy (do not squash feat PRs)
 ├── app-under-test/              # Express.js test application
 │   ├── server.js                #   API + static file server
 │   └── public/                  #   HTML pages (login, dashboard, forms, dialogs)
@@ -228,6 +235,7 @@ cypress-playwright/
 │   └── support/
 │
 ├── plugin/                      # Installer: core + Copilot/Claude/Cursor/Gemini adapters
+├── docs/                        # Setup, inventory, workflow diagrams, architecture.html, demo video
 ├── docs/ENTERPRISE_AGENTS.md    # Tool matrix vs live vendor docs
 ├── playwright.config.ts
 ├── cypress.config.ts

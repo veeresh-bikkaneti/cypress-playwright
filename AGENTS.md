@@ -39,6 +39,10 @@ Read the matching `skills/<name>/SKILL.md` when the task matches:
 | `playwright-testing` | Writing or healing Playwright tests |
 | `code-review` | Reviewing a completed migration or feature before merge |
 | `webapp-testing` | Planning E2E coverage, not writing a single spec |
+| `architecture-diagram` | **This repo only.** Interactive HTML system maps (not installed into consumer apps) |
+| `skill-creator` | **This repo only.** Author, eval, and package new Agent Skills |
+
+The installer (`plugin/`) copies the first four skills into a consumer Cypress repo. `architecture-diagram` and `skill-creator` stay here so we can document workflows and mint new playbooks.
 
 Discovery copies of the same skills also live at `.agents/skills/`, `.github/skills/`, `.claude/skills/`, and `.cursor/skills/` so Copilot, Codex, Claude, and Cursor find them.
 
