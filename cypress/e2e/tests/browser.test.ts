@@ -34,7 +34,7 @@ describe("Browser Testing - Viewport, Scroll & Navigation", () => {
   // cy.viewport() - Responsive Testing
   // ==========================================================================
 
-  describe.skip("cy.viewport() - Responsive Testing", () => {
+  describe("cy.viewport() - Responsive Testing", () => {
     beforeEach(() => {
       cy.visit("/");
     });
@@ -43,11 +43,10 @@ describe("Browser Testing - Viewport, Scroll & Navigation", () => {
      * Set viewport by dimensions
      */
     it("should set viewport by dimensions", () => {
-      cy.log("Setting viewport to 1920x1080");
       cy.viewport(1920, 1080);
-
-      // Verify viewport affects layout
-      cy.getByTestId("main-heading").should("exist").should("be.visible");
+      cy.window().then((win) => win.dispatchEvent(new Event("resize")));
+      cy.getByTestId("viewport-flag").should("have.text", "desktop");
+      cy.getByTestId("main-heading").should("be.visible");
     });
 
     /**
@@ -55,8 +54,8 @@ describe("Browser Testing - Viewport, Scroll & Navigation", () => {
      */
     it("should test mobile viewport", () => {
       cy.viewport(375, 667); // iPhone SE
-
-      // Mobile-specific assertions
+      cy.window().then((win) => win.dispatchEvent(new Event("resize")));
+      cy.getByTestId("viewport-flag").should("have.text", "mobile");
       cy.getByTestId("main-nav").should("be.visible");
     });
 
@@ -64,8 +63,9 @@ describe("Browser Testing - Viewport, Scroll & Navigation", () => {
      * Test tablet viewport
      */
     it("should test tablet viewport", () => {
-      cy.viewport(768, 1024); // iPad
-
+      cy.viewport(768, 1024);
+      cy.window().then((win) => win.dispatchEvent(new Event("resize")));
+      cy.getByTestId("viewport-flag").should("have.text", "tablet");
       cy.getByTestId("products-grid").should("be.visible");
     });
 
@@ -177,9 +177,13 @@ describe("Browser Testing - Viewport, Scroll & Navigation", () => {
      * Scroll within element
      */
     it("should scroll within a container element", () => {
-      // If there's a scrollable container
-      cy.getByTestId("products-grid").scrollTo("right", {
-        ensureScrollable: false,
+      cy.getByTestId("products-grid").then(($el) => {
+        const before = $el[0].scrollLeft;
+        cy.wrap($el).scrollTo("right", { ensureScrollable: false });
+        cy.wrap($el).should(($after) => {
+          expect($after[0].scrollWidth).to.be.greaterThan(0);
+          expect($after[0].scrollLeft).to.be.at.least(before);
+        });
       });
     });
 
@@ -194,69 +198,6 @@ describe("Browser Testing - Viewport, Scroll & Navigation", () => {
       cy.window().should((win) => {
         expect(win.scrollY).to.be.lessThan(100);
       });
-    });
-  });
-
-  // ==========================================================================
-  // cy.window() / cy.document() - Window & Document Access
-  // ==========================================================================
-
-  // Skipped due to known hang in headless mode on this environment
-  describe.skip("Window & Document Access", () => {
-    beforeEach(() => {
-      cy.visit("/");
-    });
-
-    /**
-     * Access window object
-     */
-    it("should access window object", () => {
-      cy.window().then((win) => {
-        expect(win).to.have.property("document");
-        expect(win).to.have.property("localStorage");
-        expect(win).to.have.property("location");
-      });
-    });
-
-    /**
-     * Access window properties
-     */
-    it("should access window properties using .its()", () => {
-      cy.window().its("innerWidth").should("be.greaterThan", 0);
-
-      cy.window().its("innerHeight").should("be.greaterThan", 0);
-    });
-
-    /**
-     * Access document object
-     */
-    it("should access document object", () => {
-      cy.document().then((doc) => {
-        expect(doc).to.have.property("body");
-        expect(doc).to.have.property("head");
-        expect(doc.contentType).to.equal("text/html");
-      });
-    });
-
-    /**
-     * Get document properties
-     */
-    it("should get document properties", () => {
-      cy.document().its("readyState").should("equal", "complete");
-
-      cy.document().its("charset").should("equal", "UTF-8");
-    });
-
-    /**
-     * Manipulate window object
-     */
-    it("should manipulate window object for testing", () => {
-      cy.window().then((win: any) => {
-        // Set custom property for testing
-        win.testFlag = true;
-      });
-
-      cy.window().its("testFlag").should("equal", true);
     });
   });
 
@@ -296,13 +237,9 @@ describe("Browser Testing - Viewport, Scroll & Navigation", () => {
      * Assert hash fragment
      */
     it("should assert URL hash", () => {
-      cy.visit("/dialogs");
-
-      // Navigate with hash
-      cy.get('[href="#overview"]').first().click({ force: true });
-
-      // Note: The dialogs page may not have these links,
-      // this is a pattern demonstration
+      cy.visit("/#scroll-target");
+      cy.location("hash").should("eq", "#scroll-target");
+      cy.getByTestId("scroll-section").should("be.visible");
     });
 
     /**
@@ -383,32 +320,5 @@ describe("Browser Testing - Viewport, Scroll & Navigation", () => {
   // cy.screenshot() - Screenshots
   // ==========================================================================
 
-  describe("Screenshots", () => {
-    /**
-     * Take full page screenshot
-     */
-    it.skip("should take a full page screenshot", () => {
-      cy.visit("/");
-      cy.screenshot("home-page-full");
-    });
-
-    /**
-     * Take element screenshot
-     */
-    it.skip("should take element screenshot", () => {
-      cy.visit("/");
-      cy.getByTestId("products-section").screenshot("products-section");
-    });
-
-    /**
-     * Screenshot with options
-     */
-    it.skip("should take screenshot with options", () => {
-      cy.visit("/");
-      cy.screenshot("home-page-clip", {
-        capture: "viewport",
-        overwrite: true,
-      });
-    });
-  });
+  // Screenshots live in utilities.test.ts (heading assert + file).
 });

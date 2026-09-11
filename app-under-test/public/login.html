@@ -246,7 +246,7 @@
         const submitBtn = document.getElementById('submit-btn');
         const btnText = document.getElementById('btn-text');
         const loadingSpinner = document.getElementById('loading-spinner');
-        const alert = document.getElementById('alert');
+        const alertBox = document.getElementById('alert');
         const emailError = document.getElementById('email-error');
         const passwordError = document.getElementById('password-error');
 
@@ -278,15 +278,15 @@
          * Show alert message
          */
         function showAlert(message, type) {
-            alert.textContent = message;
-            alert.className = `alert ${type} show`;
+            alertBox.textContent = message;
+            alertBox.className = `alert ${type} show`;
         }
 
         /**
          * Hide alert
          */
         function hideAlert() {
-            alert.className = 'alert';
+            alertBox.className = 'alert';
         }
 
         /**
@@ -383,7 +383,6 @@
         // Forgot password handler
         document.getElementById('forgot-password-link').addEventListener('click', (e) => {
             e.preventDefault();
-            alert('Password reset functionality - would trigger cy.on("window:alert") test');
             window.alert('Password reset email sent to your email address.');
         });
     </script>

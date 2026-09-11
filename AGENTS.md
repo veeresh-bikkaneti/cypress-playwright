@@ -8,16 +8,18 @@ Vendor-specific files (`CLAUDE.md`, `.github/copilot-instructions.md`, `.cursor/
 
 Migrate Cypress E2E tests to Playwright Test (TypeScript). Preserve coverage. Prefer Playwright’s own APIs over Cypress-shaped workarounds.
 
+The **application under test** is exercised by the **Cypress suite**. Playwright specs in this repo exist only as **1:1 migrations** of those Cypress specs. Do not author Playwright-only tests.
+
 ## Layout
 
-| Path | Role |
-| --- | --- |
-| `cypress/e2e/tests/*.test.ts` | Source Cypress specs |
-| `playwright/e2e/*.spec.ts` | Playwright specs |
-| `playwright/pages/` | Page objects |
-| `playwright/fixtures/` | Fixtures and test data |
-| `app-under-test/` | Express app under test (port 3000) |
-| `skills/` | Portable Agent Skills (canonical) |
+| Path                          | Role                                                          |
+| ----------------------------- | ------------------------------------------------------------- |
+| `cypress/e2e/tests/*.test.ts` | Source of truth — Cypress specs against the AUT               |
+| `playwright/e2e/*.spec.ts`    | 1:1 Playwright twins (migrated, never authored independently) |
+| `playwright/pages/`           | Page objects                                                  |
+| `playwright/fixtures/`        | Fixtures and test data                                        |
+| `app-under-test/`             | Express app under test (port 3000)                            |
+| `skills/`                     | Portable Agent Skills (canonical)                             |
 
 ## Non-negotiables
 
@@ -28,19 +30,22 @@ Migrate Cypress E2E tests to Playwright Test (TypeScript). Preserve coverage. Pr
 5. Page Object Model when a page has 3+ interactions.
 6. Auth via `storageState` or fixtures — do not UI-login in every test.
 7. TypeScript strict. No placeholders (`// ... rest of code`).
+8. Every Playwright spec is a migration of a Cypress spec. New AUT coverage is added in `cypress/e2e/tests/` first, then migrated.
+
+Capability matrix: `docs/CAPABILITIES.md`.
 
 ## Skills (load on demand)
 
 Read the matching `skills/<name>/SKILL.md` when the task matches:
 
-| Skill | Use when |
-| --- | --- |
-| `cypress-to-playwright-migration` | Converting a Cypress spec/command to Playwright |
-| `playwright-testing` | Writing or healing Playwright tests |
-| `code-review` | Reviewing a completed migration or feature before merge |
-| `webapp-testing` | Planning E2E coverage, not writing a single spec |
-| `architecture-diagram` | **This repo only.** Interactive HTML system maps (not installed into consumer apps) |
-| `skill-creator` | **This repo only.** Author, eval, and package new Agent Skills |
+| Skill                             | Use when                                                                            |
+| --------------------------------- | ----------------------------------------------------------------------------------- |
+| `cypress-to-playwright-migration` | Converting a Cypress spec/command to Playwright                                     |
+| `playwright-testing`              | Writing or healing Playwright tests                                                 |
+| `code-review`                     | Reviewing a completed migration or feature before merge                             |
+| `webapp-testing`                  | Planning E2E coverage, not writing a single spec                                    |
+| `architecture-diagram`            | **This repo only.** Interactive HTML system maps (not installed into consumer apps) |
+| `skill-creator`                   | **This repo only.** Author, eval, and package new Agent Skills                      |
 
 The installer (`plugin/`) copies the first four skills into a consumer Cypress repo. `architecture-diagram` and `skill-creator` stay here so we can document workflows and mint new playbooks.
 
@@ -49,8 +54,9 @@ Discovery copies of the same skills also live at `.agents/skills/`, `.github/ski
 ## Quality gates (before calling work done)
 
 ```bash
-# No Cypress leftovers in Playwright output (ignore comments if needed)
 npx tsc --noEmit
+node plugin/scripts/assert-migration-parity.js
+cd plugin && npm test
 npx playwright test --project=chromium
 ```
 

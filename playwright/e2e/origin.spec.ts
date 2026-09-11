@@ -1,47 +1,27 @@
+/**
+ * Migrated from: cypress/e2e/tests/origin.test.ts
+ * Secondary origin is the same AUT on :3002. Fail if it is down — do not swallow.
+ */
 import { test, expect } from "@playwright/test";
-
-// ============================================================================
-// CROSS-ORIGIN TESTING
-// ============================================================================
+import { testData } from "../fixtures/test-data";
 
 test.describe("Cross-Origin Testing", () => {
-  test("should verify title of an external website", async ({ page }) => {
-    // Visit primary origin
+  test("secondary origin serves the same AUT title", async ({ page }) => {
     await page.goto("/");
+    await expect(page.getByTestId("main-heading")).toBeVisible();
 
-    // Navigate to secondary origin
-    // Note: In real scenarios, ensure the secondary origin is accessible from the test environment
-    try {
-      await page.goto("http://127.0.0.1:3002");
-      const title = await page.title();
-      expect(title).toBeTruthy();
-
-      // Interaction in new origin
-      // Check for element present on our test app page
-      await expect(
-        page.locator('h1, h2, .header, [data-testid="page-title"]'),
-      ).toHaveCount(1);
-    } catch (e) {
-      console.log(
-        "Skipping cross-origin test due to network unreachability of example origin",
-      );
-    }
+    await page.goto("http://127.0.0.1:3002/");
+    await expect(page).toHaveTitle(/Cypress Test Application/);
+    await expect(page.getByTestId("main-heading")).toBeVisible();
   });
 
-  test("should interact with elements on external domain", async ({ page }) => {
-    try {
-      await page.goto("http://127.0.0.1:3002/login.html");
-
-      // Flexible selector logic
-      const emailInput = page
-        .locator(
-          '#email, [data-testid="email-input"], input[type="email"], input[name="email"]',
-        )
-        .first();
-      await emailInput.fill("test@example.com");
-      await expect(emailInput).toHaveValue("test@example.com");
-    } catch (e) {
-      console.log("Skipping cross-origin interaction test");
-    }
+  test("secondary origin login form accepts the fixture email", async ({
+    page,
+  }) => {
+    await page.goto("http://127.0.0.1:3002/login");
+    const email = page.getByTestId("email-input");
+    await email.fill(testData.validCredentials.emailId);
+    await expect(email).toHaveValue(testData.validCredentials.emailId);
+    await expect(page.getByTestId("login-container")).toBeVisible();
   });
 });

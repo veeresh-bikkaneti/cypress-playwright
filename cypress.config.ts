@@ -52,7 +52,7 @@ export default defineConfig({
       on("task", {
         log(message: string) {
           console.log(message);
-          return null;
+          return message;
         },
         failed: require("cypress-failed-log/src/failed")(),
         getTimestamp() {

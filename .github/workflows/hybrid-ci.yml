@@ -22,6 +22,8 @@ jobs:
         run: npm run type-check
       - name: Lint
         run: npm run lint
+      - name: Plugin smoke + migration parity
+        run: cd plugin && npm test
       - name: Security Audit
         continue-on-error: true
         run: |

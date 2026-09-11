@@ -16,24 +16,27 @@ test.describe("Browser Testing - Viewport, Scroll & Navigation", () => {
 
     test("should set viewport by dimensions", async ({ page }) => {
       await page.setViewportSize({ width: 1920, height: 1080 });
+      await expect(page.getByTestId("viewport-flag")).toHaveText("desktop");
       await expect(page.getByTestId("main-heading")).toBeVisible();
     });
 
     test("should test mobile viewport", async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 667 }); // iPhone SE
-      // Check if nav becomes a hamburger or specific mobile element exists
-      // Assuming main-nav is visible in this responsive design
+      await page.evaluate(() => window.dispatchEvent(new Event("resize")));
+      await expect(page.getByTestId("viewport-flag")).toHaveText("mobile");
       await expect(page.getByTestId("main-nav")).toBeVisible();
     });
 
     test("should test tablet viewport", async ({ page }) => {
       await page.setViewportSize({ width: 768, height: 1024 });
-      await expect(page.getByTestId("products-grid")).toBeVisible();
+      await page.evaluate(() => window.dispatchEvent(new Event("resize")));
+      await expect(page.getByTestId("viewport-flag")).toHaveText("tablet");
     });
 
     test("should test landscape orientation", async ({ page }) => {
-      // Playwright handles orientation via viewport dimensions usually, or mobile emulation context
       await page.setViewportSize({ width: 667, height: 375 });
+      await page.evaluate(() => window.dispatchEvent(new Event("resize")));
+      await expect(page.getByTestId("viewport-flag")).toHaveText("mobile");
       await expect(page.getByTestId("main-heading")).toBeVisible();
     });
   });
@@ -67,7 +70,9 @@ test.describe("Browser Testing - Viewport, Scroll & Navigation", () => {
     test("should scroll element into view", async ({ page }) => {
       const el = page.getByTestId("scroll-section");
       await el.scrollIntoViewIfNeeded();
-      await expect(el).toBeVisible();
+      const top = await el.evaluate((e) => e.getBoundingClientRect().top);
+      expect(top).toBeGreaterThanOrEqual(0);
+      expect(top).toBeLessThan(await page.evaluate(() => window.innerHeight));
     });
   });
 
@@ -84,6 +89,15 @@ test.describe("Browser Testing - Viewport, Scroll & Navigation", () => {
     test("should assert URL", async ({ page }) => {
       await page.goto("/login");
       await expect(page).toHaveURL(/.*\/login/);
+    });
+
+    test("should assert URL hash", async ({ page }) => {
+      await page.goto("/#scroll-target");
+      expect(new URL(page.url()).hash).toBe("#scroll-target");
+      const top = await page
+        .getByTestId("scroll-section")
+        .evaluate((e) => e.getBoundingClientRect().top);
+      expect(top).toBeLessThan(await page.evaluate(() => window.innerHeight));
     });
 
     test("should assert query parameters", async ({ page }) => {

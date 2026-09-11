@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Iframe inner</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 16px; }
+        button { padding: 8px 14px; border: none; border-radius: 6px; background: #667eea; color: white; cursor: pointer; }
+        p { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <p data-testid="iframe-secret">inside iframe</p>
+    <button type="button" data-testid="iframe-btn" id="iframe-btn">Ping</button>
+    <p data-testid="iframe-status" id="iframe-status">idle</p>
+    <script>
+        document.getElementById('iframe-btn').addEventListener('click', () => {
+            document.getElementById('iframe-status').textContent = 'pinged';
+        });
+    </script>
+</body>
+</html>

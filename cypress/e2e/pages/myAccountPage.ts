@@ -59,6 +59,12 @@ class MyAccountPage {
   get statsGrid() {
     return cy.get('[data-testid="stats-grid"]');
   }
+  get productsSection() {
+    return cy.get('[data-testid="products-section"]');
+  }
+  get settingsSection() {
+    return cy.get('[data-testid="settings-section"]');
+  }
 
   // Orders section
   get ordersSection() {

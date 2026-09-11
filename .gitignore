@@ -86,6 +86,10 @@ docker-compose.override.yml
 *.seed
 *.pid.lock
 
+# AUT upload artifacts from selectFile / multer tests
+app-under-test/uploads/*
+!app-under-test/uploads/.gitkeep
+
 # Local-only AI artifacts (adapters we ship are NOT ignored: AGENTS.md, CLAUDE.md,
 # GEMINI.md, .claude/, .cursor/rules, .agents/skills, .github/skills)
 .aider*

@@ -3,7 +3,7 @@
 This GitHub repo is **two things glued together on purpose**:
 
 1. **A publishable toolkit** (`plugin/`) — copies `AGENTS.md` + Agent Skills into *your* Cypress repo so Copilot, Claude, Cursor, Grok, Codex, Gemini, and OpenCode all run the same migration procedure.
-2. **A worked example** — a small Express app with a Cypress suite *and* a Playwright twin, so you can see the mapping on real specs.
+2. **A worked example** — a small Express app with a Cypress suite (source of truth) *and* Playwright twins migrated 1:1 from those specs. Playwright is never authored independently against the AUT.
 
 It is **not** “install this whole repo as a test framework.” Do not `npm i` the demo app and expect a migrator. Consume `plugin/`.
 
@@ -33,7 +33,7 @@ cypress-playwright/
 | `AGENTS.md` + `skills/{cypress-to-playwright-migration,playwright-testing,code-review,webapp-testing}` | Every coding agent | Procedure |
 | `skills/architecture-diagram` | Maintainers of *this* repo | Generate [architecture.html](./architecture.html) |
 | `skills/skill-creator` | Maintainers of *this* repo | Draft / eval new skills |
-| `playwright/` + `cypress/` | Learners / CI | Dual-run example |
+| `playwright/` + `cypress/` | Learners / CI | Cypress source + migrated Playwright twins |
 | `app-under-test/` | Learners / CI | Pages the example tests hit |
 | `docs/` | Humans | Setup, diagrams, video |
 

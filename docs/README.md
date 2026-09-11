@@ -12,6 +12,7 @@ How to set up, migrate, and operate this toolkit. Interactive map: [architecture
 | Merging a PR | [../CONTRIBUTING.md](../CONTRIBUTING.md) — **do not squash** feature work |
 | Picking an AI tool | [ENTERPRISE_AGENTS.md](./ENTERPRISE_AGENTS.md) |
 | Running the dual demo | [SETUP.md](./SETUP.md#demo-this-repository-optional) |
+| Cypress command coverage | [CAPABILITIES.md](./CAPABILITIES.md) |
 | Writing / healing tests | [../AGENTS.md](../AGENTS.md) + `skills/` |
 | Security of the installer | [SECURITY.md](./SECURITY.md) |
 

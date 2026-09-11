@@ -7,7 +7,7 @@
 [![Node](https://img.shields.io/badge/Node.js-20+-339933?style=flat-square&logo=node.js)](https://nodejs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7+-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org)
 
-**Docs:** [docs/README.md](./docs/README.md) · **Setup:** [docs/SETUP.md](./docs/SETUP.md) · **Inventory:** [docs/INVENTORY.md](./docs/INVENTORY.md) · **Workflows:** [docs/WORKFLOW.md](./docs/WORKFLOW.md) · **Interactive architecture:** [docs/architecture.html](./docs/architecture.html) · **Demo video:** [docs/demo/setup-and-use.mp4](./docs/demo/setup-and-use.mp4)
+**Docs:** [docs/README.md](./docs/README.md) · **Setup:** [docs/SETUP.md](./docs/SETUP.md) · **Inventory:** [docs/INVENTORY.md](./docs/INVENTORY.md) · **Capabilities:** [docs/CAPABILITIES.md](./docs/CAPABILITIES.md) · **Workflows:** [docs/WORKFLOW.md](./docs/WORKFLOW.md) · **Interactive architecture:** [docs/architecture.html](./docs/architecture.html) · **Demo video:** [docs/demo/setup-and-use.mp4](./docs/demo/setup-and-use.mp4)
 
 [![Setup and use — screen recording](./docs/demo/poster.png)](./docs/demo/setup-and-use.mp4)
 
@@ -255,7 +255,7 @@ cypress-playwright/
 | `npx playwright test --headed`           | See browser actions                   |         ✅         |
 | `npx playwright test --ui`               | Interactive UI mode                   |         ✅         |
 | `npx playwright test --debug`            | Step-through debugging                |         ✅         |
-| `npx playwright test auth/login`         | Specific test file                    |         ✅         |
+| `npx playwright test login`              | Specific test file                    |         ✅         |
 | `npm run cy:run`                         | Run all Cypress tests                 |         ❌         |
 | `npm run cy:open`                        | Open Cypress Test Runner              |         ❌         |
 | `npm run test:hybrid`                    | Run both frameworks in parallel       |      Partial       |

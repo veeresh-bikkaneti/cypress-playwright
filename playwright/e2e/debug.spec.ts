@@ -4,8 +4,7 @@ test.describe("Debug Page Load", () => {
   test("should load home page and print title", async ({ page }) => {
     await page.goto("/");
 
-    const title = await page.title();
-    console.log("Page Title:", title);
+    await expect(page).toHaveTitle(/Cypress Test Application/);
 
     const bodyText = await page.evaluate(() => document.body.innerText);
     console.log("Body Text Length:", bodyText.length);
@@ -14,5 +13,12 @@ test.describe("Debug Page Load", () => {
     await expect(page.getByTestId("main-heading")).toBeVisible({
       timeout: 10000,
     });
+    await expect(page.getByTestId("main-heading")).toContainText(
+      "Cypress Test Application",
+    );
+    await expect(page.getByTestId("product-card").first()).toBeVisible({
+      timeout: 10000,
+    });
+    expect(await page.getByTestId("product-card").count()).toBeGreaterThan(0);
   });
 });

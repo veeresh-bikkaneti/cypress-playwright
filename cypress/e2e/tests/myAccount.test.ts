@@ -1,20 +1,9 @@
 import { loginPage } from "../pages/loginPage";
 import { myAccountPage } from "../pages/myAccountPage";
 
-/**
- * ============================================================================
- * MY ACCOUNT FUNCTIONALITY TESTS
- * ============================================================================
- *
- * PURPOSE:
- * Tests the dashboard/account page functionality of the self-contained test application.
- * Demonstrates navigation, user info display, and account features.
- *
- * @author Veeresh Bikkaneti
- */
 describe("My Account Functionality", () => {
-  beforeEach(() => {
-    cy.fixture("users.json").then(function (data) {
+  beforeEach(function () {
+    cy.fixture("users.json").then((data) => {
       this.data = data;
     });
   });
@@ -32,10 +21,7 @@ describe("My Account Functionality", () => {
       this.data.valid_credentials.emailId,
       this.data.valid_credentials.password,
     );
-
-    // Wait for user info to be loaded
-    cy.get('[data-testid="user-name"]').should("be.visible");
-    cy.get('[data-testid="user-email"]').should("be.visible");
+    myAccountPage.validateUserInfo("Test User", "test@example.com");
   });
 
   it("should navigate to orders section", function () {
@@ -43,9 +29,23 @@ describe("My Account Functionality", () => {
       this.data.valid_credentials.emailId,
       this.data.valid_credentials.password,
     );
-
+    myAccountPage.ordersSection.should("not.be.visible");
     myAccountPage.navigateToOrders();
     myAccountPage.ordersSection.should("be.visible");
+    myAccountPage.statsGrid.should("not.be.visible");
+  });
+
+  it("should navigate to products and settings", function () {
+    loginPage.login(
+      this.data.valid_credentials.emailId,
+      this.data.valid_credentials.password,
+    );
+    myAccountPage.navigateToProducts();
+    myAccountPage.productsSection.should("be.visible");
+    myAccountPage.ordersSection.should("not.be.visible");
+    myAccountPage.navigateToSettings();
+    myAccountPage.settingsSection.should("be.visible");
+    myAccountPage.productsSection.should("not.be.visible");
   });
 
   it("should handle storage operations", function () {
@@ -53,12 +53,8 @@ describe("My Account Functionality", () => {
       this.data.valid_credentials.emailId,
       this.data.valid_credentials.password,
     );
-
-    // Test set storage button
     myAccountPage.setStorageBtn.click();
     myAccountPage.storageResult.should("contain", "localStorage");
-
-    // Test clear storage button
     myAccountPage.clearStorageBtn.click();
     myAccountPage.storageResult.should("contain", "cleared");
   });
@@ -68,7 +64,6 @@ describe("My Account Functionality", () => {
       this.data.valid_credentials.emailId,
       this.data.valid_credentials.password,
     );
-
     myAccountPage.logout();
     myAccountPage.validateSuccessfulLogout();
   });

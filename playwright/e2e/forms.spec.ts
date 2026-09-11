@@ -27,6 +27,13 @@ test.describe("Form Testing - Input Interactions", () => {
       );
     });
 
+    test("should type special characters", async ({ page }) => {
+      await page.getByTestId("fullname-input").fill("Price: $100 {special}");
+      await expect(page.getByTestId("fullname-input")).toHaveValue(
+        "Price: $100 {special}",
+      );
+    });
+
     test("should type into textarea with multiline text", async ({ page }) => {
       const multilineText = "Line 1\nLine 2\nLine 3";
       await page.getByTestId("bio-textarea").fill(multilineText);
@@ -93,7 +100,7 @@ test.describe("Form Testing - Input Interactions", () => {
 
     test("should select option by index", async ({ page }) => {
       await page.getByTestId("country-select").selectOption({ index: 2 });
-      await expect(page.getByTestId("country-select")).not.toHaveValue("");
+      await expect(page.getByTestId("country-select")).toHaveValue("uk");
     });
 
     test("should select multiple options", async ({ page }) => {
@@ -152,6 +159,13 @@ test.describe("Form Testing - Input Interactions", () => {
       await expect(page.getByTestId("gender-male")).toBeChecked();
       await expect(page.getByTestId("gender-female")).not.toBeChecked();
     });
+
+    test("should change radio button selection", async ({ page }) => {
+      await page.getByTestId("gender-male").check();
+      await page.getByTestId("gender-female").check();
+      await expect(page.getByTestId("gender-male")).not.toBeChecked();
+      await expect(page.getByTestId("gender-female")).toBeChecked();
+    });
   });
 
   // ==========================================================================
@@ -189,9 +203,30 @@ test.describe("Form Testing - Input Interactions", () => {
     });
 
     test("should interact with range slider", async ({ page }) => {
-      // Set range value via JS as 'input' event trigger might be complex with drag
       await page.getByTestId("satisfaction-range").fill("75");
       await expect(page.getByTestId("satisfaction-range")).toHaveValue("75");
+      await expect(page.getByTestId("satisfaction-value")).toContainText("75");
+    });
+  });
+
+  test.describe("Date & Time Inputs", () => {
+    test("should set date input value", async ({ page }) => {
+      await page.getByTestId("birthdate-input").fill("1990-05-15");
+      await expect(page.getByTestId("birthdate-input")).toHaveValue(
+        "1990-05-15",
+      );
+    });
+
+    test("should set time input value", async ({ page }) => {
+      await page.getByTestId("appointment-input").fill("14:30");
+      await expect(page.getByTestId("appointment-input")).toHaveValue("14:30");
+    });
+
+    test("should set datetime-local input value", async ({ page }) => {
+      await page.getByTestId("meeting-input").fill("2024-12-25T10:00");
+      await expect(page.getByTestId("meeting-input")).toHaveValue(
+        "2024-12-25T10:00",
+      );
     });
   });
 
@@ -211,6 +246,20 @@ test.describe("Form Testing - Input Interactions", () => {
       await page.getByTestId("fullname-input").fill("Jane Doe");
       await page.getByTestId("fullname-input").press("Enter");
       await expect(page.getByTestId("form-output")).toBeVisible();
+    });
+
+    test("should complete full form workflow", async ({ page }) => {
+      await page.getByTestId("fullname-input").fill("John Smith");
+      await page.getByTestId("username-input").fill("jsmith");
+      await page
+        .getByTestId("email-field-input")
+        .fill("john.smith@example.com");
+      await page.getByTestId("bio-textarea").fill("Test user biography");
+      await page.getByTestId("text-submit-btn").click();
+      const tbody = page.getByTestId("output-tbody");
+      await expect(tbody).toContainText("John Smith");
+      await expect(tbody).toContainText("jsmith");
+      await expect(tbody).toContainText("john.smith@example.com");
     });
   });
 });

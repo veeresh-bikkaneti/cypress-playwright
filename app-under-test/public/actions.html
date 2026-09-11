@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actions - Cypress Test Application</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container { max-width: 960px; margin: 0 auto; }
+        h1 { color: #667eea; margin-bottom: 8px; }
+        .lede { color: #555; margin-bottom: 24px; }
+        .back-link { display: inline-block; margin-bottom: 16px; color: #667eea; text-decoration: none; }
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 10px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        .card h2 { color: #333; margin-bottom: 12px; border-bottom: 2px solid #eee; padding-bottom: 8px; }
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            cursor: pointer;
+            background: #667eea;
+            color: white;
+            margin: 4px 4px 4px 0;
+        }
+        .btn.secondary { background: #4a5568; }
+        .log {
+            margin-top: 12px;
+            padding: 10px 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 13px;
+            min-height: 24px;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .dropzone {
+            min-height: 160px;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 12px;
+            background: #fafbff;
+        }
+        .dropzone h3 { font-size: 14px; color: #667eea; margin-bottom: 10px; }
+        .card-item {
+            background: #667eea;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            cursor: grab;
+            user-select: none;
+        }
+        .hover-target {
+            display: inline-block;
+            padding: 12px 20px;
+            background: #edf2ff;
+            border-radius: 8px;
+            position: relative;
+            cursor: default;
+        }
+        .tooltip {
+            display: none;
+            position: absolute;
+            left: 0;
+            top: 110%;
+            background: #2d3748;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            white-space: nowrap;
+            z-index: 2;
+        }
+        .hover-target.is-hovered .tooltip,
+        .tooltip.show { display: block; }
+        .slider-track {
+            width: 100%;
+            max-width: 420px;
+            height: 10px;
+            background: #e2e8f0;
+            border-radius: 999px;
+            position: relative;
+            margin: 24px 0 12px;
+        }
+        .slider-knob {
+            width: 24px;
+            height: 24px;
+            background: #667eea;
+            border-radius: 50%;
+            position: absolute;
+            top: -7px;
+            left: 0;
+            cursor: grab;
+        }
+        .covered-wrap { position: relative; display: inline-block; }
+        .cover {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.15);
+        }
+        .chip-list { display: flex; gap: 8px; list-style: none; margin: 8px 0; }
+        .chip {
+            padding: 8px 14px;
+            background: #edf2ff;
+            border-radius: 999px;
+            cursor: pointer;
+        }
+        .chip.picked { background: #667eea; color: white; }
+        input[type="text"], input[type="range"] {
+            padding: 8px 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+        label { display: block; margin-bottom: 6px; font-weight: 600; }
+        .form-row { margin-bottom: 12px; }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="/" class="back-link">&larr; Back to Home</a>
+        <h1 data-testid="actions-heading">User Actions</h1>
+        <p class="lede">Kitchen-sink widgets for Cypress action commands: click, double-click, right-click, hover, drag-and-drop, keyboard, trigger, and submit.</p>
+
+        <div class="card" id="click-section">
+            <h2>Click variants</h2>
+            <button type="button" class="btn" data-testid="click-target" id="click-target">Click me</button>
+            <div class="covered-wrap">
+                <button type="button" class="btn secondary" data-testid="covered-btn" id="covered-btn">Covered</button>
+                <div class="cover" data-testid="cover"></div>
+            </div>
+            <ul class="chip-list" data-testid="multi-click-list">
+                <li class="chip" data-testid="chip-one">One</li>
+                <li class="chip" data-testid="chip-two">Two</li>
+                <li class="chip" data-testid="chip-three">Three</li>
+            </ul>
+            <div class="log" data-testid="click-log" id="click-log">idle</div>
+        </div>
+
+        <div class="card" id="hover-section">
+            <h2>Hover</h2>
+            <div class="hover-target" data-testid="hover-target" id="hover-target">
+                Hover me
+                <div class="tooltip" data-testid="hover-tooltip" id="hover-tooltip">Tooltip visible</div>
+            </div>
+            <div class="log" data-testid="hover-log" id="hover-log">idle</div>
+        </div>
+
+        <div class="card" id="dnd-section">
+            <h2>HTML5 drag and drop</h2>
+            <div class="board">
+                <div class="dropzone" data-testid="drop-todo" id="drop-todo">
+                    <h3>Todo</h3>
+                    <article class="card-item" draggable="true" data-testid="card-alpha" id="card-alpha">Alpha</article>
+                    <article class="card-item" draggable="true" data-testid="card-beta" id="card-beta">Beta</article>
+                </div>
+                <div class="dropzone" data-testid="drop-done" id="drop-done">
+                    <h3>Done</h3>
+                </div>
+            </div>
+            <div class="log" data-testid="dnd-status" id="dnd-status">idle</div>
+        </div>
+
+        <div class="card" id="slider-section">
+            <h2>Pointer drag (slider)</h2>
+            <div class="slider-track" data-testid="slider-track" id="slider-track">
+                <div class="slider-knob" data-testid="slider-knob" id="slider-knob"></div>
+            </div>
+            <p>Value: <span data-testid="slider-value" id="slider-value">0</span></p>
+        </div>
+
+        <div class="card" id="keyboard-section">
+            <h2>Keyboard</h2>
+            <div class="form-row">
+                <label for="key-input">Type here</label>
+                <input type="text" id="key-input" data-testid="key-input" />
+            </div>
+            <div class="log" data-testid="key-log" id="key-log">idle</div>
+        </div>
+
+        <div class="card" id="trigger-section">
+            <h2>Trigger (range)</h2>
+            <label for="volume">Volume</label>
+            <input type="range" id="volume" data-testid="volume-range" min="0" max="100" value="20" />
+            <p>Volume: <span data-testid="volume-value" id="volume-value">20</span></p>
+        </div>
+
+        <div class="card" id="submit-section">
+            <h2>Native form submit</h2>
+            <form data-testid="native-form" id="native-form">
+                <div class="form-row">
+                    <label for="alias-input">Alias</label>
+                    <input type="text" name="alias" id="alias-input" data-testid="alias-input" data-field="alias" />
+                </div>
+                <button type="submit" class="btn" data-testid="native-submit">Save</button>
+            </form>
+            <div class="log" data-testid="form-status" id="form-status">idle</div>
+        </div>
+    </div>
+
+    <script>
+        const clickLog = document.getElementById('click-log');
+        const clickTarget = document.getElementById('click-target');
+        const coveredBtn = document.getElementById('covered-btn');
+
+        function describeEvent(e) {
+            return [
+                e.type,
+                'btn=' + e.button,
+                'detail=' + e.detail,
+                'x=' + Math.round(e.offsetX),
+                'y=' + Math.round(e.offsetY),
+                e.ctrlKey ? 'ctrl' : null,
+                e.altKey ? 'alt' : null,
+                e.shiftKey ? 'shift' : null,
+            ].filter(Boolean).join(' ');
+        }
+
+        function bindClick(el) {
+            ['click', 'dblclick', 'contextmenu'].forEach((type) => {
+                el.addEventListener(type, (e) => {
+                    if (type === 'contextmenu') e.preventDefault();
+                    clickLog.textContent = describeEvent(e) + ' on ' + (el.getAttribute('data-testid') || el.id);
+                });
+            });
+        }
+        bindClick(clickTarget);
+        bindClick(coveredBtn);
+
+        document.querySelectorAll('.chip').forEach((chip) => {
+            chip.addEventListener('click', () => {
+                chip.classList.toggle('picked');
+                const count = document.querySelectorAll('.chip.picked').length;
+                clickLog.textContent = 'chips=' + count;
+            });
+        });
+
+        const hoverTarget = document.getElementById('hover-target');
+        const hoverLog = document.getElementById('hover-log');
+        hoverTarget.addEventListener('mouseenter', () => {
+            hoverTarget.classList.add('is-hovered');
+            hoverLog.textContent = 'hovered';
+        });
+        hoverTarget.addEventListener('mouseleave', () => {
+            hoverTarget.classList.remove('is-hovered');
+            hoverLog.textContent = 'left';
+        });
+
+        let dragged = null;
+        const dndStatus = document.getElementById('dnd-status');
+        document.querySelectorAll('[draggable="true"]').forEach((el) => {
+            el.addEventListener('dragstart', (e) => {
+                dragged = el;
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', el.id);
+                dndStatus.textContent = 'dragging:' + el.dataset.testid;
+            });
+            el.addEventListener('dragend', () => {
+                dragged = null;
+            });
+        });
+        document.querySelectorAll('.dropzone').forEach((zone) => {
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+            });
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const id = e.dataTransfer.getData('text/plain');
+                const card = dragged || document.getElementById(id);
+                if (!card) return;
+                zone.appendChild(card);
+                dndStatus.textContent = 'dropped:' + card.dataset.testid + '@' + zone.dataset.testid;
+            });
+        });
+
+        const track = document.getElementById('slider-track');
+        const knob = document.getElementById('slider-knob');
+        const sliderValue = document.getElementById('slider-value');
+        let draggingSlider = false;
+
+        function setSliderFromClientX(clientX) {
+            const rect = track.getBoundingClientRect();
+            const x = Math.min(Math.max(clientX - rect.left, 0), rect.width);
+            const pct = Math.round((x / rect.width) * 100);
+            knob.style.left = Math.max(0, x - 12) + 'px';
+            sliderValue.textContent = String(pct);
+        }
+
+        knob.addEventListener('mousedown', (e) => {
+            draggingSlider = true;
+            e.preventDefault();
+        });
+        window.addEventListener('mousemove', (e) => {
+            if (!draggingSlider) return;
+            setSliderFromClientX(e.clientX);
+        });
+        window.addEventListener('mouseup', () => {
+            draggingSlider = false;
+        });
+        track.addEventListener('mousedown', (e) => {
+            if (e.target === knob) return;
+            setSliderFromClientX(e.clientX);
+        });
+
+        const keyInput = document.getElementById('key-input');
+        const keyLog = document.getElementById('key-log');
+        keyInput.addEventListener('keydown', (e) => {
+            keyLog.textContent = 'keydown:' + e.key;
+        });
+
+        const volume = document.getElementById('volume');
+        const volumeValue = document.getElementById('volume-value');
+        volume.addEventListener('input', () => {
+            volumeValue.textContent = volume.value;
+        });
+        volume.addEventListener('change', () => {
+            volumeValue.textContent = volume.value;
+        });
+
+        const form = document.getElementById('native-form');
+        const formStatus = document.getElementById('form-status');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const alias = document.getElementById('alias-input').value;
+            formStatus.textContent = 'submitted:' + alias;
+        });
+    </script>
+</body>
+
+</html>

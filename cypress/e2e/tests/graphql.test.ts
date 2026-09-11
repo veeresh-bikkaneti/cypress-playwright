@@ -235,11 +235,8 @@ describe("GraphQL API Testing", () => {
         expect(response.body.errors.length).to.be.greaterThan(0);
         // Check for UNAUTHENTICATED code in extensions if present, otherwise check message
         const error = response.body.errors[0];
-        if (error.extensions && error.extensions.code) {
-          expect(error.extensions.code).to.eq("UNAUTHENTICATED");
-        } else {
-          expect(error.message).to.include("Authentication");
-        }
+        expect(error.extensions.code).to.eq("UNAUTHENTICATED");
+        expect(error.message).to.include("Authentication");
       });
     });
   });
@@ -416,17 +413,7 @@ describe("GraphQL API Testing", () => {
 
       cy.wait("@graphql").then((interception) => {
         expect(interception.request.body.query).to.include("products");
-        // Response may be null if server hasn't processed properly, so check defensively
-        if (
-          interception.response &&
-          interception.response.body &&
-          interception.response.body.data
-        ) {
-          expect(interception.response.body.data.products).to.be.an("array");
-        } else {
-          // If data is null/undefined, at least verify the request was intercepted
-          expect(interception.request.method).to.eq("POST");
-        }
+        expect(interception.response.body.data.products).to.be.an("array");
       });
     });
   });

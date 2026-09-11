@@ -123,6 +123,8 @@ Allure is an optional reporting tool that creates beautiful HTML test reports. I
 | Forms     | `/forms`     | All input types (text, select, checkbox, etc.) |
 | Dialogs   | `/dialogs`   | Alert, confirm, prompt, custom modals          |
 | Upload    | `/upload`    | File upload and download                       |
+| Actions   | `/actions`   | Click, dblclick, rightclick, hover, drag-and-drop, keyboard |
+| DOM       | `/dom`       | Traversal, shadow DOM, iframe                  |
 
 ## 🔧 API Endpoints (for cy.request() testing)
 
@@ -149,8 +151,11 @@ Allure is an optional reporting tool that creates beautiful HTML test reports. I
 - ✅ `cy.get()` - Find elements by CSS selector
 - ✅ `cy.getByTestId()` - Custom command for data-testid
 - ✅ `cy.type()` - Type into inputs
-- ✅ `cy.click()` - Click buttons/links
-- ✅ `cy.should()` - Make assertions
+- ✅ `cy.click()` / `cy.dblclick()` / `cy.rightclick()` / `cy.submit()`
+- ✅ HTML5 drag-and-drop via `cy.trigger()`
+- ✅ `cy.selectFile()` including `{ action: 'drag-drop' }`
+- ✅ `cy.shadow()` and same-origin iframe access
+- ✅ Query/traversal connectors (`find`, `parent`, `within`, `each`, …)
 
 ### Network Testing
 

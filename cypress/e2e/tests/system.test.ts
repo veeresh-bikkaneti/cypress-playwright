@@ -43,7 +43,10 @@ describe("System and Filesystem Capabilities", () => {
 
   describe("Node Tasks (cy.task)", () => {
     it("should execute a task to log message to console", () => {
-      cy.task("log", "This message is printed to the terminal via cy.task()");
+      cy.task(
+        "log",
+        "This message is printed to the terminal via cy.task()",
+      ).should("eq", "This message is printed to the terminal via cy.task()");
     });
 
     it("should execute a task to get value from backend", () => {
@@ -90,9 +93,31 @@ describe("System and Filesystem Capabilities", () => {
 
       // Reading via cy.task (server side check)
       cy.task("readFileMaybe", textFile).then((val) => {
-        // If the path resolution in config matches, this should work
-        // Note: fs.readFileSync in config uses process.cwd() which is usually project root
         expect(val).to.eq(content);
+      });
+    });
+  });
+
+  describe("Fixtures (cy.fixture)", () => {
+    it("cy.fixture() loads products.json", () => {
+      cy.fixture("products.json").its("products").should("have.length.gt", 0);
+      cy.fixture("products.json")
+        .its("products.0.name")
+        .should("eq", "Premium Laptop");
+    });
+
+    it("products.json fixture drives the AUT product grid", () => {
+      cy.fixture("products.json").then((data) => {
+        cy.intercept("GET", "/api/products", data).as("products");
+        cy.visit("/");
+        cy.wait("@products");
+        cy.get("[data-testid=product-card]").should(
+          "have.length",
+          data.products.length,
+        );
+        cy.contains("[data-testid=product-card]", "Premium Laptop").should(
+          "be.visible",
+        );
       });
     });
   });

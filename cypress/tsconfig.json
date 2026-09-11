@@ -4,7 +4,7 @@
     "lib": ["ES2022", "DOM"],
     "module": "ESNext",
     "moduleResolution": "node",
-    "types": ["cypress", "node"],
+    "types": ["cypress", "node", "cypress-real-events"],
     "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,

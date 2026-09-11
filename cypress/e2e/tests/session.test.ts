@@ -26,16 +26,21 @@ describe("Session Testing - Caching / Restore", () => {
    * This function will run once per session id, then restore from cache
    */
   const login = (user: typeof testUser) => {
-    cy.session([user.email], () => {
-      cy.visit("/login");
-      cy.get('[data-testid="email-input"]').type(user.email);
-      cy.get('[data-testid="password-input"]').type(user.password);
-      cy.get('[data-testid="submit-btn"]').click();
-
-      // Wait for redirect or success indicator to ensure session is established
-      cy.url().should("include", "/dashboard");
-      cy.getCookie("authToken").should("exist");
-    });
+    cy.session(
+      [user.email],
+      () => {
+        cy.visit("/login");
+        cy.get('[data-testid="email-input"]').type(user.email);
+        cy.get('[data-testid="password-input"]').type(user.password);
+        cy.get('[data-testid="submit-btn"]').click();
+        cy.url().should("include", "/dashboard");
+      },
+      {
+        validate() {
+          cy.getCookie("authToken").should("exist");
+        },
+      },
+    );
   };
 
   /**
@@ -43,12 +48,13 @@ describe("Session Testing - Caching / Restore", () => {
    */
   it("should log in via session for Test 1", () => {
     login(testUser);
-
-    // Visit protected page directly
     cy.visit("/dashboard");
-
-    // verify we are logged in
     cy.get("h1").should("contain", "Dashboard");
+  });
+
+  it("cy.login() custom command lands on dashboard", () => {
+    cy.login(testUser.email, testUser.password);
+    cy.get('[data-testid="page-title"]').should("contain", "Dashboard");
   });
 
   /**
@@ -72,12 +78,10 @@ describe("Session Testing - Caching / Restore", () => {
     login(testUser);
 
     cy.visit("/dashboard");
-
-    // Use sidebar navigation
+    cy.get('[data-testid="orders-section"]').should("not.be.visible");
     cy.get('[data-testid="nav-orders"]').click();
-
-    // Verify orders section is visible (it's within the same dashboard page)
     cy.get('[data-testid="orders-section"]').should("be.visible");
+    cy.get('[data-testid="stats-grid"]').should("not.be.visible");
   });
 
   /**

@@ -15,27 +15,31 @@ test.describe("Dialog Testing - Alerts, Confirms, Prompts", () => {
 
   test.describe("Alert Dialogs", () => {
     test("should capture alert message", async ({ page }) => {
-      // Setup listener
-      page.once("dialog", (dialog) => {
-        expect(dialog.message()).toEqual("This is an alert message!");
-        dialog.dismiss().catch(() => {});
+      let message = "";
+      page.once("dialog", async (dialog) => {
+        message = dialog.message();
+        await dialog.dismiss();
       });
-
       await page.getByTestId("alert-btn").click();
+      expect(message).toEqual("This is an alert message!");
+      await expect(page.getByTestId("native-dialog-result")).toContainText(
+        "Alert was shown",
+      );
     });
 
     test("should count multiple alert calls", async ({ page }) => {
       let alertCount = 0;
-      page.on("dialog", (dialog) => {
+      page.on("dialog", async (dialog) => {
         alertCount++;
-        dialog.accept().catch(() => {});
+        await dialog.accept();
       });
-
       await page.getByTestId("alert-btn").click();
       await page.getByTestId("alert-btn").click();
       await page.getByTestId("alert-btn").click();
-
-      expect(alertCount).toBe(3);
+      await expect.poll(() => alertCount).toBe(3);
+      await expect(page.getByTestId("native-dialog-result")).toContainText(
+        "Alert was shown",
+      );
     });
   });
 
@@ -47,19 +51,30 @@ test.describe("Dialog Testing - Alerts, Confirms, Prompts", () => {
     test("should accept confirm dialog by default", async ({ page }) => {
       page.once("dialog", (dialog) => dialog.accept());
       await page.getByTestId("confirm-btn").click();
+      await expect(page.getByTestId("native-dialog-result")).toContainText(
+        "User clicked OK",
+      );
     });
 
     test("should reject confirm dialog", async ({ page }) => {
       page.once("dialog", (dialog) => dialog.dismiss());
       await page.getByTestId("confirm-btn").click();
+      await expect(page.getByTestId("native-dialog-result")).toContainText(
+        "User clicked Cancel",
+      );
     });
 
     test("should capture confirm message", async ({ page }) => {
-      page.once("dialog", (dialog) => {
-        expect(dialog.message()).toEqual("Do you want to proceed?");
-        dialog.accept();
+      let message = "";
+      page.once("dialog", async (dialog) => {
+        message = dialog.message();
+        await dialog.accept();
       });
       await page.getByTestId("confirm-btn").click();
+      expect(message).toEqual("Do you want to proceed?");
+      await expect(page.getByTestId("native-dialog-result")).toContainText(
+        "User clicked OK",
+      );
     });
   });
 
@@ -85,12 +100,19 @@ test.describe("Dialog Testing - Alerts, Confirms, Prompts", () => {
     });
 
     test("should verify prompt default value", async ({ page }) => {
-      page.once("dialog", (dialog) => {
-        expect(dialog.message()).toBe("Please enter your name:");
-        expect(dialog.defaultValue()).toBe("Guest");
-        dialog.accept("Entered Name");
+      let message = "";
+      let defaultValue = "";
+      page.once("dialog", async (dialog) => {
+        message = dialog.message();
+        defaultValue = dialog.defaultValue();
+        await dialog.accept("Entered Name");
       });
       await page.getByTestId("prompt-btn").click();
+      expect(message).toBe("Please enter your name:");
+      expect(defaultValue).toBe("Guest");
+      await expect(page.getByTestId("native-dialog-result")).toContainText(
+        'User entered: "Entered Name"',
+      );
     });
   });
 
@@ -153,6 +175,13 @@ test.describe("Dialog Testing - Alerts, Confirms, Prompts", () => {
       await expect(result).toContainText("John Doe");
       await expect(result).toContainText("test message");
     });
+
+    test("should close modal by clicking overlay", async ({ page }) => {
+      await page.getByTestId("info-modal-btn").click();
+      await expect(page.getByTestId("info-modal")).toHaveClass(/show/);
+      await page.getByTestId("info-modal").click({ position: { x: 2, y: 2 } });
+      await expect(page.getByTestId("info-modal")).not.toHaveClass(/show/);
+    });
   });
 
   // ==========================================================================
@@ -161,17 +190,12 @@ test.describe("Dialog Testing - Alerts, Confirms, Prompts", () => {
 
   test.describe("Popup Windows", () => {
     test("should handle new popup window", async ({ page }) => {
-      // Start waiting for new page before clicking. Note no await.
       const popupPromise = page.waitForEvent("popup");
       await page.getByTestId("popup-btn").click();
       const popup = await popupPromise;
-
-      // Wait for popup to load.
       await popup.waitForLoadState();
-
-      // Verify popup url or content
-      // The app opens '/' so we just check it loaded
-      expect(popup.url()).not.toBe("about:blank");
+      await expect(popup).toHaveTitle(/Cypress Test Application/);
+      await expect(popup.getByTestId("main-heading")).toBeVisible();
     });
   });
 });

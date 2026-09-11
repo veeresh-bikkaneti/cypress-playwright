@@ -18,6 +18,9 @@ export class MyAccountPage {
   readonly dashboardHeader: Locator;
   readonly mainContent: Locator;
   readonly statsGrid: Locator;
+  readonly overviewSection: Locator;
+  readonly productsSection: Locator;
+  readonly settingsSection: Locator;
   readonly ordersSection: Locator;
   readonly ordersTable: Locator;
   readonly createOrderBtn: Locator;
@@ -48,6 +51,9 @@ export class MyAccountPage {
     this.dashboardHeader = page.getByTestId("dashboard-header");
     this.mainContent = page.getByTestId("main-content");
     this.statsGrid = page.getByTestId("stats-grid");
+    this.overviewSection = page.getByTestId("stats-grid");
+    this.productsSection = page.getByTestId("products-section");
+    this.settingsSection = page.getByTestId("settings-section");
     this.ordersSection = page.getByTestId("orders-section");
     this.ordersTable = page.getByTestId("orders-table");
     this.createOrderBtn = page.getByRole("button", {

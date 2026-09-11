@@ -112,9 +112,7 @@ describe("Form Testing - Input Interactions", () => {
      */
     it("should simulate keyboard shortcuts", () => {
       cy.getByTestId("fullname-input")
-        .type("Select All")
-        // In headless mode, use programmatic selection instead of Ctrl+A
-        .invoke("val", "") // Clear instead of select+delete for headless compatibility
+        .type("Select All{selectall}{del}")
         .should("have.value", "");
     });
   });
@@ -180,8 +178,10 @@ describe("Form Testing - Input Interactions", () => {
      */
     it("should select option by index", () => {
       cy.getByTestId("country-select")
-        .select(2) // Second option (0-indexed)
-        .should("not.have.value", "");
+        .select(2)
+        .should("have.value", "uk")
+        .find("option:selected")
+        .should("have.text", "United Kingdom");
     });
 
     /**

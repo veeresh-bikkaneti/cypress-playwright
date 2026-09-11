@@ -8,7 +8,7 @@
   },
   "scripts": {
     "setup": "node bin/setup.js",
-    "test": "node bin/setup.js list && node scripts/smoke-setup.js && node scripts/audit-skills.js",
+    "test": "node bin/setup.js list && node scripts/smoke-setup.js && node scripts/audit-skills.js && node scripts/assert-migration-parity.js",
     "audit:urls": "node scripts/audit-template-urls.js",
     "audit:urls:verbose": "node scripts/audit-template-urls.js --verbose"
   },
