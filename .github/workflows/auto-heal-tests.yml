@@ -20,6 +20,11 @@ on:
           - "playwright"
           - "cypress"
 
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
 jobs:
   detect-failures:
     runs-on: ubuntu-latest
@@ -61,71 +66,90 @@ jobs:
           const fs = require("fs");
           const path = require("path");
 
-          function walkPw(suite, acc) {
+          function walkPw(suite, acc, seen) {
             for (const spec of suite.specs || []) {
               for (const t of spec.tests || []) {
-                const failed = (t.results || []).some(
-                  (r) => r.status === "failed" || r.status === "timedOut",
-                );
-                if (failed) {
-                  acc.push(`${spec.file || ""}: ${spec.title || t.title}`);
-                }
+                const overall = t.status;
+                const last = (t.results || []).at(-1);
+                const failed =
+                  overall === "unexpected" ||
+                  (!overall &&
+                    last &&
+                    (last.status === "failed" || last.status === "timedOut"));
+                if (!failed) continue;
+                const line = `${spec.file || ""}: ${spec.title || t.title}`;
+                if (seen.has(line)) continue;
+                seen.add(line);
+                acc.push(line);
               }
             }
-            for (const child of suite.suites || []) walkPw(child, acc);
+            for (const child of suite.suites || []) walkPw(child, acc, seen);
           }
 
-          const pwJson = path.join("test-results", "playwright", "results.json");
           const pwFailed = [];
+          const pwJson = path.join("test-results", "playwright", "results.json");
           if (fs.existsSync(pwJson)) {
             try {
               const data = JSON.parse(fs.readFileSync(pwJson, "utf8"));
-              for (const s of data.suites || []) walkPw(s, pwFailed);
+              const seen = new Set();
+              for (const s of data.suites || []) walkPw(s, pwFailed, seen);
             } catch (err) {
               pwFailed.push(`(could not parse Playwright JSON: ${err.message})`);
             }
           }
 
+          const cyFailed = [];
           const cyDir = path.join("test-results", "cypress");
-          let cyFailed = false;
-          if (fs.existsSync(cyDir)) {
-            const grepHint = [];
-            const walk = (dir) => {
-              for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
-                const p = path.join(dir, ent.name);
-                if (ent.isDirectory()) walk(p);
-                else if (/\.(txt|json|xml|log)$/i.test(ent.name)) {
-                  const text = fs.readFileSync(p, "utf8");
-                  if (/failing|failed/i.test(text)) {
-                    cyFailed = true;
-                    grepHint.push(ent.name);
+          function walkCy(dir) {
+            if (!fs.existsSync(dir)) return;
+            for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+              const p = path.join(dir, ent.name);
+              if (ent.isDirectory()) {
+                if (ent.name === "screenshots") {
+                  const shots = fs.readdirSync(p);
+                  if (shots.length) {
+                    cyFailed.push(`cypress screenshots (${shots.length})`);
                   }
                 }
+                walkCy(p);
+                continue;
               }
-            };
-            try {
-              walk(cyDir);
-            } catch {
-              /* empty or unreadable */
+              if (!ent.name.endsWith(".json")) continue;
+              try {
+                const data = JSON.parse(fs.readFileSync(p, "utf8"));
+                const stats = data.stats || {};
+                const failures = Number(stats.failures ?? stats.failed ?? 0);
+                if (failures > 0) {
+                  cyFailed.push(`${ent.name}: ${failures} failure(s)`);
+                }
+              } catch {
+                /* not a mocha/allure stats file */
+              }
             }
-            if (cyFailed && grepHint.length) {
-              pwFailed.push(`cypress artifacts with failures: ${grepHint.slice(0, 5).join(", ")}`);
-            }
+          }
+          try {
+            walkCy(cyDir);
+          } catch {
+            /* empty or unreadable */
           }
 
           const inputFw = process.env.INPUT_FRAMEWORK || "";
           let framework = inputFw;
           if (!framework) {
-            if (pwFailed.length && cyFailed) framework = "playwright";
-            else if (pwFailed.length) framework = "playwright";
-            else if (cyFailed) framework = "cypress";
+            if (pwFailed.length) framework = "playwright";
+            else if (cyFailed.length) framework = "cypress";
             else framework = "playwright";
           }
 
           const inputFile = process.env.INPUT_TEST_FILE || "";
           const lines = [];
           if (inputFile) lines.push(inputFile);
-          lines.push(...pwFailed);
+          if (pwFailed.length) {
+            lines.push("Playwright:", ...pwFailed);
+          }
+          if (cyFailed.length) {
+            lines.push("Cypress:", ...cyFailed);
+          }
           const tests = lines.filter(Boolean).join("\n") || "(see artifacts)";
 
           const out = process.env.GITHUB_OUTPUT;
@@ -150,14 +174,16 @@ jobs:
         env:
           FAILED_TESTS: ${{ needs.detect-failures.outputs.failed_tests }}
           FRAMEWORK: ${{ needs.detect-failures.outputs.framework }}
+          SOURCE_RUN_ID: ${{ github.event.workflow_run.id || github.run_id }}
         with:
           script: |
             const failedTests = process.env.FAILED_TESTS || "(see artifacts)";
             const framework = process.env.FRAMEWORK || "playwright";
+            const sourceRunId = process.env.SOURCE_RUN_ID || context.runId;
             const skill = framework === "cypress"
               ? "skills/cypress-to-playwright-migration"
               : "skills/playwright-testing (Heal section)";
-            const firstLine = failedTests.split("\n")[0];
+            const firstLine = failedTests.split("\n").find((l) => l && l !== "Playwright:" && l !== "Cypress:") || "test failure";
 
             const issue = await github.rest.issues.create({
               owner: context.repo.owner,
@@ -179,7 +205,7 @@ jobs:
             4. Review the proposed fix, apply, close this issue
 
             **Artifacts**:
-            - [Workflow run](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+            - [Workflow run](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${sourceRunId})
             `,
               labels: ["test-failure", "ai-healing", framework],
             });

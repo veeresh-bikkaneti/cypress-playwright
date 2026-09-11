@@ -13,8 +13,6 @@ test.describe("API Testing - Network Capabilities", () => {
     test("should load and display products from API", async ({ page }) => {
       await page.goto("/");
 
-      // Verify real products load from API
-      // Verify real products load from API
       // Wait for at least one product to appear
       await expect(page.getByTestId("product-card").first()).toBeVisible();
 
