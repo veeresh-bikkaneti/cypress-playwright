@@ -1,79 +1,71 @@
 import { test, expect } from "@playwright/test";
-
-// ============================================================================
-// SECURITY CHECKS
-// ============================================================================
+import { LoginPage } from "../pages/LoginPage";
+import { testData } from "../fixtures/test-data";
 
 test.describe("OWASP Security Checks", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/");
-    await page.context().clearCookies();
-    await page.evaluate(() => localStorage.clear());
-    await page.evaluate(() => sessionStorage.clear());
-  });
+  test.use({ storageState: { cookies: [], origins: [] } });
 
   test.describe("Injection (XSS)", () => {
-    test("should sanitize input and prevent Reflected XSS", async ({
-      page,
-    }) => {
+    test("reflects the payload as text, not HTML", async ({ page }) => {
       const xssPayload = '<script>alert("XSS")</script>';
-
-      await page.goto("/forms"); // Assuming /forms.html maps to /forms in this app routing
-
       let dialogFired = false;
       page.on("dialog", (dialog) => {
         dialogFired = true;
-        dialog.accept();
+        dialog.dismiss().catch(() => {});
       });
 
-      // Inject payload
-      await page.locator('input[type="text"]').first().fill(xssPayload);
-      await page.locator('input[type="text"]').first().blur();
+      await page.goto("/forms");
+      await page.getByTestId("fullname-input").fill(xssPayload);
+      const echo = page.getByTestId("xss-echo");
+      await expect(echo).toHaveText(xssPayload);
+      expect(await echo.evaluate((el) => el.childElementCount)).toBe(0);
 
-      // Verify alert was NOT called
+      await page.getByTestId("text-submit-btn").click();
+      const tbody = page.getByTestId("output-tbody");
+      await expect(tbody).toContainText(xssPayload);
+      expect(await tbody.locator("script").count()).toBe(0);
       expect(dialogFired).toBe(false);
     });
   });
 
   test.describe("Broken Access Control", () => {
-    test.skip("should redirect unauthenticated users identifying protected resources", async ({
+    test("redirects unauthenticated users away from /dashboard", async ({
       page,
     }) => {
       await page.goto("/dashboard");
-      await expect(page).toHaveURL(/.*\/login/);
-      await expect(page.locator("h1")).toContainText("Login");
+      await expect(page).toHaveURL(/\/login/);
+      await expect(page.getByTestId("login-container")).toBeVisible();
     });
   });
 
   test.describe("Security Misconfiguration (Headers)", () => {
-    test("should have standard security headers", async ({ request }) => {
+    test("sends nosniff, DENY framing, and no X-Powered-By", async ({
+      request,
+    }) => {
       const response = await request.get("/");
       const headers = response.headers();
-      expect(headers["x-powered-by"]).toBeDefined();
+      expect(headers["x-content-type-options"]).toBe("nosniff");
+      expect(headers["x-frame-options"]).toBe("DENY");
+      expect(headers["referrer-policy"]).toBe("no-referrer");
+      expect(headers["x-powered-by"]).toBeUndefined();
     });
   });
 
   test.describe("Insecure Design (Cookie Flags)", () => {
-    test.skip("should use Secure and HttpOnly flags for session cookies", async ({
+    test("sets HttpOnly on the auth cookie after UI login", async ({
       page,
-      request,
     }) => {
-      // Login to get cookie
-      await request.post("/api/auth/login", {
-        data: { email: "test@example.com", password: "password123" },
-      });
-
-      // Reload page to get cookies in context
-      await page.reload();
-
+      const loginPage = new LoginPage(page);
+      await loginPage.login(
+        testData.validCredentials.emailId,
+        testData.validCredentials.password,
+      );
+      await expect(page).toHaveURL(/\/dashboard/);
       const cookies = await page.context().cookies();
       const authCookie = cookies.find((c) => c.name === "authToken");
-
-      if (authCookie) {
-        expect(authCookie.httpOnly).toBe(true);
-        // Secure flag depends on HTTPS environment
-        // expect(authCookie.secure).toBe(true);
-      }
+      expect(authCookie, "authToken cookie after login").toBeTruthy();
+      expect(authCookie?.httpOnly).toBe(true);
+      expect(authCookie?.secure).toBe(false);
     });
   });
 });

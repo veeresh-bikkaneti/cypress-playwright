@@ -46,36 +46,38 @@ describe("Smoke Test - Basic Verification", () => {
   });
 
   it("should login successfully via UI", () => {
-    cy.visit("/login");
-    cy.get('[data-testid="email-input"]').type("test@example.com");
-    cy.get('[data-testid="password-input"]').type("password123");
-    cy.get('[data-testid="submit-btn"]').click();
-
-    // Wait for redirect to dashboard
-    cy.url().should("include", "/dashboard", { timeout: 10000 });
+    cy.fixture("users.json").then((data) => {
+      cy.visit("/login");
+      cy.get('[data-testid="email-input"]').type(
+        data.valid_credentials.emailId,
+      );
+      cy.get('[data-testid="password-input"]').type(
+        data.valid_credentials.password,
+      );
+      cy.get('[data-testid="submit-btn"]').click();
+      cy.url().should("include", "/dashboard", { timeout: 10000 });
+    });
   });
 
   it("should login via API and access dashboard", () => {
-    // Login via API
-    cy.request({
-      method: "POST",
-      url: "/api/auth/login",
-      body: {
-        email: "test@example.com",
-        password: "password123",
-      },
-    }).then((response) => {
-      expect(response.status).to.eq(200);
-      expect(response.body.token).to.exist;
-
-      // Store token
-      cy.window().then((win) => {
-        win.localStorage.setItem("authToken", response.body.token);
-        win.localStorage.setItem("user", JSON.stringify(response.body.user));
+    cy.fixture("users.json").then((data) => {
+      cy.request({
+        method: "POST",
+        url: "/api/auth/login",
+        body: {
+          email: data.valid_credentials.emailId,
+          password: data.valid_credentials.password,
+        },
+      }).then((response) => {
+        expect(response.status).to.eq(200);
+        expect(response.body.token).to.exist;
+        cy.window().then((win) => {
+          win.localStorage.setItem("authToken", response.body.token);
+          win.localStorage.setItem("user", JSON.stringify(response.body.user));
+        });
       });
     });
 
-    // Now visit dashboard
     cy.visit("/dashboard");
     cy.get('[data-testid="auth-warning"]').should("have.class", "hidden");
   });

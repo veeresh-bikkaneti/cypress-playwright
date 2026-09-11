@@ -1,87 +1,129 @@
-import { test, expect } from "@playwright/test";
-import { LoginPage } from "../pages/LoginPage";
-import { MyAccountPage } from "../pages/MyAccountPage";
-import fs from "fs";
-import path from "path";
-
-// Load fixture data
-const users = JSON.parse(
-  fs.readFileSync(
-    path.join(__dirname, "../../cypress/fixtures/users.json"),
-    "utf-8",
-  ),
-);
+/**
+ * Migrated from: cypress/e2e/tests/login.test.ts
+ * Pages: LoginPage / MyAccountPage via auth.fixture
+ * Data: cypress/fixtures/users.json through playwright/fixtures/test-data.ts
+ */
+import { test, expect } from "../fixtures/auth.fixture";
+import { testData } from "../fixtures/test-data";
 
 test.describe("Login Functionality", () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  let loginPage: LoginPage;
-  let myAccountPage: MyAccountPage;
-
-  test.beforeEach(async ({ page }) => {
-    loginPage = new LoginPage(page);
-    myAccountPage = new MyAccountPage(page);
-  });
-
-  test("login with valid credentials", async ({ page }) => {
+  test("login with valid credentials from fixture", async ({
+    loginPage,
+    myAccountPage,
+  }) => {
     await loginPage.login(
-      users.valid_credentials.emailId,
-      users.valid_credentials.password,
+      testData.validCredentials.emailId,
+      testData.validCredentials.password,
     );
     await myAccountPage.validateSuccessfulLogin();
+    await myAccountPage.validateUserInfo(
+      "Test User",
+      testData.validCredentials.emailId,
+    );
     await myAccountPage.logout();
     await myAccountPage.validateSuccessfulLogout();
   });
 
-  // Since we loaded data from fixture, this test is effectively the same as above but with explicit data usage
-  test("login with valid credentials read data from fixture", async ({
-    page,
-  }) => {
+  test("login as admin from fixture", async ({ loginPage, myAccountPage }) => {
     await loginPage.login(
-      users.valid_credentials.emailId,
-      users.valid_credentials.password,
+      testData.adminCredentials.emailId,
+      testData.adminCredentials.password,
     );
     await myAccountPage.validateSuccessfulLogin();
-    await myAccountPage.logout();
-    await myAccountPage.validateSuccessfulLogout();
+    await myAccountPage.validateUserInfo(
+      "Admin User",
+      testData.adminCredentials.emailId,
+    );
   });
 
-  test("login with invalid email credentials read data from fixture", async ({
-    page,
-  }) => {
+  test("login with invalid email from fixture", async ({ loginPage }) => {
     await loginPage.login(
-      users.invalid_credentials.invalid_email.emailId,
-      users.invalid_credentials.invalid_email.password,
+      testData.invalidCredentials.invalidEmail.emailId,
+      testData.invalidCredentials.invalidEmail.password,
     );
     await loginPage.validateLoginError("Invalid email or password");
   });
 
-  test("login with invalid password credentials read data from fixture", async ({
-    page,
-  }) => {
+  test("login with invalid password from fixture", async ({ loginPage }) => {
     await loginPage.login(
-      users.invalid_credentials.invalid_password.emailId,
-      users.invalid_credentials.invalid_password.password,
+      testData.invalidCredentials.invalidPassword.emailId,
+      testData.invalidCredentials.invalidPassword.password,
     );
     await loginPage.validateLoginError("Invalid email or password");
   });
 
-  test("login with wrong email format credentials read data from fixture", async ({
-    page,
-  }) => {
+  test("login with wrong email format from fixture", async ({ loginPage }) => {
     await loginPage.login(
-      users.invalid_credentials.wrong_email_format.emailId,
-      users.invalid_credentials.wrong_email_format.password,
+      testData.invalidCredentials.wrongEmailFormat.emailId,
+      testData.invalidCredentials.wrongEmailFormat.password,
     );
-    // The test-app validates email format client-side
     await loginPage.validateEmailError();
   });
 
-  test("should show password error for short password", async ({ page }) => {
+  test("shows password error for short password", async ({ loginPage }) => {
     await loginPage.navigateToLogin();
-    await loginPage.emailAddressTxt.fill("test@example.com");
-    await loginPage.passwordTxt.fill("short"); // Less than 6 characters
+    await loginPage.emailAddressTxt.fill(testData.validCredentials.emailId);
+    await loginPage.passwordTxt.fill("short");
     await loginPage.signinBtn.click();
     await loginPage.validatePasswordError();
+  });
+
+  test("loginFromHome reaches dashboard", async ({
+    loginPage,
+    myAccountPage,
+  }) => {
+    await loginPage.loginFromHome(
+      testData.validCredentials.emailId,
+      testData.validCredentials.password,
+    );
+    await myAccountPage.validateSuccessfulLogin();
+  });
+
+  test("unchecked Remember me stores token in sessionStorage only", async ({
+    loginPage,
+    myAccountPage,
+    page,
+  }) => {
+    await loginPage.navigateToLogin();
+    await loginPage.emailAddressTxt.fill(testData.validCredentials.emailId);
+    await loginPage.passwordTxt.fill(testData.validCredentials.password);
+    await expect(loginPage.rememberCheckbox).not.toBeChecked();
+    await loginPage.signinBtn.click();
+    await myAccountPage.validateSuccessfulLogin();
+    const sessionToken = await page.evaluate(() =>
+      sessionStorage.getItem("authToken"),
+    );
+    const localToken = await page.evaluate(() =>
+      localStorage.getItem("authToken"),
+    );
+    const user = await page.evaluate(() =>
+      JSON.parse(localStorage.getItem("user") || "null"),
+    );
+    expect(sessionToken).toBeTruthy();
+    expect(localToken).toBeNull();
+    expect(user.email).toBe(testData.validCredentials.emailId);
+  });
+
+  test("checked Remember me stores token in localStorage", async ({
+    loginPage,
+    myAccountPage,
+    page,
+  }) => {
+    await loginPage.login(
+      testData.validCredentials.emailId,
+      testData.validCredentials.password,
+      true,
+    );
+    await myAccountPage.validateSuccessfulLogin();
+    const sessionToken = await page.evaluate(() =>
+      sessionStorage.getItem("authToken"),
+    );
+    const localToken = await page.evaluate(() =>
+      localStorage.getItem("authToken"),
+    );
+    expect(localToken).toBeTruthy();
+    expect(sessionToken).toBeNull();
   });
 });

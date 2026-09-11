@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { LoginPage } from "../pages/LoginPage";
+import { testData } from "../fixtures/test-data";
 
 // ============================================================================
 // SMOKE TEST - Verify Basic Connectivity + Test App Integration
@@ -40,7 +41,10 @@ test.describe("Smoke Test - Basic Verification", () => {
 
   test("should login successfully via UI", async ({ page }) => {
     const loginPage = new LoginPage(page);
-    await loginPage.login("test@example.com", "password123");
+    await loginPage.login(
+      testData.validCredentials.emailId,
+      testData.validCredentials.password,
+    );
     await expect(page).toHaveURL(/.*\/dashboard/, { timeout: 10000 });
   });
 
@@ -51,8 +55,8 @@ test.describe("Smoke Test - Basic Verification", () => {
     // Login via API
     const response = await request.post("/api/auth/login", {
       data: {
-        email: "test@example.com",
-        password: "password123",
+        email: testData.validCredentials.emailId,
+        password: testData.validCredentials.password,
       },
     });
     expect(response.status()).toBe(200);

@@ -58,10 +58,10 @@ describe("Dialog Testing - Alerts, Confirms, Prompts", () => {
       });
 
       cy.getByTestId("alert-btn").click();
-
-      // Verify result in UI
-      // Note: DOM updates after native dialogs can be flaky in headless mode
-      // cy.getByTestId('native-dialog-result').should('contain', 'Alert was shown');
+      cy.getByTestId("native-dialog-result").should(
+        "contain",
+        "Alert was shown",
+      );
     });
 
     /**
@@ -110,8 +110,10 @@ describe("Dialog Testing - Alerts, Confirms, Prompts", () => {
     it("should accept confirm dialog by default", () => {
       // Cypress automatically accepts confirms
       cy.getByTestId("confirm-btn").click();
-
-      // cy.getByTestId('native-dialog-result').should('contain', 'User clicked OK');
+      cy.getByTestId("native-dialog-result").should(
+        "contain",
+        "User clicked OK",
+      );
     });
 
     /**
@@ -122,8 +124,10 @@ describe("Dialog Testing - Alerts, Confirms, Prompts", () => {
       cy.on("window:confirm", () => false);
 
       cy.getByTestId("confirm-btn").click();
-
-      // cy.getByTestId('native-dialog-result').should('contain', 'User clicked Cancel');
+      cy.getByTestId("native-dialog-result").should(
+        "contain",
+        "User clicked Cancel",
+      );
     });
 
     /**
@@ -136,8 +140,10 @@ describe("Dialog Testing - Alerts, Confirms, Prompts", () => {
       });
 
       cy.getByTestId("confirm-btn").click();
-
-      // cy.getByTestId('native-dialog-result').should('contain', 'User clicked OK');
+      cy.getByTestId("native-dialog-result").should(
+        "contain",
+        "User clicked OK",
+      );
     });
 
     /**
@@ -148,8 +154,11 @@ describe("Dialog Testing - Alerts, Confirms, Prompts", () => {
         expect(message).to.equal("Do you want to proceed?");
         return true;
       });
-
       cy.getByTestId("confirm-btn").click();
+      cy.getByTestId("native-dialog-result").should(
+        "contain",
+        "User clicked OK",
+      );
     });
 
     /**
@@ -358,10 +367,13 @@ describe("Dialog Testing - Alerts, Confirms, Prompts", () => {
      * Handle uncaught exceptions
      */
     it("should handle triggered errors gracefully", () => {
-      // Our e2e.ts already handles uncaught exceptions
+      cy.on("uncaught:exception", (err) => {
+        if (err.message.includes("Test error")) {
+          return false;
+        }
+        return true;
+      });
       cy.getByTestId("error-btn").click();
-
-      // Test continues despite the error
       cy.getByTestId("event-result").should("contain", "Error triggered");
     });
 

@@ -34,137 +34,106 @@
  */
 
 describe("API Testing - Network Capabilities", () => {
+  const validLogin = () =>
+    cy.fixture("users.json").then((data) => ({
+      email: data.valid_credentials.emailId as string,
+      password: data.valid_credentials.password as string,
+    }));
   // ==========================================================================
   // cy.intercept() - Response Stubbing
   // ==========================================================================
 
   describe("cy.intercept() - Response Stubbing", () => {
-    /**
-     * Basic intercept - stub with inline response
-     */
-    it("should load and display products from API", () => {
-      cy.visit("/");
-
-      // Verify real products load from API
-      cy.get('[data-testid="product-card"]', { timeout: 5000 }).should(
-        "have.length.gt",
-        0,
+    it("cy.intercept() stubs GET /api/products from a fixture", () => {
+      cy.intercept("GET", "/api/products", { fixture: "products.json" }).as(
+        "products",
       );
-
-      // Verify product card structure
-      cy.get('[data-testid="product-card"]')
-        .first()
-        .within(() => {
-          cy.get("h3").should("exist");
-          cy.get(".price").should("exist");
-        });
-    });
-
-    /**
-     * Intercept with fixture file
-     */
-    it("should display multiple products", () => {
       cy.visit("/");
-
-      // Verify multiple products are displayed
-      cy.get('[data-testid="product-card"]', { timeout: 5000 }).should(
-        "have.length.gt",
-        1,
+      cy.wait("@products").its("response.statusCode").should("eq", 200);
+      cy.get("[data-testid=product-card]").should("have.length", 5);
+      cy.contains("[data-testid=product-card]", "Premium Laptop").should(
+        "be.visible",
       );
     });
 
-    /**
-     * Intercept with URL pattern matching
-     */
-    it("should match URL patterns for products endpoint", () => {
+    it("cy.intercept() stubs GET /api/products and the AUT renders the stub", () => {
+      cy.intercept("GET", "/api/products", {
+        body: {
+          products: [{ id: 99, name: "Stub Widget", price: 1, inStock: true }],
+          total: 1,
+        },
+      }).as("products");
       cy.visit("/");
-      // Just verify page loads - pattern test is architectural, not functional
-      cy.get("body").should("be.visible");
-    });
-
-    /**
-     * Intercept and modify response
-     */
-    it("should display product details correctly", () => {
-      cy.visit("/");
-
-      // Verify first product shows correct data pattern
-      cy.get('[data-testid="product-card"]')
-        .first()
-        .within(() => {
-          cy.get("h3").should("not.be.empty");
-          cy.get(".price").should("contain", "$");
-        });
-    });
-
-    /**
-     * Intercept and delay response
-     */
-    it("should load products quickly", () => {
-      const start = Date.now();
-      cy.visit("/");
-
-      cy.get('[data-testid="product-card"]', { timeout: 3000 })
-        .should("exist")
-        .then(() => {
-          const duration = Date.now() - start;
-          expect(duration).to.be.lessThan(2000); // Should load in under 2s
-        });
-    });
-
-    /**
-     * Intercept and return error
-     */
-    it("should handle empty result set from API", () => {
-      cy.visit("/?minPrice=1000000");
-
-      // Grid should exist but be empty or show "no products" message
-      cy.get('[data-testid="products-grid"]', { timeout: 5000 }).should(
-        "exist",
+      cy.wait("@products");
+      cy.contains("[data-testid=product-card]", "Stub Widget").should(
+        "be.visible",
       );
-      cy.get('[data-testid="product-card"]').should("have.length", 0);
+      cy.get("[data-testid=product-card]").should("have.length", 1);
     });
 
-    /**
-     * Assert on request body
-     */
-    it("should successfully login via UI", () => {
-      const credentials = {
-        email: "test@example.com",
-        password: "password123",
-      };
-
-      cy.visit("/login");
-      cy.get('[data-testid="email-input"]').type(credentials.email);
-      cy.get('[data-testid="password-input"]').type(credentials.password);
-      cy.get('[data-testid="submit-btn"]').click();
-
-      // Verify redirect to dashboard or success state
-      cy.url().should("include", "/dashboard");
-      cy.contains("Welcome").should("exist");
+    it("cy.intercept() matches a URL pattern", () => {
+      cy.intercept("GET", "**/api/products*").as("products");
+      cy.visit("/");
+      cy.wait("@products").its("request.method").should("eq", "GET");
     });
 
-    /**
-     * Assert on request headers
-     */
-    it("should access protected data with token", () => {
-      // Login via API to get token
-      cy.request("POST", "/api/auth/login", {
-        email: "test@example.com",
-        password: "password123",
-      }).then((response) => {
-        const token = response.body.token;
+    it("cy.intercept() returns an empty list", () => {
+      cy.intercept("GET", "/api/products", {
+        body: { products: [], total: 0 },
+      }).as("empty");
+      cy.visit("/");
+      cy.wait("@empty");
+      cy.get("[data-testid=products-grid]").should("exist");
+      cy.get("[data-testid=product-card]").should("have.length", 0);
+    });
 
-        // Use token to access protected api
-        cy.request({
-          method: "GET",
-          url: "/api/orders", // Orders is protected
-          headers: { Authorization: `Bearer ${token}` },
-        }).then((res) => {
-          expect(res.status).to.eq(200);
-          expect(res.body).to.have.property("orders");
+    it("cy.intercept() delays the response", () => {
+      cy.intercept("GET", "/api/products", (req) => {
+        req.reply({
+          delay: 400,
+          body: {
+            products: [{ id: 1, name: "Slow Widget", price: 2, inStock: true }],
+            total: 1,
+          },
         });
+      }).as("slow");
+      cy.visit("/");
+      cy.wait("@slow")
+        .its("response.body.products.0.name")
+        .should("eq", "Slow Widget");
+    });
+
+    it("cy.intercept() stubs an error body the AUT surfaces", () => {
+      cy.intercept("GET", "/api/products", {
+        statusCode: 500,
+        body: { error: "boom" },
+      }).as("fail");
+      cy.visit("/");
+      cy.wait("@fail");
+      cy.get("[data-testid=products-grid]").should(
+        "contain",
+        "Failed to load products",
+      );
+    });
+
+    it("cy.intercept() asserts the outgoing login request body", () => {
+      validLogin().then((creds) => {
+        cy.intercept("POST", "/api/auth/login").as("login");
+        cy.visit("/login");
+        cy.get('[data-testid="email-input"]').type(creds.email);
+        cy.get('[data-testid="password-input"]').type(creds.password);
+        cy.get('[data-testid="submit-btn"]').click();
+        cy.wait("@login").its("request.body").should("deep.include", {
+          email: creds.email,
+          password: creds.password,
+        });
+        cy.url().should("include", "/dashboard");
       });
+    });
+
+    it("cy.interceptAndWait visits home and waits for products", () => {
+      cy.interceptAndWait("GET", "/api/products", "getProducts", "/");
+      cy.get("[data-testid=product-card]").should("have.length.gt", 0);
     });
   });
 
@@ -195,20 +164,19 @@ describe("API Testing - Network Capabilities", () => {
      * POST request with body
      */
     it("should make POST request with JSON body", () => {
-      cy.request({
-        method: "POST",
-        url: "/api/auth/login",
-        body: {
-          email: "test@example.com",
-          password: "password123",
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }).then((response) => {
-        expect(response.status).to.eq(200);
-        expect(response.body).to.have.property("token");
-        expect(response.body).to.have.property("user");
+      validLogin().then((creds) => {
+        cy.request({
+          method: "POST",
+          url: "/api/auth/login",
+          body: creds,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }).then((response) => {
+          expect(response.status).to.eq(200);
+          expect(response.body).to.have.property("token");
+          expect(response.body).to.have.property("user");
+        });
       });
     });
 
@@ -234,19 +202,16 @@ describe("API Testing - Network Capabilities", () => {
      * Chain API requests
      */
     it("should chain multiple API requests", () => {
-      // First: Login to get token
-      cy.request({
-        method: "POST",
-        url: "/api/auth/login",
-        body: {
-          email: "test@example.com",
-          password: "password123",
-        },
-      })
+      validLogin()
+        .then((creds) => {
+          return cy.request({
+            method: "POST",
+            url: "/api/auth/login",
+            body: creds,
+          });
+        })
         .then((loginResponse) => {
           const token = loginResponse.body.token;
-
-          // Second: Create order with token
           return cy.request({
             method: "POST",
             url: "/api/orders",
@@ -259,7 +224,6 @@ describe("API Testing - Network Capabilities", () => {
           });
         })
         .then((orderResponse) => {
-          // Verify order creation (201 created or 200 ok)
           expect(orderResponse.status).to.be.oneOf([200, 201]);
           expect(orderResponse.body).to.have.property("order");
         });
@@ -287,34 +251,77 @@ describe("API Testing - Network Capabilities", () => {
      * Use cy.request() for test setup
      */
     it("should use API for test setup (bypass UI)", () => {
-      // Create authenticated session via API (faster than UI login)
-      cy.request({
-        method: "POST",
-        url: "/api/auth/login",
-        body: {
-          email: "test@example.com",
-          password: "password123",
-        },
-      }).then((response) => {
-        // Store token for subsequent requests
-        cy.window().then((win) => {
-          win.localStorage.setItem("authToken", response.body.token);
-          win.localStorage.setItem("user", JSON.stringify(response.body.user));
+      validLogin().then((creds) => {
+        cy.request({
+          method: "POST",
+          url: "/api/auth/login",
+          body: creds,
+        }).then((response) => {
+          cy.visit("/dashboard", {
+            onBeforeLoad(win) {
+              win.localStorage.setItem("authToken", response.body.token);
+              win.localStorage.setItem(
+                "user",
+                JSON.stringify(response.body.user),
+              );
+            },
+          });
+          cy.getByTestId("user-email").should("contain", creds.email);
         });
       });
+    });
 
-      // Now visit protected page directly
-      cy.visit("/dashboard");
-      // Check for auth warning element if it exists, but don't fail if UI differs
-      cy.get("body").should("be.visible");
+    /**
+     * Why Cypress #Other — canonical cy.request POST:
+     * https://docs.cypress.io/app/get-started/why-cypress#Other
+     */
+    it("adds a todo via cy.request POST (Why Cypress #Other)", () => {
+      cy.request("POST", "/api/todos", { title: "Write API Tests" })
+        .its("body")
+        .should("contain", { title: "Write API Tests" });
+    });
+
+    it("returns 400 when the todo title is missing", () => {
+      cy.request({
+        method: "POST",
+        url: "/api/todos",
+        body: {},
+        failOnStatusCode: false,
+      })
+        .its("status")
+        .should("eq", 400);
+    });
+
+    it("cy.request reads live /api/error status codes", () => {
+      [400, 401, 404, 500].forEach((code) => {
+        cy.request({
+          method: "GET",
+          url: `/api/error/${code}`,
+          failOnStatusCode: false,
+        })
+          .its("status")
+          .should("eq", code);
+      });
+    });
+
+    it("cy.api() (cypress-plugin-api) posts a todo", () => {
+      cy.api({
+        method: "POST",
+        url: "/api/todos",
+        body: { title: "Plugin API Tests" },
+      }).then((response) => {
+        expect(response.status).to.eq(201);
+        expect(response.body).to.contain({ title: "Plugin API Tests" });
+      });
     });
   });
 
   // ==========================================================================
-  // cy.wait() - Network Request Waiting
+  // cy.wait() - aliased network requests (see intercept suite above)
+  // Direct cy.request checks live here; do not confuse with cy.wait(ms).
   // ==========================================================================
 
-  describe("cy.wait() - Network Request Waiting", () => {
+  describe("Live endpoint health (cy.request)", () => {
     /**
      * Wait for aliased request
      */

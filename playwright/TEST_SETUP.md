@@ -39,7 +39,7 @@ webServer: {
 npx playwright test
 
 # Run specific test file
-npx playwright test e2e/auth/login.spec.ts
+npx playwright test e2e/login.spec.ts
 
 # Run with UI mode
 npx playwright test --ui
@@ -78,10 +78,10 @@ Run the migrated tests:
 
 ```bash
 # Test login functionality (6 tests)
-npx playwright test e2e/auth/login.spec.ts
+npx playwright test e2e/login.spec.ts
 
 # Test form interactions (30+ tests)
-npx playwright test e2e/forms/form-interactions.spec.ts
+npx playwright test e2e/forms.spec.ts
 
 # Run all migrated tests
 npx playwright test e2e/
@@ -132,7 +132,7 @@ npx playwright test
 
 ## 📊 Expected Test Results
 
-### Login Tests (`e2e/auth/login.spec.ts`)
+### Login Tests (`e2e/login.spec.ts`)
 
 ✅ 6 tests should pass:
 
@@ -143,7 +143,7 @@ npx playwright test
 - login with wrong email format
 - should show password error for short password
 
-### Form Tests (`e2e/forms/form-interactions.spec.ts`)
+### Form Tests (`e2e/forms.spec.ts`)
 
 ✅ 33 tests should pass covering:
 

@@ -6,6 +6,11 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Dialog Testing - Alerts, Confirms, Prompts", () => {
   test.beforeEach(async ({ page }) => {
+    page.on("pageerror", (err) => {
+      if (!err.message.includes("Test error")) {
+        throw err;
+      }
+    });
     await page.goto("/dialogs");
   });
 
@@ -15,27 +20,51 @@ test.describe("Dialog Testing - Alerts, Confirms, Prompts", () => {
 
   test.describe("Alert Dialogs", () => {
     test("should capture alert message", async ({ page }) => {
-      // Setup listener
-      page.once("dialog", (dialog) => {
-        expect(dialog.message()).toEqual("This is an alert message!");
-        dialog.dismiss().catch(() => {});
+      let message = "";
+      page.once("dialog", async (dialog) => {
+        message = dialog.message();
+        await dialog.dismiss();
       });
-
       await page.getByTestId("alert-btn").click();
+      expect(message).toEqual("This is an alert message!");
+      await expect(page.getByTestId("native-dialog-result")).toContainText(
+        "Alert was shown",
+      );
+    });
+
+    test("should stub alert to prevent popup", async ({ page }) => {
+      await page.evaluate(() => {
+        (window as unknown as { __alerts: string[] }).__alerts = [];
+        window.alert = ((msg?: string) => {
+          (window as unknown as { __alerts: string[] }).__alerts.push(
+            String(msg ?? ""),
+          );
+        }) as typeof window.alert;
+      });
+      await page.getByTestId("alert-btn").click();
+      expect(
+        await page.evaluate(
+          () => (window as unknown as { __alerts: string[] }).__alerts,
+        ),
+      ).toEqual(["This is an alert message!"]);
+      await expect(page.getByTestId("native-dialog-result")).toContainText(
+        "Alert was shown",
+      );
     });
 
     test("should count multiple alert calls", async ({ page }) => {
       let alertCount = 0;
-      page.on("dialog", (dialog) => {
+      page.on("dialog", async (dialog) => {
         alertCount++;
-        dialog.accept().catch(() => {});
+        await dialog.accept();
       });
-
       await page.getByTestId("alert-btn").click();
       await page.getByTestId("alert-btn").click();
       await page.getByTestId("alert-btn").click();
-
-      expect(alertCount).toBe(3);
+      await expect.poll(() => alertCount).toBe(3);
+      await expect(page.getByTestId("native-dialog-result")).toContainText(
+        "Alert was shown",
+      );
     });
   });
 
@@ -47,19 +76,46 @@ test.describe("Dialog Testing - Alerts, Confirms, Prompts", () => {
     test("should accept confirm dialog by default", async ({ page }) => {
       page.once("dialog", (dialog) => dialog.accept());
       await page.getByTestId("confirm-btn").click();
+      await expect(page.getByTestId("native-dialog-result")).toContainText(
+        "User clicked OK",
+      );
     });
 
     test("should reject confirm dialog", async ({ page }) => {
       page.once("dialog", (dialog) => dialog.dismiss());
       await page.getByTestId("confirm-btn").click();
+      await expect(page.getByTestId("native-dialog-result")).toContainText(
+        "User clicked Cancel",
+      );
+    });
+
+    test("should conditionally respond to confirm based on message", async ({
+      page,
+    }) => {
+      page.once("dialog", async (dialog) => {
+        if (dialog.message().includes("proceed")) {
+          await dialog.accept();
+        } else {
+          await dialog.dismiss();
+        }
+      });
+      await page.getByTestId("confirm-btn").click();
+      await expect(page.getByTestId("native-dialog-result")).toContainText(
+        "User clicked OK",
+      );
     });
 
     test("should capture confirm message", async ({ page }) => {
-      page.once("dialog", (dialog) => {
-        expect(dialog.message()).toEqual("Do you want to proceed?");
-        dialog.accept();
+      let message = "";
+      page.once("dialog", async (dialog) => {
+        message = dialog.message();
+        await dialog.accept();
       });
       await page.getByTestId("confirm-btn").click();
+      expect(message).toEqual("Do you want to proceed?");
+      await expect(page.getByTestId("native-dialog-result")).toContainText(
+        "User clicked OK",
+      );
     });
   });
 
@@ -85,12 +141,19 @@ test.describe("Dialog Testing - Alerts, Confirms, Prompts", () => {
     });
 
     test("should verify prompt default value", async ({ page }) => {
-      page.once("dialog", (dialog) => {
-        expect(dialog.message()).toBe("Please enter your name:");
-        expect(dialog.defaultValue()).toBe("Guest");
-        dialog.accept("Entered Name");
+      let message = "";
+      let defaultValue = "";
+      page.once("dialog", async (dialog) => {
+        message = dialog.message();
+        defaultValue = dialog.defaultValue();
+        await dialog.accept("Entered Name");
       });
       await page.getByTestId("prompt-btn").click();
+      expect(message).toBe("Please enter your name:");
+      expect(defaultValue).toBe("Guest");
+      await expect(page.getByTestId("native-dialog-result")).toContainText(
+        'User entered: "Entered Name"',
+      );
     });
   });
 
@@ -153,6 +216,50 @@ test.describe("Dialog Testing - Alerts, Confirms, Prompts", () => {
       await expect(result).toContainText("John Doe");
       await expect(result).toContainText("test message");
     });
+
+    test("should close modal by clicking overlay", async ({ page }) => {
+      await page.getByTestId("info-modal-btn").click();
+      await expect(page.getByTestId("info-modal")).toHaveClass(/show/);
+      await page.getByTestId("info-modal").click({ position: { x: 2, y: 2 } });
+      await expect(page.getByTestId("info-modal")).not.toHaveClass(/show/);
+    });
+  });
+
+  // ==========================================================================
+  // Window Events (uncaught error, console spy, beforeunload)
+  // ==========================================================================
+
+  test.describe("Window Events", () => {
+    test("should handle beforeunload event", async ({ page }) => {
+      await page.getByTestId("beforeunload-btn").click();
+      await expect(page.getByTestId("event-result")).toContainText("ENABLED");
+    });
+
+    test("should handle triggered errors gracefully", async ({ page }) => {
+      const errorPromise = page.waitForEvent("pageerror");
+      await page.getByTestId("error-btn").click();
+      const err = await errorPromise;
+      expect(err.message).toContain("Test error");
+      await expect(page.getByTestId("event-result")).toContainText(
+        "Error triggered",
+      );
+    });
+
+    test("should spy on console methods", async ({ page }) => {
+      const logs: string[] = [];
+      const warns: string[] = [];
+      page.on("console", (msg) => {
+        if (msg.type() === "log") {
+          logs.push(msg.text());
+        }
+        if (msg.type() === "warning") {
+          warns.push(msg.text());
+        }
+      });
+      await page.getByTestId("console-btn").click();
+      await expect.poll(() => logs).toContain("Console log test message");
+      await expect.poll(() => warns).toContain("Console warn test message");
+    });
   });
 
   // ==========================================================================
@@ -160,18 +267,40 @@ test.describe("Dialog Testing - Alerts, Confirms, Prompts", () => {
   // ==========================================================================
 
   test.describe("Popup Windows", () => {
-    test("should handle new popup window", async ({ page }) => {
-      // Start waiting for new page before clicking. Note no await.
-      const popupPromise = page.waitForEvent("popup");
+    test("should stub window.open to prevent popup", async ({ page }) => {
+      await page.evaluate(() => {
+        (window as unknown as { __openCalls: unknown[][] }).__openCalls = [];
+        window.open = ((...args: unknown[]) => {
+          (window as unknown as { __openCalls: unknown[][] }).__openCalls.push(
+            args,
+          );
+          return null;
+        }) as typeof window.open;
+      });
       await page.getByTestId("popup-btn").click();
-      const popup = await popupPromise;
+      const calls = await page.evaluate(
+        () => (window as unknown as { __openCalls: unknown[][] }).__openCalls,
+      );
+      expect(calls).toHaveLength(1);
+    });
 
-      // Wait for popup to load.
-      await popup.waitForLoadState();
-
-      // Verify popup url or content
-      // The app opens '/' so we just check it loaded
-      expect(popup.url()).not.toBe("about:blank");
+    test("should verify popup window parameters", async ({ page }) => {
+      await page.evaluate(() => {
+        (window as unknown as { __openCalls: unknown[][] }).__openCalls = [];
+        window.open = ((...args: unknown[]) => {
+          (window as unknown as { __openCalls: unknown[][] }).__openCalls.push(
+            args,
+          );
+          return null;
+        }) as typeof window.open;
+      });
+      await page.getByTestId("popup-btn").click();
+      const calls = await page.evaluate(
+        () => (window as unknown as { __openCalls: unknown[][] }).__openCalls,
+      );
+      expect(calls[0][0]).toBe("/");
+      expect(calls[0][1]).toBe("popup");
+      expect(typeof calls[0][2]).toBe("string");
     });
   });
 });

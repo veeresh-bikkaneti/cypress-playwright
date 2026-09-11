@@ -27,7 +27,7 @@
     "format": "prettier --write \"**/*.{ts,js,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,js,json,md}\"",
     "type-check": "tsc --noEmit",
-    "validate": "npm run type-check && npm run lint && npm run format:check",
+    "validate": "npm run type-check && npm run lint && npm run format:check && node plugin/scripts/assert-migration-parity.js",
     "test:pw": "playwright test",
     "test:pw:ui": "playwright test --ui",
     "test:pw:debug": "playwright test --debug",

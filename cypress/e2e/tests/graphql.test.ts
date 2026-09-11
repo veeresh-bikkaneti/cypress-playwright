@@ -166,18 +166,21 @@ describe("GraphQL API Testing", () => {
 
   describe("Authenticated GraphQL Queries", () => {
     let authToken: string;
+    let userEmail: string;
 
     beforeEach(() => {
-      // Login first to get auth token
-      cy.request({
-        method: "POST",
-        url: "/api/auth/login",
-        body: {
-          email: "test@example.com",
-          password: "password123",
-        },
-      }).then((response) => {
-        authToken = response.body.token;
+      cy.fixture("users.json").then((users) => {
+        userEmail = users.valid_credentials.emailId;
+        cy.request({
+          method: "POST",
+          url: "/api/auth/login",
+          body: {
+            email: users.valid_credentials.emailId,
+            password: users.valid_credentials.password,
+          },
+        }).then((response) => {
+          authToken = response.body.token;
+        });
       });
     });
 
@@ -206,7 +209,7 @@ describe("GraphQL API Testing", () => {
       }).then((response) => {
         expect(response.status).to.eq(200);
         expect(response.body.data.user).to.exist;
-        expect(response.body.data.user.email).to.eq("test@example.com");
+        expect(response.body.data.user.email).to.eq(userEmail);
       });
     });
 
@@ -235,11 +238,8 @@ describe("GraphQL API Testing", () => {
         expect(response.body.errors.length).to.be.greaterThan(0);
         // Check for UNAUTHENTICATED code in extensions if present, otherwise check message
         const error = response.body.errors[0];
-        if (error.extensions && error.extensions.code) {
-          expect(error.extensions.code).to.eq("UNAUTHENTICATED");
-        } else {
-          expect(error.message).to.include("Authentication");
-        }
+        expect(error.extensions.code).to.eq("UNAUTHENTICATED");
+        expect(error.message).to.include("Authentication");
       });
     });
   });
@@ -252,15 +252,17 @@ describe("GraphQL API Testing", () => {
     let authToken: string;
 
     beforeEach(() => {
-      cy.request({
-        method: "POST",
-        url: "/api/auth/login",
-        body: {
-          email: "test@example.com",
-          password: "password123",
-        },
-      }).then((response) => {
-        authToken = response.body.token;
+      cy.fixture("users.json").then((users) => {
+        cy.request({
+          method: "POST",
+          url: "/api/auth/login",
+          body: {
+            email: users.valid_credentials.emailId,
+            password: users.valid_credentials.password,
+          },
+        }).then((response) => {
+          authToken = response.body.token;
+        });
       });
     });
 
@@ -416,17 +418,7 @@ describe("GraphQL API Testing", () => {
 
       cy.wait("@graphql").then((interception) => {
         expect(interception.request.body.query).to.include("products");
-        // Response may be null if server hasn't processed properly, so check defensively
-        if (
-          interception.response &&
-          interception.response.body &&
-          interception.response.body.data
-        ) {
-          expect(interception.response.body.data.products).to.be.an("array");
-        } else {
-          // If data is null/undefined, at least verify the request was intercepted
-          expect(interception.request.method).to.eq("POST");
-        }
+        expect(interception.response.body.data.products).to.be.an("array");
       });
     });
   });

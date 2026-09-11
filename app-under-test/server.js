@@ -60,6 +60,18 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware configuration
+app.disable("x-powered-by");
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  // SAMEORIGIN on the iframe document so /dom can embed it; DENY elsewhere.
+  if (req.path === "/iframe-inner.html") {
+    res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  } else {
+    res.setHeader("X-Frame-Options", "DENY");
+  }
+  res.setHeader("Referrer-Policy", "no-referrer");
+  next();
+});
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -521,6 +533,13 @@ app.post("/api/upload", upload.single("file"), (req, res) => {
 app.get("/api/download/:filename", (req, res) => {
   // Sanitize filename to prevent path traversal
   const filename = path.basename(req.params.filename);
+
+  if (filename === "sample.txt") {
+    res.setHeader("Content-Disposition", "attachment; filename=\"sample.txt\"");
+    res.type("text/plain").send("Sample file for Cypress download tests\n");
+    return;
+  }
+
   const filepath = path.join(__dirname, "uploads", filename);
 
   if (!fs.existsSync(filepath)) {
@@ -575,6 +594,19 @@ app.get("/api/time", (req, res) => {
     iso: new Date().toISOString(),
     formatted: new Date().toLocaleString(),
   });
+});
+
+/**
+ * POST /api/todos
+ * Why Cypress #Other example: API testing via cy.request()
+ * https://docs.cypress.io/app/get-started/why-cypress#Other
+ */
+app.post("/api/todos", (req, res) => {
+  const title = req.body && req.body.title;
+  if (!title) {
+    return res.status(400).json({ error: "title required" });
+  }
+  res.status(201).json({ id: Date.now(), title });
 });
 
 /**
@@ -915,6 +947,14 @@ app.get("/upload", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "upload.html"));
 });
 
+app.get("/actions", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "actions.html"));
+});
+
+app.get("/dom", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "dom.html"));
+});
+
 // ============================================================================
 // ERROR HANDLING
 // ============================================================================
@@ -957,6 +997,8 @@ app.listen(PORT, () => {
 ║   - GET  /forms               Form testing page                ║
 ║   - GET  /dialogs             Dialog testing page              ║
 ║   - GET  /upload              File upload page                 ║
+║   - GET  /actions             Click / drag / keyboard          ║
+║   - GET  /dom                 Traversal, shadow, iframe        ║
 ║                                                                 ║
 ║   API Endpoints:                                                ║
 ║   - POST /api/auth/login      Authenticate user                ║

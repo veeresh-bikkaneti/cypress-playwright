@@ -203,6 +203,7 @@
                     <label for="fullname">Full Name</label>
                     <input type="text" id="fullname" name="fullname" placeholder="Enter your full name"
                         data-testid="fullname-input">
+                    <p>Reflected (textContent): <span id="xss-echo" data-testid="xss-echo"></span></p>
                 </div>
                 <div class="form-group">
                     <label for="username">Username</label>
@@ -429,13 +430,22 @@
 
             for (const [key, value] of formData.entries()) {
                 const row = document.createElement('tr');
-                row.innerHTML = `<td>${key}</td><td>${value}</td>`;
+                const k = document.createElement('td');
+                const v = document.createElement('td');
+                k.textContent = key;
+                v.textContent = String(value);
+                row.appendChild(k);
+                row.appendChild(v);
                 tbody.appendChild(row);
             }
 
             output.classList.add('show');
             output.scrollIntoView({ behavior: 'smooth' });
         }
+
+        document.getElementById('fullname').addEventListener('input', (e) => {
+            document.getElementById('xss-echo').textContent = e.target.value;
+        });
 
         // Handle all form submissions
         document.querySelectorAll('form').forEach(form => {

@@ -227,10 +227,10 @@
             <h2>Dashboard</h2>
         </div>
         <nav class="sidebar-nav" data-testid="sidebar-nav">
-            <a href="#overview" class="active" data-testid="nav-overview">📊 Overview</a>
-            <a href="#orders" data-testid="nav-orders">📦 Orders</a>
-            <a href="#products" data-testid="nav-products">🛍️ Products</a>
-            <a href="#settings" data-testid="nav-settings">⚙️ Settings</a>
+            <a href="#overview" class="active" data-testid="nav-overview" data-dash-panel-link="overview">📊 Overview</a>
+            <a href="#orders" data-testid="nav-orders" data-dash-panel-link="orders">📦 Orders</a>
+            <a href="#products" data-testid="nav-products" data-dash-panel-link="products">🛍️ Products</a>
+            <a href="#settings" data-testid="nav-settings" data-dash-panel-link="settings">⚙️ Settings</a>
             <a href="#" id="logout-link" data-testid="logout-link">🚪 Logout</a>
         </nav>
     </aside>
@@ -256,7 +256,7 @@
         </header>
 
         <!-- Stats Grid -->
-        <div class="stats-grid" data-testid="stats-grid">
+        <div class="stats-grid" data-testid="stats-grid" data-dash-panel="overview" id="overview">
             <div class="stat-card blue">
                 <h3>Total Orders</h3>
                 <div class="value" id="total-orders">--</div>
@@ -276,7 +276,7 @@
         </div>
 
         <!-- Recent Orders -->
-        <div class="card" data-testid="orders-section">
+        <div class="card hidden" data-testid="orders-section" data-dash-panel="orders" id="orders">
             <h2>Recent Orders</h2>
             <table data-testid="orders-table">
                 <thead>
@@ -302,7 +302,17 @@
             </div>
         </div>
 
-        <!-- Cookie/Storage Test Section -->
+        <div class="card hidden" data-testid="products-section" data-dash-panel="products" id="products">
+            <h2>Products</h2>
+            <p data-testid="products-panel-copy">Catalog lives on the home page. Create an order from Overview.</p>
+        </div>
+
+        <div class="card hidden" data-testid="settings-section" data-dash-panel="settings" id="settings">
+            <h2>Settings</h2>
+            <p data-testid="settings-panel-copy">Session cookies are httpOnly. Use the storage widget below for localStorage.</p>
+        </div>
+
+        <!-- Cookie/Storage Test Section (always visible — storage specs click these) -->
         <div class="card" data-testid="storage-section">
             <h2>Storage Testing</h2>
             <p style="margin-bottom: 15px;">Test cookie and localStorage operations:</p>
@@ -355,9 +365,9 @@
 
             if (token && user) {
                 authWarning.classList.add('hidden');
-                document.querySelector('[]').textContent = user.name.charAt(0).toUpperCase();
-                document.querySelector('[]').textContent = user.name;
-                document.querySelector('[]').textContent = user.email;
+                document.querySelector('[data-testid="user-avatar"]').textContent = user.name.charAt(0).toUpperCase();
+                document.querySelector('[data-testid="user-name"]').textContent = user.name;
+                document.querySelector('[data-testid="user-email"]').textContent = user.email;
                 return true;
             }
 
@@ -488,6 +498,26 @@
             if (user) localStorage.setItem('user', user);
             storageResult.textContent = 'localStorage cleared (except auth)';
         });
+
+        // Panel switching — navigateToOrders must be able to fail
+        function showPanel(name) {
+            document.querySelectorAll("[data-dash-panel]").forEach((el) => {
+                el.classList.toggle("hidden", el.getAttribute("data-dash-panel") !== name);
+            });
+            document.querySelectorAll("[data-dash-panel-link]").forEach((a) => {
+                a.classList.toggle("active", a.getAttribute("data-dash-panel-link") === name);
+            });
+        }
+        document.querySelectorAll("[data-dash-panel-link]").forEach((a) => {
+            a.addEventListener("click", (e) => {
+                e.preventDefault();
+                const name = a.getAttribute("data-dash-panel-link");
+                showPanel(name);
+                history.replaceState(null, "", "#" + name);
+            });
+        });
+        const initialPanel = (location.hash || "#overview").slice(1);
+        showPanel(["overview", "orders", "products", "settings"].includes(initialPanel) ? initialPanel : "overview");
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {

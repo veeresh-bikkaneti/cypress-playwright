@@ -1,78 +1,35 @@
+/**
+ * Migrated from: cypress/e2e/tests/system.test.ts
+ *
+ * cy.exec / cy.task / write-then-read of a temp file are Cypress runner
+ * capabilities. They are not twinned with echo/Date.now tautologies.
+ * The AUT-observable twin of cy.fixture("products.json") is: stub the
+ * products API with that fixture and assert the home grid.
+ */
 import { test, expect } from "@playwright/test";
-import { exec } from "child_process";
 import fs from "fs";
-import util from "util";
 import path from "path";
 
-const execAsync = util.promisify(exec);
-
-// ============================================================================
-// SYSTEM & FILESYSTEM CAPABILITIES
-// ============================================================================
+const productsFixture = JSON.parse(
+  fs.readFileSync(
+    path.join(process.cwd(), "cypress/fixtures/products.json"),
+    "utf-8",
+  ),
+);
 
 test.describe("System and Filesystem Capabilities", () => {
-  const tempFileName = "playwright/fixtures/temp-system-test.json";
-
-  // ========================================================================
-  // SYSTEM COMMANDS
-  // ========================================================================
-
-  test.describe("System Commands (Node.exec)", () => {
-    test("should execute a system command", async () => {
-      const msg = "Hello from Playwright";
-      // Playwright runs in Node, so we use child_process directly!
-      const { stdout } = await execAsync(`echo ${msg}`);
-      expect(stdout).toContain(msg);
+  test("products.json fixture drives the AUT product grid", async ({
+    page,
+  }) => {
+    await page.route("**/api/products", async (route) => {
+      await route.fulfill({ json: productsFixture });
     });
-  });
-
-  // ========================================================================
-  // NODE TASKS (Native Mode)
-  // ========================================================================
-
-  test.describe("Node Tasks (Native)", () => {
-    test("should log message to console", async () => {
-      console.log(
-        "This message is printed to the terminal naturally in Playwright",
-      );
-    });
-
-    test("should get value from backend (Node)", async () => {
-      const ts = Date.now();
-      expect(typeof ts).toBe("number");
-      expect(ts).toBeLessThanOrEqual(Date.now());
-    });
-  });
-
-  // ========================================================================
-  // FILE SYSTEM OPERATIONS
-  // ========================================================================
-
-  test.describe("File System (fs module)", () => {
-    // Ensure directory exists
-    const dir = path.dirname(tempFileName);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-
-    test("should write to a file and read it back", async () => {
-      const data = {
-        test: "System Capability",
-        timestamp: Date.now(),
-      };
-
-      // Write file using native fs
-      fs.writeFileSync(tempFileName, JSON.stringify(data));
-
-      // Read file
-      const content = JSON.parse(fs.readFileSync(tempFileName, "utf-8"));
-      expect(content).toEqual(data);
-    });
-
-    test.afterAll(() => {
-      if (fs.existsSync(tempFileName)) {
-        fs.unlinkSync(tempFileName);
-      }
-    });
+    await page.goto("/");
+    await expect(page.getByTestId("product-card")).toHaveCount(
+      productsFixture.products.length,
+    );
+    await expect(
+      page.getByTestId("product-card").filter({ hasText: "Premium Laptop" }),
+    ).toBeVisible();
   });
 });

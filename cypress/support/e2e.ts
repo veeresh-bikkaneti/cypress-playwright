@@ -97,9 +97,8 @@ Cypress.on("uncaught:exception", (err, runnable) => {
     }
   }
 
-  // Return false to prevent the error from failing the test
-  // Change to 'return true' to fail tests on all uncaught exceptions
-  return false;
+  // Fail the test on unexpected AUT exceptions. Known browser noise only.
+  return true;
 });
 
 // ============================================================================
@@ -115,15 +114,8 @@ Cypress.on("window:alert", (text) => {
   // Returning nothing automatically accepts the alert
 });
 
-/**
- * Handle window:confirm events
- * Default behavior: accept (return true)
- */
-Cypress.on("window:confirm", (text) => {
-  cy.log(`**Confirm received:** ${text}`);
-  return true; // Accept the confirmation
-});
-
+// Confirm handling belongs in the spec (accept vs reject). A global
+// accept would make reject tests fake.
 // ============================================================================
 // VIEWPORT CONFIGURATION
 // ============================================================================

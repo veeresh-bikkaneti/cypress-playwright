@@ -235,6 +235,11 @@
         <header>
             <h1 data-testid="main-heading">Cypress Test Application</h1>
             <p>A self-contained application for testing Cypress.io capabilities</p>
+            <p class="lede" style="margin: 8px 0 0; font-size: 13px; color: #555;">
+                Viewport: <span data-testid="viewport-flag" id="viewport-flag">desktop</span>
+            </p>
+            <img id="logo" data-testid="app-logo" alt="Cypress Logo" width="40" height="40"
+                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect fill='%23667eea' width='40' height='40' rx='8'/%3E%3Ctext x='20' y='26' text-anchor='middle' fill='white' font-size='16' font-family='sans-serif'%3EC%3C/text%3E%3C/svg%3E" />
             <nav role="navigation" aria-label="Main navigation" data-testid="main-nav">
                 <a href="/" data-testid="nav-home">Home</a>
                 <a href="/login" data-testid="nav-login">Login</a>
@@ -242,6 +247,8 @@
                 <a href="/forms" data-testid="nav-forms">Forms</a>
                 <a href="/dialogs" data-testid="nav-dialogs">Dialogs</a>
                 <a href="/upload" data-testid="nav-upload">File Upload</a>
+                <a href="/actions" data-testid="nav-actions">Actions</a>
+                <a href="/dom" data-testid="nav-dom">DOM</a>
             </nav>
         </header>
 
@@ -254,6 +261,8 @@
                 <li>Form handling and validation</li>
                 <li>API interception and stubbing</li>
                 <li>File upload and download</li>
+                <li>Click, drag-and-drop, hover, and keyboard actions</li>
+                <li>DOM traversal, shadow DOM, and iframes</li>
                 <li>Dialog handling (alert, confirm, prompt)</li>
                 <li>Dynamic content loading</li>
                 <li>Cookie and storage management</li>
@@ -283,16 +292,26 @@
         <!-- Time Display Section (for cy.clock testing) -->
         <div class="card">
             <h2>Server Time</h2>
-            <p>Current time: <span id="current-time">--:--:--</span></p>
-            <button id="refresh-time-btn" class="btn btn-secondary">
+            <p>Current time: <span id="current-time" data-testid="current-time">--:--:--</span></p>
+            <p>Client clock: <span id="client-clock" data-testid="client-clock">--</span></p>
+            <button id="refresh-time-btn" class="btn btn-secondary" data-testid="refresh-time-btn">
                 Refresh Time
             </button>
+            <button id="delayed-banner-btn" class="btn btn-secondary" data-testid="delayed-banner-btn">
+                Show delayed banner
+            </button>
+            <div id="delayed-banner" data-testid="delayed-banner" hidden>Timeout Complete</div>
         </div>
 
         <!-- Scroll Target Section (for scroll testing) -->
         <div class="card" id="scroll-target" style="margin-top: 100vh;" data-testid="scroll-section">
             <h2>Scroll Target</h2>
             <p>This section is placed far down the page to test scrolling capabilities.</p>
+            <div data-testid="scroll-container" style="overflow-x: auto; width: 240px; border: 1px solid #ddd;">
+                <div data-testid="scroll-container-inner" style="width: 800px; height: 40px; background: linear-gradient(90deg, #667eea, #764ba2); color: #fff; line-height: 40px; padding: 0 12px;">
+                    Horizontal overflow
+                </div>
+            </div>
             <button id="scroll-to-top-btn" class="btn btn-secondary" data-testid="scroll-to-top-btn">
                 Scroll to Top
             </button>
@@ -340,24 +359,38 @@
             }, 3000);
         }
 
+        function escapeHtml(value) {
+            const amp = "\u0026";
+            return String(value)
+                .replace(/&/g, amp + "amp;")
+                .replace(/</g, amp + "lt;")
+                .replace(/>/g, amp + "gt;")
+                .replace(/"/g, amp + "quot;");
+        }
+
         /**
          * Load products from API
          * Demonstrates: cy.intercept(), API data loading
          */
         async function loadProducts() {
             try {
-                const response = await fetch('/api/products');
+                const query = window.location.search || "";
+                const response = await fetch("/api/products" + query);
+                if (!response.ok) {
+                    throw new Error("Failed to load products");
+                }
                 const data = await response.json();
+                const list = Array.isArray(data.products) ? data.products : [];
 
-                productsContainer.innerHTML = data.products.map(product => `
-                    <div class="product-card" data-testid="product-card" data-product-id="${product.id}">
-                        <h3>${product.name}</h3>
-                        <p class="price">$${product.price.toFixed(2)}</p>
+                productsContainer.innerHTML = list.map(product => `
+                    <div class="product-card" data-testid="product-card" data-product-id="${escapeHtml(product.id)}">
+                        <h3>${escapeHtml(product.name)}</h3>
+                        <p class="price">$${Number(product.price).toFixed(2)}</p>
                         <span class="stock ${product.inStock ? 'in-stock' : 'out-of-stock'}">
                             ${product.inStock ? 'In Stock' : 'Out of Stock'}
                         </span>
                         <button class="btn btn-primary add-to-cart" 
-                                data-product-id="${product.id}"
+                                data-product-id="${escapeHtml(product.id)}"
                                 ${!product.inStock ? 'disabled' : ''}>
                             Add to Cart
                         </button>
@@ -433,6 +466,19 @@
 
         refreshTimeBtn.addEventListener('click', refreshTime);
 
+        function paintClientClock() {
+            const el = document.getElementById('client-clock');
+            if (el) el.textContent = new Date().toISOString();
+        }
+        paintClientClock();
+        setInterval(paintClientClock, 1000);
+
+        document.getElementById('delayed-banner-btn').addEventListener('click', () => {
+            setTimeout(() => {
+                document.getElementById('delayed-banner').hidden = false;
+            }, 5000);
+        });
+
         /**
          * Scroll to top button
          * Demonstrates: cy.scrollTo()
@@ -445,10 +491,23 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadProducts();
             refreshTime();
+            updateViewportFlag();
 
             // Update time every second (for clock testing)
             setInterval(refreshTime, 60000);
         });
+
+        function updateViewportFlag() {
+            const el = document.getElementById('viewport-flag');
+            if (!el) return;
+            el.textContent =
+                window.innerWidth <= 767
+                    ? "mobile"
+                    : window.innerWidth <= 1024
+                      ? "tablet"
+                      : "desktop";
+        }
+        window.addEventListener('resize', updateViewportFlag);
     </script>
 </body>
 

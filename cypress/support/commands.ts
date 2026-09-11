@@ -69,12 +69,13 @@ declare global {
        * @param method - HTTP method
        * @param url - URL pattern to match
        * @param alias - Alias name for the intercept
-       * @example cy.interceptAndWait('GET', '/api/products', 'getProducts')
+       * @example cy.interceptAndWait('GET', '/api/products', 'getProducts', '/')
        */
       interceptAndWait(
         method: string,
         url: string,
         alias: string,
+        visitPath: string,
       ): Chainable<void>;
 
       /**
@@ -107,6 +108,21 @@ declare global {
        * @example cy.setAuthCookie('token123')
        */
       setAuthCookie(token: string): Chainable<void>;
+
+      /**
+       * Cypress 12 addQuery demo: find a .fruit by visible text.
+       * @example cy.fruit('Bananas')
+       */
+      fruit(name: string): Chainable<JQuery<HTMLElement>>;
+
+      /**
+       * cypress-plugin-api — Why Cypress #Other plugin demo.
+       */
+      api(options: {
+        method: string;
+        url: string;
+        body?: Record<string, unknown>;
+      }): Chainable<Cypress.Response<unknown>>;
     }
   }
 }
@@ -196,9 +212,15 @@ Cypress.Commands.add("getByTestId", (testId: string) => {
  */
 Cypress.Commands.add(
   "interceptAndWait",
-  (method: string, url: string, alias: string) => {
+  (method: string, url: string, alias: string, visitPath: string) => {
+    if (!visitPath) {
+      throw new Error(
+        "interceptAndWait: visitPath is required so the request is triggered",
+      );
+    }
     cy.intercept(method, url).as(alias);
-    cy.wait(`@${alias}`);
+    cy.visit(visitPath);
+    return cy.wait(`@${alias}`);
   },
 );
 
@@ -287,43 +309,22 @@ Cypress.Commands.add(
   },
 );
 
-// ============================================================================
-// OVERWRITE COMMANDS
-// ============================================================================
-
 /**
- * Overwrite Visit Command
- *
- * Extends the default cy.visit() to add:
- * - Logging of visited URL
- * - Performance timing
- * - Optional callback on page load
+ * Cypress 12 query command (retried). Finds a .fruit by visible text.
  */
-/*
-Cypress.Commands.overwrite('visit',
-    (originalFn: Cypress.CommandOriginalFn<'visit'>, url: string, options?: Partial<Cypress.VisitOptions>) => {
-        const startTime = Date.now();
+Cypress.Commands.addQuery("fruit", (name: string) => {
+  return () => Cypress.$(`.fruit:contains("${name}")`);
+});
 
-        cy.log(`**Navigating to:** ${url}`);
-
-        // Call original visit with enhanced options
-        const result = originalFn(url, {
-            ...options,
-            onLoad: (win) => {
-                const loadTime = Date.now() - startTime;
-                cy.log(`**Page loaded in:** ${loadTime}ms`);
-
-                // Call original onLoad if provided
-                if (options?.onLoad) {
-                    options.onLoad(win);
-                }
-            }
-        });
-
-        return result;
-    }
+Cypress.Commands.overwrite(
+  "visit",
+  // Cypress 12 overwrite typing is a union of url/onLoad signatures
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (originalFn: any, url: string, options?: Partial<Cypress.VisitOptions>) => {
+    Cypress.log({ name: "visit overwrite", message: String(url) });
+    return originalFn(url, options);
+  },
 );
-*/
 
 // Prevent TypeScript error about missing export
 export {};
