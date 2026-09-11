@@ -111,7 +111,7 @@ jobs:
   merge-reports:
     needs: [cypress-run, playwright-run]
     runs-on: ubuntu-latest
-    if: always()
+    if: ${{ always() && needs.cypress-run.result == 'success' && needs.playwright-run.result == 'success' }}
     steps:
       - uses: actions/checkout@v4
       - name: Download Cypress Artifacts

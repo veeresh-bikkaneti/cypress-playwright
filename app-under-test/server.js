@@ -535,7 +535,7 @@ app.get("/api/download/:filename", (req, res) => {
   const filename = path.basename(req.params.filename);
 
   if (filename === "sample.txt") {
-    res.setHeader("Content-Disposition", "attachment; filename=\"sample.txt\"");
+    res.setHeader("Content-Disposition", 'attachment; filename="sample.txt"');
     res.type("text/plain").send("Sample file for Cypress download tests\n");
     return;
   }

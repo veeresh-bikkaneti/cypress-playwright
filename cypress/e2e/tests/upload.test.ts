@@ -52,7 +52,9 @@ describe("File upload and download", () => {
         },
       ]);
 
-      cy.getByTestId("file-list").should("contain", "one.txt").and("contain", "two.txt");
+      cy.getByTestId("file-list")
+        .should("contain", "one.txt")
+        .and("contain", "two.txt");
       cy.getByTestId("multiple-upload-btn").should("not.be.disabled");
     });
 
@@ -80,7 +82,10 @@ describe("File upload and download", () => {
       cy.getByTestId("single-upload-btn").click();
 
       cy.wait("@upload").its("response.statusCode").should("eq", 200);
-      cy.getByTestId("single-upload-result").should("contain", "Upload successful");
+      cy.getByTestId("single-upload-result").should(
+        "contain",
+        "Upload successful",
+      );
     });
   });
 

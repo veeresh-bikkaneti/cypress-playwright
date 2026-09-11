@@ -92,7 +92,8 @@ test.describe("File upload and download", () => {
     test("uploads the selected file through the AUT", async ({ page }) => {
       const upload = page.waitForResponse(
         (res) =>
-          res.url().includes("/api/upload") && res.request().method() === "POST",
+          res.url().includes("/api/upload") &&
+          res.request().method() === "POST",
       );
 
       await page.getByTestId("single-file-input").setInputFiles({

@@ -319,7 +319,6 @@ Cypress.Commands.addQuery("fruit", (name: string) => {
 Cypress.Commands.overwrite(
   "visit",
   // Cypress 12 overwrite typing is a union of url/onLoad signatures
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (originalFn: any, url: string, options?: Partial<Cypress.VisitOptions>) => {
     Cypress.log({ name: "visit overwrite", message: String(url) });
     return originalFn(url, options);
