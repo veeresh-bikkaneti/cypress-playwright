@@ -18,7 +18,10 @@ test.describe("Login Functionality", () => {
       testData.validCredentials.password,
     );
     await myAccountPage.validateSuccessfulLogin();
-    await myAccountPage.validateUserInfo("Test User", "test@example.com");
+    await myAccountPage.validateUserInfo(
+      "Test User",
+      testData.validCredentials.emailId,
+    );
     await myAccountPage.logout();
     await myAccountPage.validateSuccessfulLogout();
   });
@@ -29,7 +32,10 @@ test.describe("Login Functionality", () => {
       testData.adminCredentials.password,
     );
     await myAccountPage.validateSuccessfulLogin();
-    await myAccountPage.validateUserInfo("Admin User", "admin@example.com");
+    await myAccountPage.validateUserInfo(
+      "Admin User",
+      testData.adminCredentials.emailId,
+    );
   });
 
   test("login with invalid email from fixture", async ({ loginPage }) => {
@@ -58,7 +64,7 @@ test.describe("Login Functionality", () => {
 
   test("shows password error for short password", async ({ loginPage }) => {
     await loginPage.navigateToLogin();
-    await loginPage.emailAddressTxt.fill("test@example.com");
+    await loginPage.emailAddressTxt.fill(testData.validCredentials.emailId);
     await loginPage.passwordTxt.fill("short");
     await loginPage.signinBtn.click();
     await loginPage.validatePasswordError();

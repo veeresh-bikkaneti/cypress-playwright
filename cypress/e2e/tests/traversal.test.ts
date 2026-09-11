@@ -112,8 +112,16 @@ describe("Query, traversal, and connectors", () => {
       cy.get("@firstFruit").should("contain", "Apples");
     });
 
-    it("cy.wrap() wraps a plain object", () => {
-      cy.wrap({ name: "Ada" }).its("name").should("eq", "Ada");
+    it("cy.wrap() wraps a fruit name from the AUT", () => {
+      cy.get(".fruit")
+        .first()
+        .invoke("text")
+        .then((text) => {
+          const name = String(text).trim().split("\n")[0];
+          cy.wrap({ name })
+            .its("name")
+            .should("match", /Apples/);
+        });
     });
 
     it("cy.its() reads a property", () => {
@@ -138,11 +146,16 @@ describe("Query, traversal, and connectors", () => {
       });
     });
 
-    it("cy.spread() unpacks an array subject", () => {
-      cy.wrap(["Apples", "Bananas", "Oranges"]).spread((a, b, c) => {
-        expect(a).to.eq("Apples");
-        expect(b).to.eq("Bananas");
-        expect(c).to.eq("Oranges");
+    it("cy.spread() unpacks fruit names from the AUT", () => {
+      cy.get(".fruit").then(($els) => {
+        const names = [...$els].map(
+          (el) => (el.textContent || "").trim().split("\n")[0],
+        );
+        cy.wrap(names).spread((a, b, c) => {
+          expect(a).to.eq("Apples");
+          expect(b).to.eq("Bananas");
+          expect(c).to.eq("Oranges");
+        });
       });
     });
 

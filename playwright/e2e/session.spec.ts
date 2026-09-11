@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { AUTH_STATE } from "../auth-state";
 import { LoginPage } from "../pages/LoginPage";
+import { testData } from "../fixtures/test-data";
 
 test.describe("Session Testing - Caching / Restore", () => {
   test.describe("storageState restore (cy.session twin)", () => {
@@ -44,7 +45,10 @@ test.describe("Session Testing - Caching / Restore", () => {
 
     test("login helper twin lands on dashboard", async ({ page }) => {
       const loginPage = new LoginPage(page);
-      await loginPage.login("test@example.com", "password123");
+      await loginPage.login(
+        testData.validCredentials.emailId,
+        testData.validCredentials.password,
+      );
       await expect(page.getByTestId("page-title")).toContainText("Dashboard");
     });
   });

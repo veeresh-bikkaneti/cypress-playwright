@@ -1,7 +1,6 @@
 /**
  * Migrated from: cypress/e2e/tests/graphql.test.ts
- * AUT-real GraphQL cases only. The Cypress spy-fallback (POST always exists)
- * is not twinned.
+ * AUT-real GraphQL queries, mutations, mocks, and live spies.
  */
 import { test, expect } from "@playwright/test";
 import { testData } from "../fixtures/test-data";
@@ -179,7 +178,12 @@ test.describe("GraphQL API Testing", () => {
           query: `
             mutation CreateOrder($items: [OrderItemInput!]!) {
               createOrder(items: $items) {
-                order { id total status }
+                order {
+                  id
+                  items { productId quantity }
+                  total
+                  status
+                }
                 success
                 message
               }
@@ -196,6 +200,7 @@ test.describe("GraphQL API Testing", () => {
       expect(response.status()).toBe(200);
       const body = await response.json();
       expect(body.data.createOrder.success).toBe(true);
+      expect(body.data.createOrder.order.items).toHaveLength(2);
       expect(body.data.createOrder.order.total).toBeGreaterThan(0);
     });
 
@@ -254,6 +259,41 @@ test.describe("GraphQL API Testing", () => {
         return res.json();
       });
       expect(result.data.products[0].name).toBe("Mocked Product");
+    });
+
+    test("should spy on GraphQL requests and verify query", async ({
+      page,
+    }) => {
+      await page.goto("/");
+      const requestPromise = page.waitForRequest(
+        (req) => req.method() === "POST" && req.url().includes("/api/graphql"),
+      );
+      const responsePromise = page.waitForResponse(
+        (res) =>
+          res.request().method() === "POST" &&
+          res.url().includes("/api/graphql"),
+      );
+      await page.evaluate(() => {
+        return fetch("/api/graphql", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            query: `
+              query {
+                products {
+                  id
+                  name
+                }
+              }
+            `,
+          }),
+        });
+      });
+      const req = await requestPromise;
+      const res = await responsePromise;
+      expect(req.postData()).toContain("products");
+      const body = await res.json();
+      expect(Array.isArray(body.data.products)).toBe(true);
     });
   });
 });

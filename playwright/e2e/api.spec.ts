@@ -11,6 +11,7 @@
 import { test, expect } from "@playwright/test";
 import fs from "fs";
 import path from "path";
+import { testData } from "../fixtures/test-data";
 
 const productsFixture = JSON.parse(
   fs.readFileSync(
@@ -100,13 +101,17 @@ test.describe("API Testing - Network Capabilities", () => {
     test("asserts the outgoing login request body", async ({ page }) => {
       const requestPromise = page.waitForRequest("**/api/auth/login");
       await page.goto("/login");
-      await page.getByTestId("email-input").fill("test@example.com");
-      await page.getByTestId("password-input").fill("password123");
+      await page
+        .getByTestId("email-input")
+        .fill(testData.validCredentials.emailId);
+      await page
+        .getByTestId("password-input")
+        .fill(testData.validCredentials.password);
       await page.getByTestId("submit-btn").click();
       const req = await requestPromise;
       expect(req.postDataJSON()).toMatchObject({
-        email: "test@example.com",
-        password: "password123",
+        email: testData.validCredentials.emailId,
+        password: testData.validCredentials.password,
       });
       await expect(page).toHaveURL(/\/dashboard/);
     });
@@ -134,8 +139,8 @@ test.describe("API Testing - Network Capabilities", () => {
     test("should make POST request with JSON body", async ({ request }) => {
       const response = await request.post("/api/auth/login", {
         data: {
-          email: "test@example.com",
-          password: "password123",
+          email: testData.validCredentials.emailId,
+          password: testData.validCredentials.password,
         },
         headers: { "Content-Type": "application/json" },
       });
@@ -159,7 +164,10 @@ test.describe("API Testing - Network Capabilities", () => {
 
     test("should chain multiple API requests", async ({ request }) => {
       const loginRes = await request.post("/api/auth/login", {
-        data: { email: "test@example.com", password: "password123" },
+        data: {
+          email: testData.validCredentials.emailId,
+          password: testData.validCredentials.password,
+        },
       });
       const loginBody = await loginRes.json();
       const orderRes = await request.post("/api/orders", {
@@ -181,7 +189,10 @@ test.describe("API Testing - Network Capabilities", () => {
       request,
     }) => {
       const response = await request.post("/api/auth/login", {
-        data: { email: "test@example.com", password: "password123" },
+        data: {
+          email: testData.validCredentials.emailId,
+          password: testData.validCredentials.password,
+        },
       });
       const body = await response.json();
       await page.goto("/");
@@ -191,7 +202,7 @@ test.describe("API Testing - Network Capabilities", () => {
       }, body);
       await page.goto("/dashboard");
       await expect(page.getByTestId("user-email")).toContainText(
-        "test@example.com",
+        testData.validCredentials.emailId,
       );
     });
 

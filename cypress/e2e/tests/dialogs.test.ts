@@ -367,10 +367,13 @@ describe("Dialog Testing - Alerts, Confirms, Prompts", () => {
      * Handle uncaught exceptions
      */
     it("should handle triggered errors gracefully", () => {
-      // Our e2e.ts already handles uncaught exceptions
+      cy.on("uncaught:exception", (err) => {
+        if (err.message.includes("Test error")) {
+          return false;
+        }
+        return true;
+      });
       cy.getByTestId("error-btn").click();
-
-      // Test continues despite the error
       cy.getByTestId("event-result").should("contain", "Error triggered");
     });
 

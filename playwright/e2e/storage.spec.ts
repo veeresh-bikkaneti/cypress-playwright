@@ -138,7 +138,7 @@ test.describe("Storage Testing - Cookies & Local Storage", () => {
 
     test("should clear authentication on logout", async ({ page }) => {
       await expect(page.getByTestId("user-email")).toContainText(
-        "test@example.com",
+        testData.validCredentials.emailId,
       );
       await page.getByTestId("logout-link").click();
       await expect(page).toHaveURL(/\/login/);

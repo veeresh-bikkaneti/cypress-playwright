@@ -74,6 +74,28 @@ test.describe("Browser Testing - Viewport, Scroll & Navigation", () => {
       expect(top).toBeGreaterThanOrEqual(0);
       expect(top).toBeLessThan(await page.evaluate(() => window.innerHeight));
     });
+
+    test("should scroll within a container element", async ({ page }) => {
+      const grid = page.getByTestId("products-grid");
+      const before = await grid.evaluate((el) => el.scrollLeft);
+      await grid.evaluate((el) => {
+        el.scrollLeft = el.scrollWidth;
+      });
+      const after = await grid.evaluate((el) => ({
+        scrollLeft: el.scrollLeft,
+        scrollWidth: el.scrollWidth,
+      }));
+      expect(after.scrollWidth).toBeGreaterThan(0);
+      expect(after.scrollLeft).toBeGreaterThanOrEqual(before);
+    });
+
+    test("should use scroll to top button", async ({ page }) => {
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      await page.getByTestId("scroll-to-top-btn").click();
+      await expect
+        .poll(async () => page.evaluate(() => window.scrollY))
+        .toBeLessThan(100);
+    });
   });
 
   // ==========================================================================
@@ -89,6 +111,14 @@ test.describe("Browser Testing - Viewport, Scroll & Navigation", () => {
     test("should assert URL", async ({ page }) => {
       await page.goto("/login");
       await expect(page).toHaveURL(/.*\/login/);
+    });
+
+    test("should assert location properties", async ({ page }) => {
+      await page.goto("/forms");
+      const loc = new URL(page.url());
+      expect(loc.pathname).toBe("/forms");
+      expect(loc.protocol).toBe("http:");
+      expect(loc.host).not.toBe("");
     });
 
     test("should assert URL hash", async ({ page }) => {

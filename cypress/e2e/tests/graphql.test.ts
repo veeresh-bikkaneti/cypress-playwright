@@ -166,18 +166,21 @@ describe("GraphQL API Testing", () => {
 
   describe("Authenticated GraphQL Queries", () => {
     let authToken: string;
+    let userEmail: string;
 
     beforeEach(() => {
-      // Login first to get auth token
-      cy.request({
-        method: "POST",
-        url: "/api/auth/login",
-        body: {
-          email: "test@example.com",
-          password: "password123",
-        },
-      }).then((response) => {
-        authToken = response.body.token;
+      cy.fixture("users.json").then((users) => {
+        userEmail = users.valid_credentials.emailId;
+        cy.request({
+          method: "POST",
+          url: "/api/auth/login",
+          body: {
+            email: users.valid_credentials.emailId,
+            password: users.valid_credentials.password,
+          },
+        }).then((response) => {
+          authToken = response.body.token;
+        });
       });
     });
 
@@ -206,7 +209,7 @@ describe("GraphQL API Testing", () => {
       }).then((response) => {
         expect(response.status).to.eq(200);
         expect(response.body.data.user).to.exist;
-        expect(response.body.data.user.email).to.eq("test@example.com");
+        expect(response.body.data.user.email).to.eq(userEmail);
       });
     });
 
@@ -249,15 +252,17 @@ describe("GraphQL API Testing", () => {
     let authToken: string;
 
     beforeEach(() => {
-      cy.request({
-        method: "POST",
-        url: "/api/auth/login",
-        body: {
-          email: "test@example.com",
-          password: "password123",
-        },
-      }).then((response) => {
-        authToken = response.body.token;
+      cy.fixture("users.json").then((users) => {
+        cy.request({
+          method: "POST",
+          url: "/api/auth/login",
+          body: {
+            email: users.valid_credentials.emailId,
+            password: users.valid_credentials.password,
+          },
+        }).then((response) => {
+          authToken = response.body.token;
+        });
       });
     });
 

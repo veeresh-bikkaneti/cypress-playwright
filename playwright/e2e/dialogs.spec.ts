@@ -27,6 +27,26 @@ test.describe("Dialog Testing - Alerts, Confirms, Prompts", () => {
       );
     });
 
+    test("should stub alert to prevent popup", async ({ page }) => {
+      await page.evaluate(() => {
+        (window as unknown as { __alerts: string[] }).__alerts = [];
+        window.alert = ((msg?: string) => {
+          (window as unknown as { __alerts: string[] }).__alerts.push(
+            String(msg ?? ""),
+          );
+        }) as typeof window.alert;
+      });
+      await page.getByTestId("alert-btn").click();
+      expect(
+        await page.evaluate(
+          () => (window as unknown as { __alerts: string[] }).__alerts,
+        ),
+      ).toEqual(["This is an alert message!"]);
+      await expect(page.getByTestId("native-dialog-result")).toContainText(
+        "Alert was shown",
+      );
+    });
+
     test("should count multiple alert calls", async ({ page }) => {
       let alertCount = 0;
       page.on("dialog", async (dialog) => {
@@ -61,6 +81,22 @@ test.describe("Dialog Testing - Alerts, Confirms, Prompts", () => {
       await page.getByTestId("confirm-btn").click();
       await expect(page.getByTestId("native-dialog-result")).toContainText(
         "User clicked Cancel",
+      );
+    });
+
+    test("should conditionally respond to confirm based on message", async ({
+      page,
+    }) => {
+      page.once("dialog", async (dialog) => {
+        if (dialog.message().includes("proceed")) {
+          await dialog.accept();
+        } else {
+          await dialog.dismiss();
+        }
+      });
+      await page.getByTestId("confirm-btn").click();
+      await expect(page.getByTestId("native-dialog-result")).toContainText(
+        "User clicked OK",
       );
     });
 
@@ -185,17 +221,81 @@ test.describe("Dialog Testing - Alerts, Confirms, Prompts", () => {
   });
 
   // ==========================================================================
+  // Window Events (uncaught error, console spy, beforeunload)
+  // ==========================================================================
+
+  test.describe("Window Events", () => {
+    test("should handle beforeunload event", async ({ page }) => {
+      await page.getByTestId("beforeunload-btn").click();
+      await expect(page.getByTestId("event-result")).toContainText("ENABLED");
+    });
+
+    test("should handle triggered errors gracefully", async ({ page }) => {
+      const errorPromise = page.waitForEvent("pageerror");
+      await page.getByTestId("error-btn").click();
+      const err = await errorPromise;
+      expect(err.message).toContain("Test error");
+      await expect(page.getByTestId("event-result")).toContainText(
+        "Error triggered",
+      );
+    });
+
+    test("should spy on console methods", async ({ page }) => {
+      const logs: string[] = [];
+      const warns: string[] = [];
+      page.on("console", (msg) => {
+        if (msg.type() === "log") {
+          logs.push(msg.text());
+        }
+        if (msg.type() === "warning") {
+          warns.push(msg.text());
+        }
+      });
+      await page.getByTestId("console-btn").click();
+      await expect.poll(() => logs).toContain("Console log test message");
+      await expect.poll(() => warns).toContain("Console warn test message");
+    });
+  });
+
+  // ==========================================================================
   // Popup Windows (page.waitForEvent)
   // ==========================================================================
 
   test.describe("Popup Windows", () => {
-    test("should handle new popup window", async ({ page }) => {
-      const popupPromise = page.waitForEvent("popup");
+    test("should stub window.open to prevent popup", async ({ page }) => {
+      await page.evaluate(() => {
+        (window as unknown as { __openCalls: unknown[][] }).__openCalls = [];
+        window.open = ((...args: unknown[]) => {
+          (window as unknown as { __openCalls: unknown[][] }).__openCalls.push(
+            args,
+          );
+          return null;
+        }) as typeof window.open;
+      });
       await page.getByTestId("popup-btn").click();
-      const popup = await popupPromise;
-      await popup.waitForLoadState();
-      await expect(popup).toHaveTitle(/Cypress Test Application/);
-      await expect(popup.getByTestId("main-heading")).toBeVisible();
+      const calls = await page.evaluate(
+        () => (window as unknown as { __openCalls: unknown[][] }).__openCalls,
+      );
+      expect(calls).toHaveLength(1);
+    });
+
+    test("should verify popup window parameters", async ({ page }) => {
+      await page.evaluate(() => {
+        (window as unknown as { __openCalls: unknown[][] }).__openCalls = [];
+        window.open = ((...args: unknown[]) => {
+          (window as unknown as { __openCalls: unknown[][] }).__openCalls.push(
+            args,
+          );
+          return null;
+        }) as typeof window.open;
+      });
+      await page.getByTestId("popup-btn").click();
+      const calls = await page.evaluate(
+        () => (window as unknown as { __openCalls: unknown[][] }).__openCalls,
+      );
+      expect(calls[0][0]).toBe("/");
+      expect(calls[0][1]).toBe("popup");
+      expect(typeof calls[0][2]).toBe("string");
     });
   });
 });

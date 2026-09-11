@@ -19,7 +19,10 @@ describe("Login Functionality", () => {
       this.data.valid_credentials.password,
     );
     myAccountPage.validateSuccessfulLogin();
-    myAccountPage.validateUserInfo("Test User", "test@example.com");
+    myAccountPage.validateUserInfo(
+      "Test User",
+      this.data.valid_credentials.emailId,
+    );
     myAccountPage.logout();
     myAccountPage.validateSuccessfulLogout();
   });
@@ -30,7 +33,10 @@ describe("Login Functionality", () => {
       this.data.admin_credentials.password,
     );
     myAccountPage.validateSuccessfulLogin();
-    myAccountPage.validateUserInfo("Admin User", "admin@example.com");
+    myAccountPage.validateUserInfo(
+      "Admin User",
+      this.data.admin_credentials.emailId,
+    );
   });
 
   it("login with invalid email from fixture", function () {
@@ -59,7 +65,7 @@ describe("Login Functionality", () => {
 
   it("shows password error for short password", function () {
     loginPage.navigateToLogin();
-    loginPage.emailAddressTxt.type("test@example.com");
+    loginPage.emailAddressTxt.type(this.data.valid_credentials.emailId);
     loginPage.passwordTxt.type("short");
     loginPage.signinBtn.click();
     loginPage.validatePasswordError();

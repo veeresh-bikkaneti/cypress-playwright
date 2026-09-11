@@ -25,3 +25,7 @@ Cypress remains the source of truth. Playwright files are 1:1 twins. The plugin 
 - Ruling: Playwright native dialogs must `page.once("dialog")` before `click()`. `waitForEvent` + awaited click deadlocks on `alert()`.
 - Ruling: hybrid-ci `quality-check` runs `cd plugin && npm test` (smoke + skills audit + parity) before E2E. The npm package is the product.
 - Ruling: Playwright wrap/spread twins must read fruit names from `/dom`. Literal `expect("Ada")` is `expect(true).toBe(true)`.
+- Ruling: GraphQL spy (`cy.intercept` then live POST) is AUT-real and must have a Playwright `waitForRequest`/`waitForResponse` twin. Mocking is not a substitute for the spy case.
+- Ruling: Forms keyboard/clear-retype/Germany/focus-blur/arrow and browser scroll-to-top/location/container-scroll are AUT interactions — drop them and the twin is a fake subset.
+- Ruling: Dialog `error-btn` throws `"Test error"` after 100ms. Cypress must `cy.on("uncaught:exception")` in the spec; Playwright must swallow only that `pageerror`. A global ignore is too wide.
+- Ruling: Demo credentials in Playwright specs come from `test-data.ts` → `users.json`. Literal `test@example.com` in a twin is a second source of truth.

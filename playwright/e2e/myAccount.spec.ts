@@ -1,5 +1,6 @@
 import { test, expect } from "../fixtures/auth.fixture";
 import { AUTH_STATE } from "../auth-state";
+import { testData } from "../fixtures/test-data";
 
 test.describe("My Account Functionality", () => {
   test.use({ storageState: AUTH_STATE });
@@ -17,7 +18,10 @@ test.describe("My Account Functionality", () => {
   test("should display user information on dashboard", async ({
     myAccountPage,
   }) => {
-    await myAccountPage.validateUserInfo("Test User", "test@example.com");
+    await myAccountPage.validateUserInfo(
+      "Test User",
+      testData.validCredentials.emailId,
+    );
   });
 
   test("should navigate to orders section", async ({ myAccountPage }) => {

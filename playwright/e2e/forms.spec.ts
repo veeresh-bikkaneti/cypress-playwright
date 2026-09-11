@@ -60,6 +60,13 @@ test.describe("Form Testing - Input Interactions", () => {
         "slowtyping",
       );
     });
+
+    test("should simulate keyboard shortcuts", async ({ page }) => {
+      await page.getByTestId("fullname-input").fill("Select All");
+      await page.getByTestId("fullname-input").press("Control+A");
+      await page.getByTestId("fullname-input").press("Delete");
+      await expect(page.getByTestId("fullname-input")).toHaveValue("");
+    });
   });
 
   // ==========================================================================
@@ -73,6 +80,12 @@ test.describe("Form Testing - Input Interactions", () => {
       );
       await page.getByTestId("editable-input").fill("");
       await expect(page.getByTestId("editable-input")).toHaveValue("");
+    });
+
+    test("should clear and retype value", async ({ page }) => {
+      await page.getByTestId("editable-input").fill("");
+      await page.getByTestId("editable-input").fill("New value");
+      await expect(page.getByTestId("editable-input")).toHaveValue("New value");
     });
 
     test("should use clear button to clear input", async ({ page }) => {
@@ -101,6 +114,12 @@ test.describe("Form Testing - Input Interactions", () => {
     test("should select option by index", async ({ page }) => {
       await page.getByTestId("country-select").selectOption({ index: 2 });
       await expect(page.getByTestId("country-select")).toHaveValue("uk");
+      const selected = await page
+        .getByTestId("country-select")
+        .evaluate(
+          (sel: HTMLSelectElement) => sel.options[sel.selectedIndex].text,
+        );
+      expect(selected).toBe("United Kingdom");
     });
 
     test("should select multiple options", async ({ page }) => {
@@ -117,6 +136,18 @@ test.describe("Form Testing - Input Interactions", () => {
           Array.from(sel.selectedOptions).map((option) => option.value),
         );
       expect(values).toEqual(["en", "es", "fr"]);
+    });
+
+    test("should assert on selected option text", async ({ page }) => {
+      await page
+        .getByTestId("country-select")
+        .selectOption({ label: "Germany" });
+      const selected = await page
+        .getByTestId("country-select")
+        .evaluate(
+          (sel: HTMLSelectElement) => sel.options[sel.selectedIndex].text,
+        );
+      expect(selected).toBe("Germany");
     });
   });
 
@@ -145,6 +176,7 @@ test.describe("Form Testing - Input Interactions", () => {
       }
       await expect(page.getByTestId("interest-technology")).toBeChecked();
       await expect(page.getByTestId("interest-music")).toBeChecked();
+      await expect(page.getByTestId("interest-sports")).not.toBeChecked();
     });
 
     test("should force check hidden checkbox", async ({ page }) => {
@@ -184,6 +216,13 @@ test.describe("Form Testing - Input Interactions", () => {
       await expect(page.getByTestId("fullname-input")).not.toBeFocused();
     });
 
+    test("should use focus and blur buttons", async ({ page }) => {
+      await page.getByTestId("focus-btn").click();
+      await expect(page.getByTestId("editable-input")).toBeFocused();
+      await page.getByTestId("blur-btn").click();
+      await expect(page.getByTestId("editable-input")).not.toBeFocused();
+    });
+
     test("should trigger validation on blur", async ({ page }) => {
       await page.goto("/login");
       await page.getByTestId("email-input").fill("invalid-email");
@@ -200,6 +239,15 @@ test.describe("Form Testing - Input Interactions", () => {
     test("should handle number input", async ({ page }) => {
       await page.getByTestId("age-input").fill("25");
       await expect(page.getByTestId("age-input")).toHaveValue("25");
+    });
+
+    test("should increment/decrement with arrow keys", async ({ page }) => {
+      await page.getByTestId("quantity-input").fill("5");
+      await page.getByTestId("quantity-input").press("ArrowUp");
+      await expect(page.getByTestId("quantity-input")).toHaveValue("6");
+      await page.getByTestId("quantity-input").press("ArrowDown");
+      await page.getByTestId("quantity-input").press("ArrowDown");
+      await expect(page.getByTestId("quantity-input")).toHaveValue("4");
     });
 
     test("should interact with range slider", async ({ page }) => {
